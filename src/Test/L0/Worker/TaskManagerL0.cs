@@ -454,9 +454,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             ""target"": ""Some Node10 target"",
             ""extraNodeArg"": ""Extra node10 arg value""
         },
-        ""Node14"": {
-            ""target"": ""Some Node14 target"",
-            ""extraNodeArg"": ""Extra node14 arg value""
+        ""Node18"": {
+            ""target"": ""Some Node18 target"",
+            ""extraNodeArg"": ""Extra node18 arg value""
         },
         ""Process"": {
             ""target"": ""Some process target"",
@@ -527,8 +527,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                     Assert.Equal(definition.Data.Execution.Node10, definition.Data.Execution.All[1]);
                     Assert.Equal("Some Node10 target", definition.Data.Execution.Node10.Target);
 
-                    // Node14 handler should always be deserialized.
-                    Assert.NotNull(definition.Data.Execution.Node18); // execution.Node14
+                    // Node18 handler should always be deserialized.
+                    Assert.NotNull(definition.Data.Execution.Node18); // execution.Node18
                     Assert.Equal(definition.Data.Execution.Node18, definition.Data.Execution.All[2]);
                     Assert.Equal("Some Node18 target", definition.Data.Execution.Node18.Target);
 
