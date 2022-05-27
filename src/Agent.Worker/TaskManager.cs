@@ -416,7 +416,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        public Node18HandlerData Node14
+        public Node18HandlerData Node18
         {
             get
             {
