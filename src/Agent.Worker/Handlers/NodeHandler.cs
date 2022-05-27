@@ -179,9 +179,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 Trace.Info($"Task.json has node18 handler data: {taskHasNode18Data}");
                 nodeFolder = "node18";
-            }
-
-            if (taskHasNode10Data || useNode10)
+            } else if (taskHasNode10Data || useNode10)
             {
                 Trace.Info($"Task.json has node10 handler data: {taskHasNode10Data}, use node10 for node tasks: {useNode10}");
                 nodeFolder = "node10";
