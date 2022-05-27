@@ -175,7 +175,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             bool taskHasNode18Data = Data is Node18HandlerData;
 
             string nodeFolder = "node";
-            if (taskHasNode14Data)
+            if (taskHasNode18Data)
             {
                 Trace.Info($"Task.json has node18 handler data: {taskHasNode18Data}");
                 nodeFolder = "node18";
