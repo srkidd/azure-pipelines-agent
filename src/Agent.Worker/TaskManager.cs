@@ -188,6 +188,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             //download and extract task in a temp folder and rename it on success
             string tempDirectory = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Tasks), "_temp_" + Guid.NewGuid());
+            System.Diagnostics.Debugger.Launch();
             try
             {
                 Directory.CreateDirectory(tempDirectory);
@@ -196,8 +197,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Allow up to 20 * 60s for any task to be downloaded from service.
                 // Base on Kusto, the longest we have on the service today is over 850 seconds.
                 // Timeout limit can be overwrite by environment variable
-                var timeoutSeconds = AgentKnobs.TaskDownloadTimeout.GetValue(UtilKnobValueContext.Instance()).AsInt();
-                int retryLimit = 3;
+                int timeoutSeconds = AgentKnobs.TaskDownloadTimeout.GetValue(executionContext).AsInt();
+                int retryLimit = AgentKnobs.TaskDownloadRetryLimit.GetValue(executionContext).AsInt();
 
                 while (true)
                 {
@@ -243,8 +244,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                                 }
                             }
 
+                            FileInfo zipFileInfo = new FileInfo(zipFile);
+                            if (zipFileInfo.Exists)
+                            {
+                                Trace.Info($"Zip file '{zipFile}' exists; its size in bytes: {zipFileInfo.Length}");
+                            }
+                            else
+                            {
+                                Trace.Info($"Zip file '{zipFile}' can not be found.");
+                            }
+
                             if (retryCount == retryLimit)
                             {
+                                Trace.Info($"Retry limit to download the '{task.Name}' task reached.");
                                 throw;
                             }
                         }
