@@ -164,14 +164,14 @@ namespace Agent.Sdk.Knob
         public static readonly Knob TaskDownloadTimeout = new Knob(
             nameof(TaskDownloadTimeout),
             "Amount of time in seconds to wait for the agent to download a task when starting a job",
-            new RuntimeKnobSource("vstsTaskDownloadTimeout"),
+            // new RuntimeKnobSource("vstsTaskDownloadTimeout"),
             new EnvironmentKnobSource("VSTS_TASK_DOWNLOAD_TIMEOUT"),
             new BuiltInDefaultKnobSource("1200")); // 20*60
 
         public static readonly Knob TaskDownloadRetryLimit = new Knob(
             nameof(TaskDownloadRetryLimit),
             "Attempts to download a task when starting a job",
-            new RuntimeKnobSource("vstsTaskDownloadRetryCount"),
+            // new RuntimeKnobSource("vstsTaskDownloadRetryCount"),
             new EnvironmentKnobSource("VSTS_TASK_DOWNLOAD_RETRY_LIMIT"),
             new BuiltInDefaultKnobSource("3"));
 
