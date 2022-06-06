@@ -188,7 +188,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             //download and extract task in a temp folder and rename it on success
             string tempDirectory = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Tasks), "_temp_" + Guid.NewGuid());
-            System.Diagnostics.Debugger.Launch();
             try
             {
                 Directory.CreateDirectory(tempDirectory);
