@@ -212,7 +212,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             using (FileStream fs = new FileStream(zipFile, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: _defaultFileStreamBufferSize, useAsync: true))
                             using (Stream result = await taskServer.GetTaskContentZipAsync(task.Id, version, taskDownloadCancellation.Token))
                             {
+                                Trace.Info($"The '{task.Name}' task downloading started.");
                                 await result.CopyToAsync(fs, _defaultCopyBufferSize, taskDownloadCancellation.Token);
+                                Trace.Info($"The '{task.Name}' task downloading finished.");
                                 await fs.FlushAsync(taskDownloadCancellation.Token);
 
                                 // download succeed, break out the retry loop.
@@ -253,7 +255,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                                 Trace.Info($"Zip file '{zipFile}' can not be found.");
                             }
 
-                            if (retryCount == retryLimit)
+                            if (retryCount >= retryLimit)
                             {
                                 Trace.Info($"Retry limit to download the '{task.Name}' task reached.");
                                 throw;
