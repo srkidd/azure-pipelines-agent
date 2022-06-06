@@ -196,8 +196,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Allow up to 20 * 60s for any task to be downloaded from service.
                 // Base on Kusto, the longest we have on the service today is over 850 seconds.
                 // Timeout limit can be overwrite by environment variable
-                int timeoutSeconds = AgentKnobs.TaskDownloadTimeout.GetValue(executionContext).AsInt();
-                int retryLimit = AgentKnobs.TaskDownloadRetryLimit.GetValue(executionContext).AsInt();
+                var timeoutSeconds = AgentKnobs.TaskDownloadTimeout.GetValue(executionContext).AsInt();
+                var retryLimit = AgentKnobs.TaskDownloadRetryLimit.GetValue(executionContext).AsInt();
 
                 while (true)
                 {
