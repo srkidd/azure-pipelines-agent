@@ -44,7 +44,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
 
         [Theory]
         [InlineData("node10")]
-        [InlineData("node18")]
+        [InlineData("node16")]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
         public void UseNewNodeForNewNodeHandler(string nodeVersion)
@@ -58,7 +58,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
 
                 nodeHandler.Initialize(thc);
                 nodeHandler.ExecutionContext = CreateTestExecutionContext(thc);
-                nodeHandler.Data = nodeVersion == "node18" ? (BaseNodeHandlerData)new Node18HandlerData() : (BaseNodeHandlerData)new Node10HandlerData();
+                nodeHandler.Data = nodeVersion == "node16" ? (BaseNodeHandlerData)new Node16HandlerData() : (BaseNodeHandlerData)new Node10HandlerData();
 
                 string actualLocation = nodeHandler.GetNodeLocation();
                 string expectedLocation = Path.Combine(thc.GetDirectory(WellKnownDirectory.Externals),

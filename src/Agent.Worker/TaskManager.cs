@@ -360,7 +360,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private AzurePowerShellHandlerData _azurePowerShell;
         private NodeHandlerData _node;
         private Node10HandlerData _node10;
-        private Node18HandlerData _node18;
+        private Node16HandlerData _node16;
         private PowerShellHandlerData _powerShell;
         private PowerShell3HandlerData _powerShell3;
         private PowerShellExeHandlerData _powerShellExe;
@@ -416,16 +416,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        public Node18HandlerData Node18
+        public Node16HandlerData Node16
         {
             get
             {
-                return _node18;
+                return _node16;
             }
 
             set
             {
-                _node18 = value;
+                _node16 = value;
                 Add(value);
             }
         }
@@ -611,7 +611,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     {
         public override int Priority => 2;
     }
-    public sealed class Node18HandlerData : BaseNodeHandlerData
+    public sealed class Node16HandlerData : BaseNodeHandlerData
     {
         public override int Priority => 1;
     }
