@@ -171,11 +171,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         public string GetNodeLocation()
         {
             bool useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsBoolean();
+            bool useNode16 = AgentKnobs.UseNode16.GetValue(ExecutionContext).AsBoolean();
             bool taskHasNode10Data = Data is Node10HandlerData;
             bool taskHasNode16Data = Data is Node16HandlerData;
 
             string nodeFolder = "node";
-            if (taskHasNode16Data)
+            if (taskHasNode16Data || useNode16)
             {
                 Trace.Info($"Task.json has node16 handler data: {taskHasNode16Data}");
                 nodeFolder = "node16";
