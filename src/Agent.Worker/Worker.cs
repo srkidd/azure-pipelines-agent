@@ -56,7 +56,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Trace.Info("Message received.");
                 ArgUtil.Equal(MessageType.NewJobRequest, channelMessage.MessageType, nameof(channelMessage.MessageType));
                 ArgUtil.NotNullOrEmpty(channelMessage.Body, nameof(channelMessage.Body));
-                var jobMessage = JsonUtility.FromString<Pipelines.AgentJobRequestMessage>(channelMessage.Body);
+                Pipelines.AgentJobRequestMessage jobMessage;
+                try
+                {
+                    jobMessage = JsonUtility.FromString<Pipelines.AgentJobRequestMessage>(channelMessage.Body);
+                }
+                catch
+                {
+                    Trace.Error($"Failed to parse jobMessage from {channelMessage.Body}");
+                    throw;
+                }
                 ArgUtil.NotNull(jobMessage, nameof(jobMessage));
                 HostContext.WritePerfCounter($"WorkerJobMessageReceived_{jobMessage.RequestId.ToString()}");
 
