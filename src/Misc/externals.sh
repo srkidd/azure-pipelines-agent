@@ -176,8 +176,8 @@ if [[ "$PACKAGERUNTIME" == "win-x86" ]]; then
     fi
     acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/win-x86/node.exe" node10/bin
     acquireExternalTool "$NODE_URL/v${NODE10_VERSION}/win-x86/node.lib" node10/bin
-    acquireExternalTool "$NODE_URL/v${NODE16_VERSION}/win-x64/node.exe" node16/bin
-    acquireExternalTool "$NODE_URL/v${NODE16_VERSION}/win-x64/node.lib" node16/bin
+    acquireExternalTool "$NODE_URL/v${NODE16_VERSION}/win-x86/node.exe" node16/bin
+    acquireExternalTool "$NODE_URL/v${NODE16_VERSION}/win-x86/node.lib" node16/bin
     acquireExternalTool "https://dist.nuget.org/win-x86-commandline/v3.4.4/nuget.exe" nuget
 fi
 
