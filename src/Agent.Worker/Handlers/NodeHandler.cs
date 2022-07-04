@@ -180,14 +180,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 Trace.Info($"Task.json has node16 handler data: {taskHasNode16Data}");
                 nodeFolder = "node16";
             }
-            else if (taskHasNode10Data || useNode10)
+            else if (taskHasNode10Data)
             {
-                if (taskHasNode10Data) {
-                    Trace.Info($"Task.json has node10 handler data: {taskHasNode10Data}");
-                }
-                else {
-                    Trace.Info($"Found UseNode10 knob, use node10 for node tasks: {useNode10}");
-                }
+                Trace.Info($"Task.json has node10 handler data: {taskHasNode10Data}");
+                nodeFolder = "node10";
+            }
+            else if (useNode10)
+            {
+                Trace.Info($"Found UseNode10 knob, use node10 for node tasks: {useNode10}");
                 nodeFolder = "node10";
             }
 
