@@ -225,6 +225,7 @@ if [[ "$PACKAGERUNTIME" != "win-x64" && "$PACKAGERUNTIME" != "win-x86" ]]; then
     rm "$LAYOUT_DIR/externals/node/bin/npm"
     rm -rf "$LAYOUT_DIR/externals/node10/lib/node_modules/npm"
     rm "$LAYOUT_DIR/externals/node10/bin/npm"
+    rm "$LAYOUT_DIR/externals/node10/bin/npx"
 fi
 
 if [[ "$L1_MODE" != "" || "$PRECACHE" != "" ]]; then
