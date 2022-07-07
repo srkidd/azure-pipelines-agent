@@ -221,6 +221,9 @@ if [[ "$PACKAGERUNTIME" == "linux-arm64" ]]; then
 fi
 
 if [[ "$PACKAGERUNTIME" != "win-x64" && "$PACKAGERUNTIME" != "win-x86" ]]; then
+    # remove `npm`, `npx`, `corepack`, and related `node_modules` from the `externals/node*` agent directory
+    # they are installed along with node, but agent does not use them
+
     rm -rf "$LAYOUT_DIR/externals/node/lib"
     rm "$LAYOUT_DIR/externals/node/bin/npm"
 
