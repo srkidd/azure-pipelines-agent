@@ -224,16 +224,16 @@ if [[ "$PACKAGERUNTIME" != "win-x64" && "$PACKAGERUNTIME" != "win-x86" ]]; then
     # remove `npm`, `npx`, `corepack`, and related `node_modules` from the `externals/node*` agent directory
     # they are installed along with node, but agent does not use them
 
-    rm "$LAYOUT_DIR/externals/node/bin/npm"
+    unlink "$LAYOUT_DIR/externals/node/bin/npm"
     rm -rf "$LAYOUT_DIR/externals/node/lib"
 
-    rm "$LAYOUT_DIR/externals/node10/bin/npm"
-    rm "$LAYOUT_DIR/externals/node10/bin/npx"
+    unlink "$LAYOUT_DIR/externals/node10/bin/npm"
+    unlink "$LAYOUT_DIR/externals/node10/bin/npx"
     rm -rf "$LAYOUT_DIR/externals/node10/lib"
 
-    rm "$LAYOUT_DIR/externals/node16/bin/npm"
-    rm "$LAYOUT_DIR/externals/node16/bin/npx"
-    rm "$LAYOUT_DIR/externals/node16/bin/corepack"
+    unlink "$LAYOUT_DIR/externals/node16/bin/npm"
+    unlink "$LAYOUT_DIR/externals/node16/bin/npx"
+    unlink "$LAYOUT_DIR/externals/node16/bin/corepack"
     rm -rf "$LAYOUT_DIR/externals/node16/lib"
 fi
 
