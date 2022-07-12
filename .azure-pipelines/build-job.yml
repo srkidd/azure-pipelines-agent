@@ -116,7 +116,7 @@ jobs:
 
   # Verify if broken symlinks exist in the agent build
   - bash: |
-      brokenSymlinks=$(find . -xtype l)
+      brokenSymlinks=$(find . -type l ! -exec test -e {} \; -print)
       if [[ $brokenSymlinks != "" ]]; then
           printf "Broken symlinks exist in the agent build:\n$brokenSymlinks\n"
           exit 1
