@@ -114,14 +114,10 @@ jobs:
       env:
         ADO_ENABLE_LOGISSUE: true
 
-  # Verify if broken symlinks exist in the agent build
-  - bash: |
-      brokenSymlinks=$(find . -type l ! -exec test -e {} \; -print)
-      if [[ $brokenSymlinks != "" ]]; then
-          printf "Broken symlinks exist in the agent build:\n$brokenSymlinks\n"
-          exit 1
-      fi
-      echo "Broken symlinks not found in the agent build."
+  # Check if broken symlinks exist in the agent build
+  - task: Bash@3
+    inputs:
+      filePath: src/Misc/check-symlinks.sh
     displayName: Check symlinks
 
   # Run l0 tests
