@@ -221,17 +221,27 @@ if [[ "$PACKAGERUNTIME" == "linux-arm64" ]]; then
 fi
 
 if [[ "$PACKAGERUNTIME" != "win-x64" && "$PACKAGERUNTIME" != "win-x86" ]]; then
-    rm -rf "$LAYOUT_DIR/externals/node/lib/node_modules/npm"
+    # remove `npm`, `npx`, `corepack`, and related `node_modules` from the `externals/node*` agent directory
+    # they are installed along with node, but agent does not use them
+
+    rm -rf "$LAYOUT_DIR/externals/node/lib"
     rm "$LAYOUT_DIR/externals/node/bin/npm"
-    rm -rf "$LAYOUT_DIR/externals/node10/lib/node_modules/npm"
+
+    rm -rf "$LAYOUT_DIR/externals/node10/lib"
     rm "$LAYOUT_DIR/externals/node10/bin/npm"
+    rm "$LAYOUT_DIR/externals/node10/bin/npx"
+
+    rm -rf "$LAYOUT_DIR/externals/node16/lib"
+    rm "$LAYOUT_DIR/externals/node16/bin/npm"
+    rm "$LAYOUT_DIR/externals/node16/bin/npx"
+    rm "$LAYOUT_DIR/externals/node16/bin/corepack"
 fi
 
 if [[ "$L1_MODE" != "" || "$PRECACHE" != "" ]]; then
     # cmdline task
     acquireExternalTool "$CONTAINER_URL/l1Tasks/d9bafed4-0b18-4f58-968d-86655b4d2ce9.zip" "Tasks" false dont_uncompress
     # cmdline node10 task
-    acquireExternalTool "$CONTAINER_URL/l1Tasks/e9bafed4-0b18-4f58-968d-86655b4d2ce9.zip" "Tasks" false dont_uncompress
+    acquireExternalTool "$CONTAINER_URL/l1Tasks/f9bafed4-0b18-4f58-968d-86655b4d2ce9.zip" "Tasks" false dont_uncompress
 
     # with the current setup of this package there are backslashes so it fails to extract on non-windows at runtime
     # we may need to fix this in the Agent
