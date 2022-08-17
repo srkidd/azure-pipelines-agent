@@ -1,3 +1,15 @@
+## Features
+ - consume fetchTags signal (#3907)
+
+## Bugs
+ - [CG alert] Update guid for l1Task CmdLine Node10 (#3904)
+
+## Misc
+ - AZP_AGENT_USE_LEGACY_HTTP knob: added warning and announcement (#3893)
+ - Check in the agent CI if broken symlinks exist in the agent build (#3902)
+ - Fix agent build script (#3921)
+ - Update dotnet install script (#3934)
+
 
 ## Agent Downloads
 
