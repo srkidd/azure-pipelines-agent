@@ -96,7 +96,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         // some secrets that CredScan should NOT suppress
         [InlineData("The password is knock knock knock", "The password is knock knock knock")]
         [InlineData("SSdtIGEgY29tcGxldGVseSBpbm5vY3VvdXMgc3RyaW5nLg==", "SSdtIGEgY29tcGxldGVseSBpbm5vY3VvdXMgc3RyaW5nLg==")]
-        public void OtherSecretsAreMasked(string input, string expected)
+        public void IsCredscanRegexesKnobWorks(string input, string expected)
         {
             // Arrange.
             try
