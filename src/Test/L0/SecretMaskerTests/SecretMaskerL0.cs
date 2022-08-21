@@ -116,5 +116,90 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                "https://username%AZP2510%AZP25A3%AZP25F6:***@example.com",
                testSecretMasker.MaskSecrets(@"https://username%AZP2510%AZP25A3%AZP25F6:password123@example.com"));
         }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "SecretMasker")]
+        public void IsUserInfoWithUnderscoresMasked()
+        {
+            var testSecretMasker = initSecretMasker();
+
+            Assert.Equal(
+               @"https://_username%AZP251_:***@example.com",
+               testSecretMasker.MaskSecrets(@"https://_username%AZP251_:_!password123_@example.com"));
+        }
+
+        [Theory]
+        [Trait("Level", "L0")]
+        [Trait("Category", "SecretMasker")]
+        [InlineData]
+        public void IsComplexPasswordsMasked(string input, string expected)
+        {
+            var testSecretMasker = initSecretMasker();
+
+            Assert.Equal(
+               input,
+               testSecretMasker.MaskSecrets(expected));
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "SecretMasker")]
+        public void IsSimpleSercretMaskedInLine()
+        {
+            var testSecretMasker = initSecretMasker();
+
+            var secret = "secret";
+            testSecretMasker.AddRegex(secret);
+
+            Assert.Equal(
+               "123***456",
+               testSecretMasker.MaskSecrets($"123{secret}456"));
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "SecretMasker")]
+        public void IsComplexSercretMaskedInLine()
+        {
+            var testSecretMasker = initSecretMasker();
+
+            var secret = @"secret";
+            testSecretMasker.AddRegex(secret);
+
+            Assert.Equal(
+               @"123_;***\456",
+               testSecretMasker.MaskSecrets(@$"123_;{secret}\456"));
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "SecretMasker")]
+        public void IsWhiteSpaceMasked()
+        {
+            var testSecretMasker = initSecretMasker();
+
+            var secret = @" ";
+            testSecretMasker.AddRegex(secret);
+
+            Assert.Equal(
+               @"123;***;456",
+               testSecretMasker.MaskSecrets(@$"123;{secret};456"));
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "SecretMasker")]
+        public void GuildMaskingTest()
+        {
+            var testSecretMasker = initSecretMasker();
+
+            var secretGuid = Guid.NewGuid().ToString();
+            testSecretMasker.AddValue(secretGuid);
+
+            Assert.Equal(
+               @"123***456",
+               testSecretMasker.MaskSecrets(@$"123{secretGuid}456"));
+        }
     }
 }
