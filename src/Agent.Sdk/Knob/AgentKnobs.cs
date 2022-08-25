@@ -105,6 +105,13 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("VSTS_DISABLE_GIT_PROMPT"),
             new BuiltInDefaultKnobSource("true"));
 
+        public static readonly Knob GitUseConfigEnv = new Knob(
+            nameof(GitUseConfigEnv),
+            "Allow to specify additional command line options to 'docker network' command when creating network for new containers",
+            new RuntimeKnobSource("agent.GitUseConfigEnv"),
+            new EnvironmentKnobSource("AZP_GIT_USE_CONFIG_ENV"),
+            new BuiltInDefaultKnobSource("true"));
+
         public const string QuietCheckoutRuntimeVarName = "agent.source.checkout.quiet";
         public const string QuietCheckoutEnvVarName = "AGENT_SOURCE_CHECKOUT_QUIET";
 
