@@ -237,18 +237,6 @@ namespace Agent.Plugins.Repository
             }
         }
 
-        public async Task SetHttpExtraHeaderWithPlaceholder(AgentTaskPluginExecutionContext executionContext, GitCliManager gitCommandManager, string targetPath, string configKey, Guid placeholder)
-        {
-            string configValue = $"\"AUTHORIZATION: {placeholder}\"";
-
-            //configModifications[configKey] = configValue.Trim('\"');
-            int exitCode_config = await gitCommandManager.GitConfig(executionContext, targetPath, configKey, configValue);
-            if (exitCode_config != 0)
-            {
-                throw new InvalidOperationException($"Git config failed with exit code: {exitCode_config}");
-            }
-        }
-
         public async Task GetSourceAsync(
             AgentTaskPluginExecutionContext executionContext,
             Pipelines.RepositoryResource repository,
@@ -411,6 +399,8 @@ namespace Agent.Plugins.Repository
             bool fetchByCommit = GitSupportsFetchingCommitBySha1Hash(gitCommandManager) && !AgentKnobs.DisableFetchByCommit.GetValue(executionContext).AsBoolean();
 
             bool gitSupportAuthHeader = GitSupportUseAuthHeader(executionContext, gitCommandManager);
+
+            bool gitUseConfigEnv = AgentKnobs.GitUseConfigEnv.GetValue(executionContext).AsBoolean();
 
             // Make sure the build machine met all requirements for the git repository
             // For now, the requirement we have are:
@@ -1063,14 +1053,22 @@ namespace Agent.Plugins.Repository
             {
                 if (gitSupportAuthHeader && exposeCred)
                 {
-                    executionContext.Warning("4.1 !selfManageGitCreds gitSupportAuthHeader && exposeCred");
+                    executionContext.Warning("4. !selfManageGitCreds ; gitLfsSupport");
                     string configKey = $"http.{repositoryUrl.AbsoluteUri}.extraheader";
                     string configValue = $"\"AUTHORIZATION: {GenerateAuthHeader(executionContext, username, password, useBearerAuthType)}\"";
                     configModifications[configKey] = configValue.Trim('\"');
-                    int exitCode_config = await gitCommandManager.GitConfig(executionContext, targetPath, configKey, configValue);
-                    if (exitCode_config != 0)
+
+                    if (gitUseConfigEnv)
                     {
-                        throw new InvalidOperationException($"Git config failed with exit code: {exitCode_config}");
+                        await SetAuthTokenInGitConfig(executionContext, gitCommandManager, configKey, configValue.Trim('\"'), repository);
+                    }
+                    else
+                    {
+                        int exitCode_config = await gitCommandManager.GitConfig(executionContext, targetPath, configKey, configValue);
+                        if (exitCode_config != 0)
+                        {
+                            throw new InvalidOperationException($"Git config failed with exit code: {exitCode_config}");
+                        }
                     }
                 }
 
@@ -1182,14 +1180,22 @@ namespace Agent.Plugins.Repository
                     bool lfsSupportAuthHeader = GitLfsSupportUseAuthHeader(executionContext, gitCommandManager);
                     if (lfsSupportAuthHeader && exposeCred)
                     {
-                        executionContext.Warning("5.1 !selfManageGitCreds ; gitLfsSupport");
+                        executionContext.Warning("5. !selfManageGitCreds ; gitLfsSupport");
                         string configKey = $"http.{repositoryUrl.AbsoluteUri}.extraheader";
                         string configValue = $"\"AUTHORIZATION: {GenerateAuthHeader(executionContext, username, password, useBearerAuthType)}\"";
                         configModifications[configKey] = configValue.Trim('\"');
-                        int exitCode_config = await gitCommandManager.GitConfig(executionContext, targetPath, configKey, configValue);
-                        if (exitCode_config != 0)
+
+                        if (gitUseConfigEnv)
                         {
-                            throw new InvalidOperationException($"Git config failed with exit code: {exitCode_config}");
+                            await SetAuthTokenInGitConfig(executionContext, gitCommandManager, configKey, configValue.Trim('\"'), repository);
+                        }
+                        else
+                        {
+                            int exitCode_config = await gitCommandManager.GitConfig(executionContext, targetPath, configKey, configValue);
+                            if (exitCode_config != 0)
+                            {
+                                throw new InvalidOperationException($"Git config failed with exit code: {exitCode_config}");
+                            }
                         }
                     }
 
@@ -1367,21 +1373,25 @@ namespace Agent.Plugins.Repository
             }
         }
 
-        private void ReplaceHttpExtraheaderInGitConfigFile(AgentTaskPluginExecutionContext executionContext, GitCliManager gitCommandManager, string targetPath, string configKey, string configValue, Guid placeholder)
+        private async Task ReplaceTokenPlaceholder(AgentTaskPluginExecutionContext executionContext, string targetPath, string configKey, string tokenPlaceholderConfigValue, string configValue)
         {
-            // if unable to use git.exe unset http.extraheader, http.proxy or core.askpass, modify git config file on disk. make sure we don't left credential.
+            //modify git config file on disk.
             if (!string.IsNullOrEmpty(configValue))
             {
+                System.Diagnostics.Debugger.Launch();
                 executionContext.Warning($"Try replacing {configKey} {configValue}");
                 string gitConfig = Path.Combine(targetPath, ".git/config");
                 if (File.Exists(gitConfig))
                 {
                     string gitConfigContent = File.ReadAllText(Path.Combine(targetPath, ".git", "config"));
-                    if (gitConfigContent.Contains("extraheader"))
+                    using (StreamWriter config = new StreamWriter(gitConfig))
                     {
-                        executionContext.Warning($"Replacing {configKey} {configValue}");
-                        gitConfigContent = Regex.Replace(gitConfigContent, placeholder.ToString(), configValue, RegexOptions.IgnoreCase);
-                        File.WriteAllText(gitConfig, gitConfigContent);
+                        if (gitConfigContent.Contains(tokenPlaceholderConfigValue))
+                        {
+                            executionContext.Warning($"Replacing {configKey} {configValue}");
+                            gitConfigContent = Regex.Replace(gitConfigContent, tokenPlaceholderConfigValue, configValue, RegexOptions.IgnoreCase);
+                        }
+                        await config.WriteAsync(gitConfigContent);
                     }
                 }
             }
@@ -1481,6 +1491,27 @@ namespace Agent.Plugins.Repository
                 executionContext.Warning($"0.1 {configKey}");
                 return $"-c {configKey}=\"{configValue}\"";
             }
+        }
+
+        private async Task SetAuthTokenInGitConfig(AgentTaskPluginExecutionContext executionContext,
+            GitCliManager gitCommandManager,
+            string configKey,
+            string configValue,
+            Pipelines.RepositoryResource repository)
+        {
+            Uri repositoryUrl = repository.Url;
+            string targetPath = repository.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+
+            executionContext.Warning($"00.2 !selfManageGitCreds gitSupportAuthHeader && exposeCred");
+            Guid tokenPlaceholder = Guid.NewGuid();
+            string tokenPlaceholderConfigValue = $"\"AUTHORIZATION: placeholder_{tokenPlaceholder}\"";
+
+            int exitCode_config = await gitCommandManager.GitConfig(executionContext, targetPath, configKey, tokenPlaceholderConfigValue);
+            if (exitCode_config != 0)
+            {
+                throw new InvalidOperationException($"Git config failed with exit code: {exitCode_config}");
+            }
+            await ReplaceTokenPlaceholder(executionContext, targetPath, configKey, tokenPlaceholderConfigValue.Trim('\"'), configValue);
         }
     }
 }
