@@ -400,7 +400,7 @@ namespace Agent.Plugins.Repository
 
             bool gitSupportAuthHeader = GitSupportUseAuthHeader(executionContext, gitCommandManager);
 
-            bool gitUseConfigEnv = AgentKnobs.GitUseConfigEnv.GetValue(executionContext).AsBoolean();
+            bool gitUseSecureParameterPassing = AgentKnobs.GitUseSecureParameterPassing.GetValue(executionContext).AsBoolean();
 
             // Make sure the build machine met all requirements for the git repository
             // For now, the requirement we have are:
@@ -1058,7 +1058,7 @@ namespace Agent.Plugins.Repository
                     string configValue = $"\"AUTHORIZATION: {GenerateAuthHeader(executionContext, username, password, useBearerAuthType)}\"";
                     configModifications[configKey] = configValue.Trim('\"');
 
-                    if (gitUseConfigEnv)
+                    if (gitUseSecureParameterPassing)
                     {
                         await SetAuthTokenInGitConfig(executionContext, gitCommandManager, configKey, configValue.Trim('\"'), repository);
                     }
@@ -1185,7 +1185,7 @@ namespace Agent.Plugins.Repository
                         string configValue = $"\"AUTHORIZATION: {GenerateAuthHeader(executionContext, username, password, useBearerAuthType)}\"";
                         configModifications[configKey] = configValue.Trim('\"');
 
-                        if (gitUseConfigEnv)
+                        if (gitUseSecureParameterPassing)
                         {
                             await SetAuthTokenInGitConfig(executionContext, gitCommandManager, configKey, configValue.Trim('\"'), repository);
                         }
@@ -1472,13 +1472,13 @@ namespace Agent.Plugins.Repository
             bool useBearerAuthType)
         {
             bool gitSupportsConfigEnv = GitSupportsConfigEnv(executionContext, gitCommandManager);
-            bool gitUseConfigEnv = AgentKnobs.GitUseConfigEnv.GetValue(executionContext).AsBoolean();
+            bool gitUseSecureParameterPassing = AgentKnobs.GitUseSecureParameterPassing.GetValue(executionContext).AsBoolean();
 
             string additionalArgs = String.Empty;
             string configValue = $"AUTHORIZATION: {GenerateAuthHeader(executionContext, username, password, useBearerAuthType)}";
 
-            // if git version is v2.31 or higher and gitUseConfigEnv knob is enabled
-            if (gitSupportsConfigEnv && gitUseConfigEnv)
+            // if git version is v2.31 or higher and GitUseSecureParameterPassing knob is enabled
+            if (gitSupportsConfigEnv && gitUseSecureParameterPassing)
             {
                 string envVariableName = $"env_var_{configKey}";
                 Environment.SetEnvironmentVariable(envVariableName, configValue);
