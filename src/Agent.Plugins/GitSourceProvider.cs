@@ -1393,9 +1393,8 @@ namespace Agent.Plugins.Repository
             }
             else
             {
-                executionContext.Error(StringUtil.Loc("FailToRemoveGitConfig", configKey, configKey, targetPath));
+                executionContext.Warning(StringUtil.Loc("FailToReplaceTokenPlaceholderInGitConfig", configKey));
             }
-
         }
 
         private async Task RemoveCachedCredential(AgentTaskPluginExecutionContext context, GitCliManager gitCommandManager, Uri repositoryUrlWithCred, string repositoryPath, Uri repositoryUrl, string remoteName)
