@@ -108,8 +108,8 @@ namespace Agent.Sdk.Knob
         public static readonly Knob GitUseSecureParameterPassing = new Knob(
             nameof(GitUseSecureParameterPassing),
             "If true, don't pass auth token in git parameters",
-            new RuntimeKnobSource("agent.GitSecureParameterPassing"),
-            new EnvironmentKnobSource("AGENT_GIT_SECURE_PARAMETER_PASSING"),
+            new RuntimeKnobSource("agent.GitUseSecureParameterPassing"),
+            new EnvironmentKnobSource("AGENT_GIT_USE_SECURE_PARAMETER_PASSING"),
             new BuiltInDefaultKnobSource("true"));
 
         public const string QuietCheckoutRuntimeVarName = "agent.source.checkout.quiet";
