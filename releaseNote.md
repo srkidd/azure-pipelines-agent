@@ -1,3 +1,15 @@
+## Features
+ - Changed node version to run as a service (#3929)
+
+## Bugs
+ - Add group id matching user (#3837)
+ - Update GitSourceProvider to not pass auth header in arguments (#3949)
+
+## Misc
+ - [Repo config] Add `CODEOWNERS` file (#3933)
+ - Added information message if agent with same name already exist in pool (#3939)
+ - Update dotnet-install.sh script (#3946)
+
 
 ## Agent Downloads
 
