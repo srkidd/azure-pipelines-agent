@@ -19,6 +19,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             public static Knob A = new Knob("A", "Test Knob", new RuntimeKnobSource("A"), new EnvironmentKnobSource("A"), new BuiltInDefaultKnobSource("false"));
             public static Knob B = new DeprecatedKnob("B", "Deprecated Knob", new BuiltInDefaultKnobSource("true"));
             public static Knob C = new ExperimentalKnob("C", "Experimental Knob", new BuiltInDefaultKnobSource("foo"));
+            public static Knob D = new ExperimentalKnob("D", "Test knob only with default", new BuiltInDefaultKnobSource("foo"));
         }
 
         [Fact]
@@ -26,7 +27,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Category", "Common")]
         public void HasAgentKnobs()
         {
-            Assert.True(Knob.GetAllKnobsFor<TestKnobs>().Count == 3, "GetAllKnobsFor returns the right amount");
+            Assert.True(Knob.GetAllKnobsFor<TestKnobs>().Count == 4, "GetAllKnobsFor returns the right amount");
         }
 
         [Fact]
@@ -109,7 +110,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void GettingKnobByGeneric()
+        public void GetSpecificKnobValueBySpecificType()
         {
             var environment = new LocalEnvironment();
 
@@ -120,9 +121,66 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
 
             environment.SetEnvironmentVariable("A", "true");
 
-            var knobValue = TestKnobs.A.GetValue<BuiltInDefaultKnobSource>(executionContext.Object).AsString();
+            var knobValue = TestKnobs.A.GetValue<BuiltInDefaultKnobSource>(executionContext.Object);
 
-            Assert.Equal("false", knobValue);
+            Assert.True(knobValue.Source.GetType() == typeof(BuiltInDefaultKnobSource));
+            Assert.Equal("false", knobValue.AsString());
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void SpecificKnobTypeNotPresentTest()
+        {
+            var environment = new LocalEnvironment();
+
+            var executionContext = new Mock<IExecutionContext>();
+            executionContext
+                .Setup(x => x.GetScopedEnvironment())
+                .Returns(environment);
+
+            var knobValue = TestKnobs.D.GetValue<RuntimeKnobSource>(executionContext.Object);
+            Assert.Equal(null, knobValue);
+
+            var knobValue2 = TestKnobs.D.GetValue<BuiltInDefaultKnobSource>(executionContext.Object);
+            Assert.True(knobValue2.Source.GetType() == typeof(BuiltInDefaultKnobSource));
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void SpecificKnobTypeAsInterfaceTest()
+        {
+            var environment = new LocalEnvironment();
+
+            var executionContext = new Mock<IExecutionContext>();
+            executionContext
+                .Setup(x => x.GetScopedEnvironment())
+                .Returns(environment);
+
+            environment.SetEnvironmentVariable("A", "true");
+
+            var knobValue = TestKnobs.A.GetValue<IEnvironmentKnobSource>(executionContext.Object);
+
+            Assert.True(knobValue.Source.GetType() == typeof(EnvironmentKnobSource));
+            Assert.Equal("true", knobValue.AsString());
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void NotRightKnobTypeSetTest()
+        {
+            var environment = new LocalEnvironment();
+
+            var executionContext = new Mock<IExecutionContext>();
+            executionContext
+                .Setup(x => x.GetScopedEnvironment())
+                .Returns(environment);
+
+            var knobValue = TestKnobs.A.GetValue<IAgentService>(executionContext.Object);
+
+            Assert.Equal(null, knobValue);
         }
     }
 }
