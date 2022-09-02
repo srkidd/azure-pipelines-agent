@@ -5,7 +5,6 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Sdk.Knob
 {
-
     public class RuntimeKnobSource : IKnobSource
     {
         private string _runTimeVar;
@@ -34,30 +33,9 @@ namespace Agent.Sdk.Knob
             return null;
         }
 
-        public KnobValue GetValue<T>(IKnobValueContext context)
-        {
-            ArgUtil.NotNull(context, nameof(context));
-            string value = null;
-            try
-            {
-                value = context.GetVariableValueOrDefault(_runTimeVar);
-            }
-            catch (NotSupportedException)
-            {
-                throw new NotSupportedException($"{nameof(RuntimeKnobSource)} not supported for context type {context.GetType()}");
-            }
-
-            if (!string.IsNullOrEmpty(value))
-            {
-                return new KnobValue(value, this);
-            }
-            return null;
-        }
-
         public string GetDisplayString()
         {
             return $"$({_runTimeVar})";
         }
     }
-
 }

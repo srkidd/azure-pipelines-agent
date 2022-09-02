@@ -45,7 +45,7 @@ namespace Agent.Sdk.Knob
                 }
             }
 
-            return this.GetValue(context);
+            return this.GetValue<BuiltInDefaultKnobSource>(context);
         }
 
         public string GetDisplayString()
@@ -80,5 +80,4 @@ namespace Agent.Sdk.Knob
             return false;
         }
     }
-
 }

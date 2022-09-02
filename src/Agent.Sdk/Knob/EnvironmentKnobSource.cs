@@ -26,18 +26,6 @@ namespace Agent.Sdk.Knob
             return null;
         }
 
-        public KnobValue GetValue<T>(IKnobValueContext context)
-        {
-            ArgUtil.NotNull(context, nameof(context));
-            var scopedEnvironment = context.GetScopedEnvironment();
-            var value = scopedEnvironment.GetEnvironmentVariable(_envVar);
-            if (!string.IsNullOrEmpty(value))
-            {
-                return new KnobValue(value, this);
-            }
-            return null;
-        }
-
         public string GetDisplayString()
         {
             return $"${{{_envVar}}}";
