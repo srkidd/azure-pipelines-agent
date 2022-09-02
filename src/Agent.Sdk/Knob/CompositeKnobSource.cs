@@ -29,23 +29,21 @@ namespace Agent.Sdk.Knob
             return null;
         }
 
+        /// <summary>
+        /// Returns knob value by specific source type
+        /// </summary>
+        /// <returns>Returns knob value if it's found in knob sources, otherwise returns null</returns>
         public KnobValue GetValue<T>(IKnobValueContext context)
         {
             foreach (var source in _sources)
             {
-                //if (typeof(T).IsAssignableFrom(source.GetType()))
                 if (source is T)
                 {
-                    var value = source.GetValue(context);
-                    if (!(value is null))
-                    {
-                        return value;
-                    }
-
+                    return source.GetValue(context);
                 }
             }
 
-            return this.GetValue<BuiltInDefaultKnobSource>(context);
+            return null;
         }
 
         public string GetDisplayString()
