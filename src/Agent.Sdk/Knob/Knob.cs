@@ -65,7 +65,15 @@ namespace Agent.Sdk.Knob
             return Source.GetValue(context);
         }
 
-        public static List<Knob> GetAllKnobsFor<T>()
+        public KnobValue GetValue<T>(IKnobValueContext context)
+        {
+             ArgUtil.NotNull(context, nameof(context));
+             ArgUtil.NotNull(Source, nameof(Source));
+
+             return Source.GetValue<T>(context);
+        }
+
+    public static List<Knob> GetAllKnobsFor<T>()
         {
             Type type = typeof(T);
             List<Knob> allKnobs = new List<Knob>();

@@ -18,6 +18,11 @@ namespace Agent.Sdk.Knob
             return new KnobValue(_value, this);
         }
 
+        public KnobValue GetValue<T>(IKnobValueContext context)
+        {
+            return new KnobValue(_value, this);
+        }
+
         public string GetDisplayString()
         {
             return "Default";

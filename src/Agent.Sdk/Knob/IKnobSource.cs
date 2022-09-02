@@ -7,7 +7,9 @@ namespace Agent.Sdk.Knob
     public interface IKnobSource
     {
         KnobValue GetValue(IKnobValueContext context);
+
+        KnobValue GetValue<T>(IKnobValueContext context);
+
         string GetDisplayString();
     }
-
 }
