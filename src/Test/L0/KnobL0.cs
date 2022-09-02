@@ -105,5 +105,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             Assert.True(TestKnobs.C.IsExperimental, "C is Experimental");
             Assert.True(!TestKnobs.C.IsDeprecated, "C is NOT Deprecated");
         }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void GettingKnobByGeneric()
+        {
+            var environment = new LocalEnvironment();
+
+            var executionContext = new Mock<IExecutionContext>();
+            executionContext
+                .Setup(x => x.GetScopedEnvironment())
+                .Returns(environment);
+
+            environment.SetEnvironmentVariable("A", "true");
+
+            var knobValue = TestKnobs.A.GetValue<BuiltInDefaultKnobSource>(executionContext.Object).AsString();
+
+            Assert.Equal("false", knobValue);
+        }
     }
 }
