@@ -54,6 +54,13 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AZP_AGENT_DOCKER_ADDITIONAL_NETWORK_OPTIONS"),
             new BuiltInDefaultKnobSource(string.Empty));
 
+        public static readonly Knob UseHostGroupId = new Knob(
+            nameof(UseHostGroupId),
+            "If true, use the same group ID (GID) as the user on the host on which the agent is running",
+            new RuntimeKnobSource("agent.UseHostGroupId"),
+            new EnvironmentKnobSource("AZP_AGENT_USE_HOST_GROUP_ID"),
+            new BuiltInDefaultKnobSource("true"));
+
         // Directory structure
         public static readonly Knob AgentToolsDirectory = new Knob(
             nameof(AgentToolsDirectory),
@@ -96,6 +103,13 @@ namespace Agent.Sdk.Knob
             "If true, git will not prompt on the terminal (e.g., when asking for HTTP authentication).",
             new RuntimeKnobSource("VSTS_DISABLE_GIT_PROMPT"),
             new EnvironmentKnobSource("VSTS_DISABLE_GIT_PROMPT"),
+            new BuiltInDefaultKnobSource("true"));
+
+        public static readonly Knob GitUseSecureParameterPassing = new Knob(
+            nameof(GitUseSecureParameterPassing),
+            "If true, don't pass auth token in git parameters",
+            new RuntimeKnobSource("agent.GitUseSecureParameterPassing"),
+            new EnvironmentKnobSource("AGENT_GIT_USE_SECURE_PARAMETER_PASSING"),
             new BuiltInDefaultKnobSource("true"));
 
         public const string QuietCheckoutRuntimeVarName = "agent.source.checkout.quiet";
