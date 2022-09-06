@@ -1,3 +1,12 @@
+## Features
+
+
+## Bugs
+ - Update Agent.Worker GitSourceProvider to not pass auth header in arguments (#3958)
+
+## Misc
+
+
 
 ## Agent Downloads
 
