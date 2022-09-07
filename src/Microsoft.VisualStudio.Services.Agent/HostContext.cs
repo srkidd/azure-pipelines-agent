@@ -489,7 +489,6 @@ namespace Microsoft.VisualStudio.Services.Agent
             CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo(name);
         }
 
-
         public void ShutdownAgent(ShutdownReason reason)
         {
             ArgUtil.NotNull(reason, nameof(reason));
