@@ -14,7 +14,7 @@ namespace Agent.Sdk.Util
         private ISecretMasker _secretMasker;
         private ITraceWriter _trace;
 
-        // We're not allowing to scip secrets longer than 4 symbols.
+        // We don't allow to skip secrets longer than 4 characters.
         private readonly short _maxMinSecretLength = 4;
 
         private void Trace(string msg)
