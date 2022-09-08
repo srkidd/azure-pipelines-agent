@@ -37,7 +37,7 @@ namespace Agent.Sdk.Knob
         {
             foreach (var source in _sources)
             {
-                if (source is T)
+                if (source.GetType() == typeof(T))
                 {
                     return source.GetValue(context);
                 }

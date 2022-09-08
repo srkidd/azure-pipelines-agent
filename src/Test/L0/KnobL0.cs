@@ -122,7 +122,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             environment.SetEnvironmentVariable("A", "true");
 
             var knobValue = TestKnobs.A.GetValue<BuiltInDefaultKnobSource>(executionContext.Object);
-
             Assert.True(knobValue.Source.GetType() == typeof(BuiltInDefaultKnobSource));
             Assert.Equal("false", knobValue.AsString());
         }
@@ -142,14 +141,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var knobValue = TestKnobs.D.GetValue<RuntimeKnobSource>(executionContext.Object);
             Assert.Equal(null, knobValue);
 
-            var knobValue2 = TestKnobs.D.GetValue<BuiltInDefaultKnobSource>(executionContext.Object);
-            Assert.True(knobValue2.Source.GetType() == typeof(BuiltInDefaultKnobSource));
+            knobValue = TestKnobs.D.GetValue<BuiltInDefaultKnobSource>(executionContext.Object);
+            Assert.True(knobValue.Source.GetType() == typeof(BuiltInDefaultKnobSource));
         }
 
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void SpecificKnobTypeAsInterfaceTest()
+        public void SpecificKnobTypeByInterfaceRestrictedTest()
         {
             var environment = new LocalEnvironment();
 
@@ -161,7 +160,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             environment.SetEnvironmentVariable("A", "true");
 
             var knobValue = TestKnobs.A.GetValue<IEnvironmentKnobSource>(executionContext.Object);
+            Assert.Equal(null, knobValue);
 
+            knobValue = TestKnobs.A.GetValue<EnvironmentKnobSource>(executionContext.Object);
             Assert.True(knobValue.Source.GetType() == typeof(EnvironmentKnobSource));
             Assert.Equal("true", knobValue.AsString());
         }
@@ -179,7 +180,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 .Returns(environment);
 
             var knobValue = TestKnobs.A.GetValue<IAgentService>(executionContext.Object);
-
             Assert.Equal(null, knobValue);
         }
     }
