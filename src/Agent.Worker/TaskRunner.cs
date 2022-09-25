@@ -13,10 +13,12 @@ using System.Threading;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Agent.Worker.Handlers;
 using Microsoft.VisualStudio.Services.Agent.Worker.Container;
 using Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Newtonsoft.Json;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -116,6 +118,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
                 Trace.Info($"Handler data is of type {handlerData}");
 
+                PublishTelemetry(definition, handlerData);
+
                 Variables runtimeVariables = ExecutionContext.Variables;
                 IStepHost stepHost = HostContext.CreateService<IDefaultStepHost>();
                 var stepTarget = ExecutionContext.StepTarget();
@@ -130,7 +134,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             // Check that the target container is still running, if not Skip task execution
                             IDockerCommandManager dockerManager = HostContext.GetService<IDockerCommandManager>();
                             bool isContainerRunning = await dockerManager.IsContainerRunning(ExecutionContext, containerTarget.ContainerId);
-                            
+
                             if (!isContainerRunning)
                             {
                                 ExecutionContext.Result = TaskResult.Skipped;
@@ -226,7 +230,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     taskDecoratorManager.IsInjectedInputsContainsSecrets(inputs, out var inputsWithSecrets))
                 {
                     var inputsForReport = taskDecoratorManager.GenerateTaskResultMessage(inputsWithSecrets);
-                    
+
                     ExecutionContext.Result = TaskResult.Skipped;
                     ExecutionContext.ResultCode = StringUtil.Loc("SecretsAreNotAllowedInInjectedTaskInputs", inputsForReport);
                     return;
@@ -483,10 +487,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     if ((currentExecution.All.Any(x => x is PowerShell3HandlerData)) &&
                         (currentExecution.All.Any(x => x is BaseNodeHandlerData)))
-                        {
-                            Trace.Info($"Since we are targeting a container, we will prefer a node handler if one is available");
-                            preferPowershellHandler = false;
-                        }
+                    {
+                        Trace.Info($"Since we are targeting a container, we will prefer a node handler if one is available");
+                        preferPowershellHandler = false;
+                    }
                 }
             }
             Trace.Info($"Get handler data for target platform {targetOS.ToString()}");
@@ -563,6 +567,32 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ExecutionContext.Output($"Author       : {taskDefinition.Data.Author}");
             ExecutionContext.Output($"Help         : {taskDefinition.Data.HelpUrl ?? taskDefinition.Data.HelpMarkDown}");
             ExecutionContext.Output("==============================================================================");
+        }
+        private void PublishTelemetry(Definition taskDefinition, HandlerData handlerData)
+        {
+            ArgUtil.NotNull(Task, nameof(Task));
+            ArgUtil.NotNull(Task.Reference, nameof(Task.Reference));
+            ArgUtil.NotNull(taskDefinition.Data, nameof(taskDefinition.Data));
+
+            var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
+            Dictionary<string, string> telemetryData = new Dictionary<string, string>();
+            telemetryData.Add("Task Name", Task.Reference.Name);
+            telemetryData.Add("Task Id", Task.Reference.Id.ToString());
+            telemetryData.Add("Version", Task.Reference.Version);
+            telemetryData.Add("OS", PlatformUtil.HostOS.ToString());
+            telemetryData.Add("Expected Execution Handler", string.Join(", ", taskDefinition.Data.Execution.All));
+            telemetryData.Add("Real Execution Handler", handlerData.ToString());
+            telemetryData.Add("UseNode10", useNode10);
+
+            var publishTelemetryCmd = new TelemetryCommandExtension();
+            publishTelemetryCmd.Initialize(HostContext);
+
+            var json = JsonConvert.SerializeObject(telemetryData, Formatting.None);
+            var cmd = new Command("telemetry", "publish");
+            cmd.Data = json;
+            cmd.Properties.Add("area", "AzurePipelinesAgent");
+            cmd.Properties.Add("feature", "TaskTelemetry");
+            publishTelemetryCmd.ProcessCommand(ExecutionContext, cmd);
         }
     }
 }
