@@ -230,7 +230,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     taskDecoratorManager.IsInjectedInputsContainsSecrets(inputs, out var inputsWithSecrets))
                 {
                     var inputsForReport = taskDecoratorManager.GenerateTaskResultMessage(inputsWithSecrets);
-
                     ExecutionContext.Result = TaskResult.Skipped;
                     ExecutionContext.ResultCode = StringUtil.Loc("SecretsAreNotAllowedInInjectedTaskInputs", inputsForReport);
                     return;
