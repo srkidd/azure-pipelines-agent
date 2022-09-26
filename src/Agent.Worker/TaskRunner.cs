@@ -590,8 +590,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             var json = JsonConvert.SerializeObject(telemetryData, Formatting.None);
             var cmd = new Command("telemetry", "publish");
             cmd.Data = json;
-            cmd.Properties.Add("area", "AzurePipelinesAgent");
-            cmd.Properties.Add("feature", "TaskTelemetry");
+            cmd.Properties.Add("area", "PipelinesTasks");
+            cmd.Properties.Add("feature", "ExecutionHandler");
             publishTelemetryCmd.ProcessCommand(ExecutionContext, cmd);
         }
     }
