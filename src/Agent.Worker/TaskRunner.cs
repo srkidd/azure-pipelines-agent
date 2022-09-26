@@ -134,7 +134,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             // Check that the target container is still running, if not Skip task execution
                             IDockerCommandManager dockerManager = HostContext.GetService<IDockerCommandManager>();
                             bool isContainerRunning = await dockerManager.IsContainerRunning(ExecutionContext, containerTarget.ContainerId);
-
+                            
                             if (!isContainerRunning)
                             {
                                 ExecutionContext.Result = TaskResult.Skipped;
@@ -487,10 +487,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     if ((currentExecution.All.Any(x => x is PowerShell3HandlerData)) &&
                         (currentExecution.All.Any(x => x is BaseNodeHandlerData)))
-                    {
-                        Trace.Info($"Since we are targeting a container, we will prefer a node handler if one is available");
-                        preferPowershellHandler = false;
-                    }
+                        {
+                            Trace.Info($"Since we are targeting a container, we will prefer a node handler if one is available");
+                            preferPowershellHandler = false;
+                        }
                 }
             }
             Trace.Info($"Get handler data for target platform {targetOS.ToString()}");
