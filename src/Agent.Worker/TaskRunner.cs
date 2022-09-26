@@ -568,6 +568,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ExecutionContext.Output($"Help         : {taskDefinition.Data.HelpUrl ?? taskDefinition.Data.HelpMarkDown}");
             ExecutionContext.Output("==============================================================================");
         }
+
         private void PublishTelemetry(Definition taskDefinition, HandlerData handlerData)
         {
             ArgUtil.NotNull(Task, nameof(Task));
@@ -575,23 +576,26 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ArgUtil.NotNull(taskDefinition.Data, nameof(taskDefinition.Data));
 
             var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
-            Dictionary<string, string> telemetryData = new Dictionary<string, string>();
-            telemetryData.Add("Task Name", Task.Reference.Name);
-            telemetryData.Add("Task Id", Task.Reference.Id.ToString());
-            telemetryData.Add("Version", Task.Reference.Version);
-            telemetryData.Add("OS", PlatformUtil.HostOS.ToString());
-            telemetryData.Add("Expected Execution Handler", string.Join(", ", taskDefinition.Data.Execution.All));
-            telemetryData.Add("Real Execution Handler", handlerData.ToString());
-            telemetryData.Add("UseNode10", useNode10);
-
-            var publishTelemetryCmd = new TelemetryCommandExtension();
-            publishTelemetryCmd.Initialize(HostContext);
+            
+            Dictionary<string, string> telemetryData = new Dictionary<string, string>
+            {
+                { "Task Name", Task.Reference.Name },
+                { "Task Id", Task.Reference.Id.ToString() },
+                { "Version", Task.Reference.Version },
+                { "OS", PlatformUtil.HostOS.ToString() },
+                { "Expected Execution Handler", string.Join(", ", taskDefinition.Data.Execution.All) },
+                { "Real Execution Handler", handlerData.ToString() },
+                { "UseNode10", useNode10 }
+            };
 
             var json = JsonConvert.SerializeObject(telemetryData, Formatting.None);
             var cmd = new Command("telemetry", "publish");
             cmd.Data = json;
             cmd.Properties.Add("area", "PipelinesTasks");
             cmd.Properties.Add("feature", "ExecutionHandler");
+
+            var publishTelemetryCmd = new TelemetryCommandExtension();
+            publishTelemetryCmd.Initialize(HostContext);
             publishTelemetryCmd.ProcessCommand(ExecutionContext, cmd);
         }
     }
