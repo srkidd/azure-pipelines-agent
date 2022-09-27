@@ -1,3 +1,15 @@
+## Features
+ - Include 'git status' as part of system diagnostics when debugging a pipeline (#3947)
+ - Implement getting knob value by source type (#3955)
+ - Introduce gMSA accounts support (#3970)
+
+## Bugs
+ - Remove Debugger.Launch from Test_Base_Node10 (#3963)
+
+## Misc
+ - Updated Agent.Worker.csproj such that a new version of System.Security.Cryptography.ProtectedData can be used for Azure.Identity (#3941)
+ - Update dotnet-install.sh scripts (#3960)
+
 
 ## Agent Downloads
 
