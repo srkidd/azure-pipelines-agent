@@ -60,6 +60,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 ArgUtil.NotNull(jobMessage, nameof(jobMessage));
                 HostContext.WritePerfCounter($"WorkerJobMessageReceived_{jobMessage.RequestId.ToString()}");
 
+                ScrubVsoCommandsFromJobMessageVariables(jobMessage.Variables);
+
                 // Initialize the secret masker and set the thread culture.
                 InitializeSecretMasker(jobMessage);
                 SetCulture(jobMessage);
@@ -217,6 +219,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 // Set the default thread culture.
                 HostContext.SetDefaultCulture(culture.Value);
+            }
+        }
+
+        // We want to prevent vso commands from running in scripts with some variables
+        private void ScrubVsoCommandsFromJobMessageVariables(IDictionary<string, VariableValue> variables)
+        {
+            ArgUtil.NotNull(variables, nameof(variables));
+
+            foreach (var variableName in Variables.VariablesVulnerableToExecution)
+            {
+                if (variables.TryGetValue(variableName, out var variable))
+                {
+                    variables[variableName] = StringUtil.ScrubVsoCommands(variable.Value);
+                }
             }
         }
     }
