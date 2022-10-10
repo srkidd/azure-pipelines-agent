@@ -260,6 +260,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             "RequestedFor"
         };
 
+        public static readonly List<string> VariablesVulnerableToExecution = new List<string>()
+        {
+            "build.sourceVersionMessage",
+            "system.sourceVersionMessage",
+            "build.definitionName",
+            "system.definitionName"
+        };
+
         public void ExpandValues(IDictionary<string, string> target)
         {
             ArgUtil.NotNull(target, nameof(target));
