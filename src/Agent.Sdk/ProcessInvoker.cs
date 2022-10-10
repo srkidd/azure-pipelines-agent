@@ -491,7 +491,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     {
                         if (DisableWorkerCommands)
                         {
-                            line = Regex.Replace(line, "##vso", "**vso", RegexOptions.IgnoreCase);
+                            line = StringUtil.ScrubVsoCommands(line);
                         }
                         dataBuffer.Enqueue(line);
                         _outputProcessEvent.Set();
