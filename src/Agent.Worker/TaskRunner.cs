@@ -588,9 +588,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 { "UseNode10", useNode10 }
             };
 
-            var json = JsonConvert.SerializeObject(telemetryData, Formatting.None);
             var cmd = new Command("telemetry", "publish");
-            cmd.Data = json;
+            cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
             cmd.Properties.Add("area", "PipelinesTasks");
             cmd.Properties.Add("feature", "ExecutionHandler");
 
