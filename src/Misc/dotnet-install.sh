@@ -173,8 +173,8 @@ get_linux_platform_name() {
             return 0
         elif [ -e /etc/redhat-release ]; then
             local redhatRelease=$(</etc/redhat-release)
-            if [[ $redhatRelease == "CentOS release 7."* || $redhatRelease == "Red Hat Enterprise Linux "*" release 7."* ]]; then
-                echo "rhel.7"
+            if [[ $redhatRelease == "CentOS release 6."* || $redhatRelease == "Red Hat Enterprise Linux "*" release 6."* ]]; then
+                echo "rhel.6"
                 return 0
             fi
         fi
@@ -202,7 +202,7 @@ get_current_os_name() {
         local linux_platform_name=""
         linux_platform_name="$(get_linux_platform_name)" || true
 
-        if [ "$linux_platform_name" = "rhel.7" ]; then
+        if [ "$linux_platform_name" = "rhel.6" ]; then
             echo $linux_platform_name
             return 0
         elif is_musl_based_distro; then
@@ -403,12 +403,12 @@ get_normalized_os() {
     local osname="$(to_lowercase "$1")"
     if [ ! -z "$osname" ]; then
         case "$osname" in
-            osx | freebsd | rhel.7 | linux-musl | linux)
+            osx | freebsd | rhel.6 | linux-musl | linux)
                 echo "$osname"
                 return 0
                 ;;
             *)
-                say_err "'$user_defined_os' is not a supported value for --os option, supported values are: osx, linux, linux-musl, freebsd, rhel.7. If you think this is a bug, report it at https://github.com/dotnet/install-scripts/issues."
+                say_err "'$user_defined_os' is not a supported value for --os option, supported values are: osx, linux, linux-musl, freebsd, rhel.6. If you think this is a bug, report it at https://github.com/dotnet/install-scripts/issues."
                 return 1
                 ;;
         esac
@@ -1639,7 +1639,7 @@ do
             echo "      --arch,-Architecture,-Arch"
             echo "          Possible values: x64, arm, arm64 and s390x"
             echo "  --os <system>                    Specifies operating system to be used when selecting the installer."
-            echo "          Overrides the OS determination approach used by the script. Supported values: osx, linux, linux-musl, freebsd, rhel.7."
+            echo "          Overrides the OS determination approach used by the script. Supported values: osx, linux, linux-musl, freebsd, rhel.6."
             echo "          In case any other value is provided, the platform will be determined by the script based on machine configuration."
             echo "          Not supported for legacy links. Use --runtime-id to specify platform for legacy links."
             echo "          Refer to: https://aka.ms/dotnet-os-lifecycle for more information."
