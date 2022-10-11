@@ -1,3 +1,20 @@
+## Features
+ - Include 'git status' as part of system diagnostics when debugging a pipeline (#3947)
+ - Implement getting knob value by source type (#3955)
+ - Introduce gMSA accounts support (#3970)
+
+## Bugs
+ - Remove Debugger.Launch from Test_Base_Node10 (#3963)
+ - fix issue when repo/path contains spaces (#3985)
+
+## Misc
+ - Updated Agent.Worker.csproj such that a new version of System.Security.Cryptography.ProtectedData can be used for Azure.Identity (#3941)
+ - Update dotnet-install.sh scripts (#3960)
+ - Update image RHEL6 to RHEL7.2 (#3981)
+ - Correct scripts in accordance with updating image RHEL6 to RHEL7.2 (#3986)
+ - Remove servicing steps for RHEL (#3988)
+ - Revert all changes related to migration from RHEL6 to RHEL7 (#3989)
+
 
 ## Agent Downloads
 
