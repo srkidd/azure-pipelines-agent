@@ -211,7 +211,7 @@ jobs:
       displayName: Hash Package
 
     # Upload agent package zip as build artifact
-    - task: PublishBuildArtifacts@1
+    - task: PublishBuildArtifacts@1.200.0
       displayName: Publish Artifact
       inputs:
         pathToPublish: _package
@@ -219,7 +219,7 @@ jobs:
         artifactType: container
 
     # Publish agent package hash too
-    - task: PublishBuildArtifacts@1
+    - task: PublishBuildArtifacts@1.200.0
       displayName: Publish Artifact
       inputs:
         pathToPublish: _package_hash
