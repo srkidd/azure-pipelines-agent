@@ -88,6 +88,7 @@ extends:
 
           # Upload agent packages to Azure blob storage and refresh Azure CDN
           - powershell: |
+              set-executionpolicy remotesigned
               Write-Host "Preloading Azure modules." # This is for better performance, to avoid module-autoloading.
               Import-Module AzureRM, AzureRM.profile, AzureRM.Storage, Azure.Storage, AzureRM.Cdn -ErrorAction Ignore -PassThru
               if (!(Test-Path "$HOME\Documents\WindowsPowerShell\profile.ps1"))
