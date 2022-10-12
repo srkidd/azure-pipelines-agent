@@ -579,13 +579,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             
             Dictionary<string, string> telemetryData = new Dictionary<string, string>
             {
-                { "Task Name", Task.Reference.Name },
-                { "Task Id", Task.Reference.Id.ToString() },
+                { "TaskName", Task.Reference.Name },
+                { "TaskId", Task.Reference.Id.ToString() },
                 { "Version", Task.Reference.Version },
                 { "OS", PlatformUtil.HostOS.ToString() },
-                { "Expected Execution Handler", string.Join(", ", taskDefinition.Data.Execution.All) },
-                { "Real Execution Handler", handlerData.ToString() },
-                { "UseNode10", useNode10 }
+                { "ExpectedExecutionHandler", string.Join(", ", taskDefinition.Data.Execution.All) },
+                { "RealExecutionHandler", handlerData.ToString() },
+                { "UseNode10", useNode10 },
+                { "JobId", ExecutionContext.Variables.System_JobId.ToString()},
+                { "PlanId", ExecutionContext.Variables.Get("system.planId")}
             };
 
             var cmd = new Command("telemetry", "publish");
