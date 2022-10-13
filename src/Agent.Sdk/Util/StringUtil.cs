@@ -255,9 +255,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         /// <returns>String without vso commands that can be executed</returns>
         public static string ScrubVsoCommands(string input)
         {
-            var vsoRegex = new Regex(@"##vso\[", RegexOptions.IgnoreCase);
+            var vsoRegex = new Regex("##vso", RegexOptions.IgnoreCase);
 
-            return vsoRegex.Replace(input, "**vso[");
+            return vsoRegex.Replace(input, "**vso");
         }
     }
 }
