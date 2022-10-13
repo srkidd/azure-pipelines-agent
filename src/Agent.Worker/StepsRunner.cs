@@ -36,16 +36,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     {
         private IJobServerQueue _jobServerQueue;
 
-        private IJobServerQueue JobServerQueue
-        {
-            get {
-                if (_jobServerQueue == null)
-                {
-                    _jobServerQueue = HostContext.GetService<IJobServerQueue>();
-                }
-                return _jobServerQueue;
-            }
-        }
+        private IJobServerQueue JobServerQueue => _jobServerQueue ??= HostContext.GetService<IJobServerQueue>();
 
         // StepsRunner should never throw exception to caller
         public async Task RunAsync(IExecutionContext jobContext, IList<IStep> steps)
