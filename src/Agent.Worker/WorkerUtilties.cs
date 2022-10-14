@@ -103,7 +103,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ArgUtil.NotNull(message, nameof(message));
             ArgUtil.NotNull(message.Variables, nameof(message.Variables));
 
-            var scrubbedVariables = new Dictionary<string, VariableValue>(message.Variables);
+            var scrubbedVariables = new Dictionary<string, VariableValue>(message.Variables, StringComparer.OrdinalIgnoreCase);
 
             foreach (var variableName in Variables.VariablesVulnerableToExecution)
             {
