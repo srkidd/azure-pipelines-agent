@@ -262,10 +262,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public static readonly List<string> VariablesVulnerableToExecution = new List<string>()
         {
-            "build.sourceVersionMessage",
-            "system.sourceVersionMessage",
-            "build.definitionName",
-            "system.definitionName"
+            Constants.Variables.Build.SourceVersionMessage,
+            Constants.Variables.System.SourceVersionMessage,
+            Constants.Variables.Build.DefinitionName,
+            Constants.Variables.System.DefinitionName
         };
 
         public void ExpandValues(IDictionary<string, string> target)
