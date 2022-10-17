@@ -279,6 +279,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 //
                 public static readonly string AcceptTeeEula = "agent.acceptteeeula";
                 public static readonly string BuildDirectory = "agent.builddirectory";
+                public static readonly string CloudId = "agent.cloudid";
                 public static readonly string ContainerId = "agent.containerid";
                 public static readonly string ContainerMapping = "agent.containermapping";
                 public static readonly string ContainerNetwork = "agent.containernetwork";
@@ -461,6 +462,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 // Agent variables
                 Agent.AcceptTeeEula,
                 Agent.BuildDirectory,
+                Agent.CloudId,
                 Agent.ContainerId,
                 Agent.ContainerMapping,
                 Agent.ContainerNetwork,
