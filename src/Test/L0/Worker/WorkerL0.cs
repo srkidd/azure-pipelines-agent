@@ -240,8 +240,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             message.Variables[Constants.Variables.Build.DefinitionName] = "##vso[setVariable]etc3";
             message.Variables[Constants.Variables.System.DefinitionName] = "##vso[setVariable]etc4";
 
-            message.Variables[Constants.Variables.Build.RepoName] = "##vso[setVariable]etc4";
-
             var scrubbedMessage = WorkerUtilities.ScrubVsoCommandsFromJobMessageVariables(message);
 
             Assert.Equal("**vso[setVariable]etc1", scrubbedMessage.Variables[Constants.Variables.Build.SourceVersionMessage]);

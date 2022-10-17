@@ -260,7 +260,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             "RequestedFor"
         };
 
-        public static readonly List<string> VariablesVulnerableToExecution = new List<string>()
+        public static readonly List<string> VariablesVulnerableToExecution = new List<string>
         {
             Constants.Variables.Build.SourceVersionMessage,
             Constants.Variables.System.SourceVersionMessage,
