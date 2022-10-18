@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener.Configuration
             trace.Info("GetVssCredentials()");
 
             VssBasicCredential loginCred = new VssBasicCredential("test", "password");
-            VssCredentials creds = new VssClientCredentials(loginCred);
+            VssCredentials creds = new VssClientCredentials(null, loginCred);
             trace.Verbose("cred created");
 
             return creds;
