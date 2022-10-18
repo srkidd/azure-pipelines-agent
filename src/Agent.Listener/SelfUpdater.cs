@@ -147,6 +147,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             Trace.Info($"Current running agent version is {BuildConstants.AgentPackage.Version}");
             PackageVersion agentVersion = new PackageVersion(BuildConstants.AgentPackage.Version);
 
+            if (serverVersion.Major == 2 && agentVersion.Major == 3)
+            {
+                Trace.Info("We don't downgrade agent from 3.* to 2.*, skipping update");
+                return false;
+            }
+
             if (serverVersion.CompareTo(agentVersion) > 0)
             {
                 return true;
