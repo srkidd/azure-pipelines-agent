@@ -205,21 +205,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     // It appears that node.exe outputs UTF8 when not in TTY mode.
                     outputEncoding = Encoding.UTF8;
                 }
-
-                var redirectStandardIn = new InputQueue<string>();
-                var payloadJson = JsonUtility.ToString(payload);
-                redirectStandardIn.Enqueue(payloadJson);
-                HostContext.GetTrace(nameof(ContainerStepHost)).Info($"Payload: {payloadJson}");
-                return await processInvoker.ExecuteAsync(workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Work),
-                                                         fileName: containerEnginePath,
-                                                         arguments: containerExecutionArgs,
-                                                         environment: null,
-                                                         requireExitCodeZero: requireExitCodeZero,
-                                                         outputEncoding: outputEncoding,
-                                                         killProcessOnCancel: killProcessOnCancel,
-                                                         redirectStandardIn: redirectStandardIn,
-                                                         inheritConsoleHandler: inheritConsoleHandler,
-                                                         cancellationToken: cancellationToken);
+                using (var redirectStandardIn = new InputQueue<string>())
+                {
+                    var payloadJson = JsonUtility.ToString(payload);
+                    redirectStandardIn.Enqueue(payloadJson);
+                    HostContext.GetTrace(nameof(ContainerStepHost)).Info($"Payload: {payloadJson}");
+                    return await processInvoker.ExecuteAsync(workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Work),
+                                                             fileName: containerEnginePath,
+                                                             arguments: containerExecutionArgs,
+                                                             environment: null,
+                                                             requireExitCodeZero: requireExitCodeZero,
+                                                             outputEncoding: outputEncoding,
+                                                             killProcessOnCancel: killProcessOnCancel,
+                                                             redirectStandardIn: redirectStandardIn,
+                                                             inheritConsoleHandler: inheritConsoleHandler,
+                                                             cancellationToken: cancellationToken);
+                }
+                
             }
         }
 

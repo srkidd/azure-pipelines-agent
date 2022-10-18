@@ -40,6 +40,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             set => _jobServerQueue = value;
         }
+
         public async Task<TaskResult> RunAsync(Pipelines.AgentJobRequestMessage message, CancellationToken jobRequestCancellationToken)
         {
             // Validate parameters.
@@ -83,9 +84,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             VssConnection jobConnection = VssUtil.CreateConnection(
                 jobServerUrl,
                 jobServerCredential,
-                trace: Trace,
+                Trace,
                 new DelegatingHandler[] { new ThrottlingReportHandler(_jobServerQueue) }
-                );
+            );
             await jobServer.ConnectAsync(jobConnection);
 
             _jobServerQueue.Start(message);
@@ -93,6 +94,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             IExecutionContext jobContext = null;
             CancellationTokenRegistration? agentShutdownRegistration = null;
+            VssConnection connection = null;
             try
             {
                 // Create the job execution context.
@@ -188,7 +190,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 if (taskServerUri != null)
                 {
                     Trace.Info($"Creating task server with {taskServerUri}");
-                    await taskServer.ConnectAsync(VssUtil.CreateConnection(taskServerUri, taskServerCredential, trace: Trace));
+                    connection = VssUtil.CreateConnection(taskServerUri, taskServerCredential, Trace);
+                    await taskServer.ConnectAsync(connection);
                 }
 
                 // for back compat TFS 2015 RTM/QU1, we may need to switch the task server url to agent config url
@@ -200,7 +203,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         var configStore = HostContext.GetService<IConfigurationStore>();
                         taskServerUri = new Uri(configStore.GetSettings().ServerUrl);
                         Trace.Info($"Recreate task server with configuration server url: {taskServerUri}");
-                        await taskServer.ConnectAsync(VssUtil.CreateConnection(taskServerUri, taskServerCredential, trace: Trace));
+                        connection = VssUtil.CreateConnection(taskServerUri, taskServerCredential, Trace);
+                        await taskServer.ConnectAsync(connection);
                     }
                 }
 
@@ -342,7 +346,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     agentShutdownRegistration.Value.Dispose();
                     agentShutdownRegistration = null;
                 }
-
+                connection.Dispose();
+                jobConnection.Dispose();
                 await ShutdownQueue(throwOnFailure: false);
             }
         }
