@@ -19,6 +19,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [InlineData("## vso", "## vso")]
         [InlineData("#vso", "#vso")]
         [InlineData("##vs", "##vs")]
+        [InlineData("##VsO", "**vso")]
         public void ScrubVsoCommandsFromStringTest(string input, string expected)
         {
             var result = StringUtil.ScrubVsoCommands(input);
