@@ -231,7 +231,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
-        public void VerifyJobRequestMessageVsoCommandsScrubbed()
+        public void VerifyJobRequestMessageVsoCommandsDeactivated()
         {
             Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobwitvsocommands");
 
@@ -240,7 +240,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             message.Variables[Constants.Variables.Build.DefinitionName] = "##vso[setVariable]etc3";
             message.Variables[Constants.Variables.System.DefinitionName] = "##vso[setVariable]etc4";
 
-            var scrubbedMessage = WorkerUtilities.ScrubVsoCommandsFromJobMessageVariables(message);
+            var scrubbedMessage = WorkerUtilities.DeactivateVsoCommandsFromJobMessageVariables(message);
 
             Assert.Equal("**vso[setVariable]etc1", scrubbedMessage.Variables[Constants.Variables.Build.SourceVersionMessage]);
             Assert.Equal("**vso[setVariable]etc2", scrubbedMessage.Variables[Constants.Variables.System.SourceVersionMessage]);
@@ -251,14 +251,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
-        public void VerifyIfOtherVariablesNotScrubbsVsoCommands()
+        public void VerifyIfOtherVariablesNotDeactivatesVsoCommands()
         {
             Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobwitvsocommands");
 
             message.Variables[Constants.Variables.Build.RepoName] = "##vso[setVariable]etc1";
             message.Variables[Constants.Variables.System.JobId] = "##vso[setVariable]etc2";
 
-            var scrubbedMessage = WorkerUtilities.ScrubVsoCommandsFromJobMessageVariables(message);
+            var scrubbedMessage = WorkerUtilities.DeactivateVsoCommandsFromJobMessageVariables(message);
 
             Assert.Equal("##vso[setVariable]etc1", scrubbedMessage.Variables[Constants.Variables.Build.RepoName]);
             Assert.Equal("##vso[setVariable]etc2", scrubbedMessage.Variables[Constants.Variables.System.JobId]);
@@ -267,7 +267,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
-        public void VerifyJobRequestMessageVsoCommandsScrubbedIfVariableCasesNotMatch()
+        public void VerifyJobRequestMessageVsoCommandsDeactivatedIfVariableCasesNotMatch()
         {
             Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobwitvsocommands");
 
@@ -276,7 +276,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             message.Variables[Constants.Variables.Build.DefinitionName.ToUpper()] = "##vso[setVariable]etc3";
             message.Variables[Constants.Variables.System.DefinitionName.ToUpper()] = "##vso[setVariable]etc4";
 
-            var scrubbedMessage = WorkerUtilities.ScrubVsoCommandsFromJobMessageVariables(message);
+            var scrubbedMessage = WorkerUtilities.DeactivateVsoCommandsFromJobMessageVariables(message);
 
             Assert.Equal("**vso[setVariable]etc1", scrubbedMessage.Variables[Constants.Variables.Build.SourceVersionMessage]);
             Assert.Equal("**vso[setVariable]etc2", scrubbedMessage.Variables[Constants.Variables.System.SourceVersionMessage]);

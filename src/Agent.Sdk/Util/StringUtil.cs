@@ -253,7 +253,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         /// Finds all vso commands in the line and deactivates them
         /// </summary>
         /// <returns>String without vso commands that can be executed</returns>
-        public static string ScrubVsoCommands(string input)
+        public static string DeactivateVsoCommands(string input)
         {
             var vsoRegex = new Regex("##vso", RegexOptions.IgnoreCase);
 

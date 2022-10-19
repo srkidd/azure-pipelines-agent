@@ -491,7 +491,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     {
                         if (DisableWorkerCommands)
                         {
-                            line = StringUtil.ScrubVsoCommands(line);
+                            line = StringUtil.DeactivateVsoCommands(line);
                         }
                         dataBuffer.Enqueue(line);
                         _outputProcessEvent.Set();
