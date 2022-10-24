@@ -200,7 +200,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             return temporaryName;
         }
 
-        protected async Task<TfsVCPorcelainCommandResult> TryRunPorcelainCommandAsync(FormatFlags formatFlags, bool ignoreStderr, params string[] args)
+        protected async Task<TfsVCPorcelainCommandResult> TryRunPorcelainCommandAsync(FormatTags formatFlags, bool ignoreStderr, params string[] args)
         {
             // Validation.
             ArgUtil.NotNull(args, nameof(args));
@@ -285,7 +285,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             command.Output.RemoveAll(item => stringsToRemove.Contains(item));
         }
 
-        private string FormatArguments(FormatFlags formatFlags, params string[] args)
+        private string FormatArguments(FormatTags formatFlags, params string[] args)
         {
             // Validation.
             ArgUtil.NotNull(args, nameof(args));

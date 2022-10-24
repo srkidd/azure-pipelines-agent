@@ -575,7 +575,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ArgUtil.NotNull(Task.Reference, nameof(Task.Reference));
             ArgUtil.NotNull(taskDefinition.Data, nameof(taskDefinition.Data));
 
-            var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
+            var useNode10 = AgentKnobs.UseNode16.GetValue(ExecutionContext).AsString();
             
             Dictionary<string, string> telemetryData = new Dictionary<string, string>
             {
