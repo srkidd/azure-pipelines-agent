@@ -119,7 +119,7 @@ namespace Agent.Plugins.Repository
             return temporaryName;
         }
 
-        protected async Task<int> RunCommandAsync(FormatFlags formatFlags, bool quiet, bool failOnNonZeroExitCode, params string[] args)
+        protected async Task<int> RunCommandAsync(FormatTags formatFlags, bool quiet, bool failOnNonZeroExitCode, params string[] args)
         {
             // Validation.
             ArgUtil.NotNull(args, nameof(args));
@@ -304,7 +304,7 @@ namespace Agent.Plugins.Repository
             command.Output.RemoveAll(item => stringsToRemove.Contains(item));
         }
 
-        private string FormatArguments(FormatFlags formatFlags, params string[] args)
+        private string FormatArguments(FormatTags formatFlags, params string[] args)
         {
             // Validation.
             ArgUtil.NotNull(args, nameof(args));
