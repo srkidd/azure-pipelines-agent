@@ -60,11 +60,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release.ContainerProvider
             VssClientCredentials cred;
             if (string.IsNullOrEmpty(accessToken))
             {
-                cred = new VssClientCredentials(null, new VssAadCredential());
+                cred = new VssClientCredentials(federatedCredential: new VssAadCredential());
             }
             else
             {
-                cred = new VssClientCredentials(null, new VssOAuthAccessTokenCredential(accessToken));
+                cred = new VssClientCredentials(federatedCredential: new VssOAuthAccessTokenCredential(accessToken));
             }
 
             cred.PromptType = CredentialPromptType.DoNotPrompt;

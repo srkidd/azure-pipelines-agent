@@ -375,6 +375,6 @@ namespace Agent.Sdk.Knob
             "Minimum lenght of secret which will be masked in logs",
             new RuntimeKnobSource("AGENT_MIN_SECRET_LENGTH"),
             new EnvironmentKnobSource("AGENT_MIN_SECRET_LENGTH"),
-            new BuiltInDefaultKnobSource($"{0}"));
+            new BuiltInDefaultKnobSource("0"));
     }
 }
