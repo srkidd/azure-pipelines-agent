@@ -1,3 +1,14 @@
+## Features
+ - FEATURE: Agent should gather telemetry on Task runner invocations (#3973)
+ - Added CloudId property to agent variables (#3984)
+ - Add onlyGitHubRelease param for the release pipeline (#3990)
+
+## Bugs
+ - BUG 1972388: vsbuild task in YAML build pipeline hangs forever in ADO even though the task has already logged completion (#3979)
+
+## Misc
+ - Update mingit to 2.37.3 (#3983)
+
 
 ## Agent Downloads
 
