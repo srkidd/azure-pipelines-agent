@@ -36,33 +36,32 @@ extends:
 
     ${{ if not(parameters.buildStageOnly) }}:
       preBuildStages:
-      - ${{ if eq(variables['Build.SourceBranch'], 'refs/heads/master') }}:
-        - stage: Create_Release_Branch
+      - stage: Create_Release_Branch
+        displayName: Create Release Branch
+        jobs:
+        ################################################################################
+        - job: Create_Release_Branch
+        ################################################################################
           displayName: Create Release Branch
-          jobs:
-          ################################################################################
-          - job: Create_Release_Branch
-          ################################################################################
-            displayName: Create Release Branch
-            pool:
-              vmImage: ubuntu-18.04
+          pool:
+            vmImage: ubuntu-18.04
 
-            steps:
-            - checkout: self
+          steps:
+          - checkout: self
 
-            - task: NodeTool@0
-              displayName: Use node 14.15.1
-              inputs:
-                versionSpec: "14.15.1"
+          - task: NodeTool@0
+            displayName: Use node 14.15.1
+            inputs:
+              versionSpec: "14.15.1"
 
-            - script: |
-                cd release
-                npm install
-                node createReleaseBranch.js ${{ parameters.version }} --derivedFrom=${{ parameters.derivedFrom }}
-              env:
-                EDITOR: cat
-                PAT: $(GithubToken)
-              displayName: Push release branch to GitHub
+          - script: |
+              cd release
+              npm install
+              node createReleaseBranch.js ${{ parameters.version }} --derivedFrom=${{ parameters.derivedFrom }}
+            env:
+              EDITOR: cat
+              PAT: $(GithubToken)
+            displayName: Push release branch to GitHub
 
     ${{ if not(parameters.buildStageOnly) }}:
       postBuildStages:
