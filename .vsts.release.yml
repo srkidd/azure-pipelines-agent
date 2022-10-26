@@ -124,7 +124,6 @@ extends:
               Write-Host "Force Refresh Azure CDN Cache"
               Publish-AzureRmCdnEndpointContent -EndpointName vstsagentpackage -ProfileName vstsagentpackage -ResourceGroupName vstsagentpackage -LoadContent $uploadFiles
             displayName: Upload to Azure Blob
-            condition: eq('${{ parameters.onlyGitHubRelease }}', 'false')
 
           # Download all agent hashes created in previous phases
           - task: DownloadBuildArtifacts@0
