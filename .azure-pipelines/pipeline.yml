@@ -1,4 +1,7 @@
 parameters:
+- name: version
+  type: string
+  displayName: Version
 - name: preBuildStages
   type: stageList
   default: []
