@@ -12,7 +12,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.Services.Agent.Util
 {
-  public static class VarUtil
+    public static class VarUtil
     {
         public static StringComparer EnvironmentVariableKeyComparer
         {
@@ -96,6 +96,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             // Copy the environment variables into a dictionary that uses the correct comparer.
             var source = new Dictionary<string, string>(EnvironmentVariableKeyComparer);
             IDictionary environment = Environment.GetEnvironmentVariables();
+
             foreach (DictionaryEntry entry in environment)
             {
                 string key = entry.Key as string ?? string.Empty;
@@ -129,13 +130,39 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             return target.Map(mapFuncs);
         }
 
-        public static void ExpandValues(IHostContext context, IDictionary<string, string> source, IDictionary<string, string> target)
+        public static readonly Dictionary<string, string> TargetVarsForReplacement = new Dictionary<string, string>
+        {
+            ["System.DefinitionName".ToLower()] = "SYSTEM_DEFINITIONNAME",
+            ["Build.DefinitionName".ToLower()] = "BUILD_DEFINITIONNAME",
+            ["Build.SourceVersionMessage".ToLower()] = "BUILD_SOURCEVERSIONMESSAGE"
+        };
+
+        public static void ExpandValues(
+            IHostContext context,
+            IDictionary<string, string> source,
+            IDictionary<string, string> target,
+            string taskName = null
+            )
         {
             ArgUtil.NotNull(context, nameof(context));
             ArgUtil.NotNull(source, nameof(source));
             Tracing trace = context.GetTrace(nameof(VarUtil));
             trace.Entering();
-            target = target ?? new Dictionary<string, string>();
+            target ??= new Dictionary<string, string>();
+
+            var envVariablePrefixes = new Dictionary<string, string>
+            {
+                ["PowerShell"] = "$env:",
+                ["Bash"] = "$",
+                ["CommandLine"] = "%"
+            };
+
+            var envVariablePostfixes = new Dictionary<string, string>
+            {
+                ["PowerShell"] = "",
+                ["Bash"] = "",
+                ["CommandLine"] = "%"
+            };
 
             // This algorithm does not perform recursive replacement.
 
@@ -159,7 +186,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         length: suffixIndex - prefixIndex - Constants.Variables.MacroPrefix.Length);
                     trace.Verbose($"Found macro candidate: '{variableKey}'");
                     string variableValue;
-                    if (!string.IsNullOrEmpty(variableKey) &&
+                    if (!string.IsNullOrEmpty(taskName) && TargetVarsForReplacement.Keys.Contains(variableKey.ToLower()))
+                    {
+                        targetValue =
+                            targetValue[..prefixIndex]
+                            + envVariablePrefixes[taskName]
+                            + TargetVarsForReplacement[variableKey.ToLower()]
+                            + envVariablePostfixes[taskName]
+                            + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
+                    }
+                    else if (!string.IsNullOrEmpty(variableKey) &&
                         TryGetValue(trace, source, variableKey, out variableValue))
                     {
                         // A matching variable was found.
