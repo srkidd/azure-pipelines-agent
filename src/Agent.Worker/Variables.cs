@@ -268,7 +268,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Constants.Variables.System.DefinitionName
         };
 
-        public void ExpandValues(IDictionary<string, string> target)
+        public void ExpandValues(IDictionary<string, string> target, string taskName = null)
         {
             ArgUtil.NotNull(target, nameof(target));
             _trace.Entering();
@@ -279,7 +279,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 source[variable.Name] = value;
             }
 
-            VarUtil.ExpandValues(_hostContext, source, target);
+            VarUtil.ExpandValues(_hostContext, source, target, taskName);
         }
 
         public string ExpandValue(string name, string value)
@@ -391,7 +391,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             lock (_setLock)
             {
                 Variable dummy;
-                 _expanded.Remove(name, out dummy);
+                _expanded.Remove(name, out dummy);
                 _nonexpanded.Remove(name, out dummy);
                 _trace.Verbose($"Unset '{name}'");
             }
@@ -440,7 +440,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public bool IsReadOnly(string name)
         {
             Variable existingVariable = null;
-            if (!_expanded.TryGetValue(name, out existingVariable)) {
+            if (!_expanded.TryGetValue(name, out existingVariable))
+            {
                 _nonexpanded.TryGetValue(name, out existingVariable);
             }
 
