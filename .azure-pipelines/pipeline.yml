@@ -56,142 +56,46 @@ resources:
 
 stages:
 
-- ${{ parameters.preBuildStages }}
-
 - stage: build
   displayName: Build
   jobs:
-
-  # Windows (x64)
-  - ${{ if parameters.win_x64 }}:
-    - template: build-jobs.yml
-      parameters:
-        jobName: build_windows_x64
-        displayName: Windows (x64)
+    - job: publish_agent_packages
+      ################################################################################
+        displayName: Publish Agents (Windows/Linux/OSX)
         pool:
-          vmImage: windows-2019
-        os: win
-        arch: x64
-        branch: ${{ parameters.branch }}
-        codeCoverage: true
-        componentDetection: ${{ parameters.componentDetection }}
-        unitTests: ${{ parameters.test }}
-        functionalTests: ${{ parameters.test }}
-        sign: ${{ parameters.sign }}
-        verifySigning: ${{ parameters.sign }}
-        publishArtifacts: ${{ parameters.publishArtifacts }}
-        buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
-
-  # Windows (x86)
-  - ${{ if parameters.win_x86 }}:
-    - template: build-jobs.yml
-      parameters:
-        jobName: build_windows_x86
-        displayName: Windows (x86)
-        pool:
-          vmImage: windows-2019
-        os: win
-        arch: x86
-        branch: ${{ parameters.branch }}
-        componentDetection: false
-        unitTests: ${{ parameters.test }}
-        functionalTests: ${{ parameters.test }}
-        sign: ${{ parameters.sign }}
-        publishArtifacts: ${{ parameters.publishArtifacts }}
-        buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
-
-  # Linux (x64)
-  - ${{ if parameters.linux_x64 }}:
-    - template: build-jobs.yml
-      parameters:
-        jobName: build_linux_x64
-        displayName: Linux (x64)
-        pool:
-          vmImage: ubuntu-18.04
-        os: linux
-        arch: x64
-        branch: ${{ parameters.branch }}
-        componentDetection: ${{ parameters.componentDetection }}
-        unitTests: ${{ parameters.test }}
-        functionalTests: ${{ parameters.test }}
-        sign: ${{ parameters.sign }}
-        publishArtifacts: ${{ parameters.publishArtifacts }}
-        buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
-
-  # Linux (ARM)
-  - ${{ if parameters.linux_arm }}:
-    - template: build-jobs.yml
-      parameters:
-        jobName: build_linux_arm
-        displayName: Linux (ARM)
-        pool:
-          vmImage: "ubuntu-20.04"
-        timeoutInMinutes: 75
-        os: linux
-        arch: arm
-        branch: ${{ parameters.branch }}
-        componentDetection: false
-        unitTests: false
-        functionalTests: false
-        sign: false
-        publishArtifacts: ${{ parameters.publishArtifacts }}
-        buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
-
-  # Linux (ARM64)
-  - ${{ if parameters.linux_arm64 }}:
-    - template: build-jobs.yml
-      parameters:
-        jobName: build_linux_arm64
-        displayName: Linux (ARM64)
-        pool:
-          name: 1ES_ARM_Agent_Pool
-          vmImage: Ubuntu_2004_ARM64
-        timeoutInMinutes: 75
-        os: linux
-        arch: arm64
-        branch: ${{ parameters.branch }}
-        componentDetection: false
-        unitTests: ${{ parameters.test }}
-        functionalTests: ${{ parameters.test }}
-        sign: false
-        publishArtifacts: ${{ parameters.publishArtifacts }}
-        buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
-
-  # RHEL6 (x64)
-  - ${{ if parameters.rhel6_x64 }}:
-    - template: build-jobs.yml
-      parameters:
-        jobName: build_rhel6_x64
-        displayName: RHEL6 (x64)
-        pool:
-          vmImage: ubuntu-18.04
-        container: dotnetcore_centos6
-        os: rhel.6
-        arch: x64
-        branch: ${{ parameters.branch }}
-        componentDetection: false
-        unitTests: ${{ parameters.test }}
-        functionalTests: ${{ parameters.test }}
-        sign: false
-        publishArtifacts: ${{ parameters.publishArtifacts }}
-        buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
-
-  # macOS x64
-  - ${{ if parameters.macOS_x64 }}:
-    - template: build-jobs.yml
-      parameters:
-        jobName: build_osx
-        displayName: macOS (x64)
-        pool:
-          vmImage: macOS-11
-        os: osx
-        arch: x64
-        branch: ${{ parameters.branch }}
-        componentDetection: ${{ parameters.componentDetection }}
-        unitTests: ${{ parameters.test }}
-        functionalTests: ${{ parameters.test }}
-        sign: ${{ parameters.sign }}
-        publishArtifacts: ${{ parameters.publishArtifacts }}
-        buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
-
-- ${{ parameters.postBuildStages }}
+          name: RMAgentsProdAME
+          demands:
+            - Agent.Name -equals bluex0001H4
+        steps:
+          - powershell: |
+              Write-Host "Preloading Azure modules." # This is for better performance, to avoid module-autoloading.
+              Import-Module AzureRM, AzureRM.profile, AzureRM.Storage, Azure.Storage, AzureRM.Cdn -ErrorAction Ignore -PassThru
+              if (!(Test-Path "$HOME\Documents\WindowsPowerShell\profile.ps1"))
+              {
+                Write-Host "Creating empty PowerShell profile for Enable-AzureRmAlias"
+                New-Item -Path "$HOME\Documents\WindowsPowerShell\profile.ps1" -ItemType File -Force | Out-Null
+              }
+              Enable-AzureRmAlias -Scope CurrentUser
+              $uploadFiles = New-Object System.Collections.ArrayList
+              $certificateThumbprint = (Get-ItemProperty -Path "$(ServicePrincipalReg)").ServicePrincipalCertThumbprint
+              $clientId = (Get-ItemProperty -Path "$(ServicePrincipalReg)").ServicePrincipalClientId
+              Write-Host "##vso[task.setsecret]$certificateThumbprint"
+              Write-Host "##vso[task.setsecret]$clientId"
+              Login-AzureRmAccount -ServicePrincipal -CertificateThumbprint $certificateThumbprint -ApplicationId $clientId -TenantId $(TenantId)
+              Select-AzureRmSubscription -SubscriptionId $(SubscriptionId)
+              $storage = Get-AzureRmStorageAccount -ResourceGroupName vstsagentpackage -AccountName vstsagentpackage
+              $versionDir = "${{ parameters.version }}"
+              Get-ChildItem -LiteralPath "$(System.ArtifactsDirectory)/agent" | ForEach-Object {
+                $target=$_
+                Get-ChildItem -LiteralPath "$(System.ArtifactsDirectory)/agent/$target" -Include "*.zip","*.tar.gz" | ForEach-Object {
+                  $executable = $_
+                  Write-Host "Uploading $executable to BlobStorage vstsagentpackage/agent/$versionDir"
+                  Set-AzureStorageBlobContent -Context $storage.Context -Container agent -File "$(System.ArtifactsDirectory)/agent/$target/$executable" -Blob "$versionDir/$executable" -Force
+                  $uploadFiles.Add("/agent/$versionDir/$executable")
+                }
+              }
+              Write-Host "Purge Azure CDN Cache"
+              Unpublish-AzureRmCdnEndpointContent -EndpointName vstsagentpackage -ProfileName vstsagentpackage -ResourceGroupName vstsagentpackage -PurgeContent $uploadFiles
+              Write-Host "Force Refresh Azure CDN Cache"
+              Publish-AzureRmCdnEndpointContent -EndpointName vstsagentpackage -ProfileName vstsagentpackage -ResourceGroupName vstsagentpackage -LoadContent $uploadFiles
+            displayName: Upload to Azure Blob
