@@ -64,8 +64,6 @@ stages:
       displayName: Publish Agents (Windows/Linux/OSX)
       pool:
         name: RMAgentsProdAME
-        demands:
-          - Agent.Name -equals bluex0001HS
       steps:
         - powershell: |
             Write-Host "Preloading Azure modules." # This is for better performance, to avoid module-autoloading.
