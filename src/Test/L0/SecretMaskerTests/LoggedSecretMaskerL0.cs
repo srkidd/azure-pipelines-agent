@@ -94,5 +94,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                "1***",
                testSecretMasker.MaskSecrets(@"12345"));
         }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "SecretMasker")]
+        public void IsNegativeValuePassed()
+        {
+            var testSecretMasker = new LoggedSecretMasker(new SecretMasker());
+
+            testSecretMasker.MinSecretLength = -2;
+
+            testSecretMasker.AddValue("1");
+            testSecretMasker.AddValue("2345");
+
+            Assert.Equal(
+               "***",
+               testSecretMasker.MaskSecrets(@"12345"));
+        }
     }
 }
