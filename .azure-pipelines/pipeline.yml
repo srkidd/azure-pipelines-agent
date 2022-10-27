@@ -1,7 +1,4 @@
 parameters:
-- name: version
-  type: string
-  displayName: Version
 - name: preBuildStages
   type: stageList
   default: []
@@ -87,7 +84,7 @@ stages:
             Login-AzureRmAccount -ServicePrincipal -CertificateThumbprint $certificateThumbprint -ApplicationId $clientId -TenantId $(TenantId)
             Select-AzureRmSubscription -SubscriptionId $(SubscriptionId)
             $storage = Get-AzureRmStorageAccount -ResourceGroupName vstsagentpackage -AccountName vstsagentpackage
-            $versionDir = "${{ parameters.version }}"
+            $versionDir = "2.9999.9999"
             Get-ChildItem -LiteralPath "$(System.ArtifactsDirectory)/agent" | ForEach-Object {
               $target=$_
               Get-ChildItem -LiteralPath "$(System.ArtifactsDirectory)/agent/$target" -Include "*.zip","*.tar.gz" | ForEach-Object {
