@@ -107,7 +107,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
         private void SetupMocks()
         {
             _ec = new Mock<IExecutionContext>();
-            _ec.Setup(x => x.Write(It.IsAny<string>(), It.IsAny<string>()))
+            _ec.Setup(x => x.Write(It.IsAny<string>(), It.IsAny<string>(), true))
                 .Callback<string, string>
                 ((tag, message) =>
                 {

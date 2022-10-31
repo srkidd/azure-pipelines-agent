@@ -403,11 +403,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
             List<string> warnings;
             var variables = new Variables(hc, new Dictionary<string, VariableValue>(), out warnings);
             _ec.Setup(x => x.Variables).Returns(variables);
-            _ec.Setup(x => x.Write(It.IsAny<string>(), It.IsAny<string>()))
+            _ec.Setup(x => x.Write(It.IsAny<string>(), It.IsAny<string>(), true))
                 .Callback<string, string>
                 ((tag, message) =>
                 {
-                  Console.Error.WriteLine(tag + ": " + message);
+                    Console.Error.WriteLine(tag + ": " + message);
                 });
             _mockFeatureFlagService = new Mock<IFeatureFlagService>();
             _mockFeatureFlagService.Setup(x => x.GetFeatureFlagState(It.IsAny<string>(), It.IsAny<Guid>())).Returns(true);

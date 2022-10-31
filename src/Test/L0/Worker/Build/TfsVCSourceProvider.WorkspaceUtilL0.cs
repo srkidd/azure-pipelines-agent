@@ -460,7 +460,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 .Setup(x => x.WriteDebug)
                 .Returns(true);
             _executionContext
-                .Setup(x => x.Write(It.IsAny<string>(), It.IsAny<string>()))
+                .Setup(x => x.Write(It.IsAny<string>(), It.IsAny<string>(), true))
                 .Callback((string tag, string message) => _trace.Info($"[ExecutionContext]{tag} {message}"));
         }
 
