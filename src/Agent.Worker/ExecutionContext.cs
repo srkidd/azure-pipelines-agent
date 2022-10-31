@@ -55,7 +55,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         // logging
         bool WriteDebug { get; }
-        long Write(string tag, string message);
+        long Write(string tag, string message, bool canMaskSecrets = true);
         void QueueAttachFile(string type, string name, string filePath);
         ITraceWriter GetTraceWriter();
 
@@ -682,9 +682,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         // Do not add a format string overload. In general, execution context messages are user facing and
         // therefore should be localized. Use the Loc methods from the StringUtil class. The exception to
         // the rule is command messages - which should be crafted using strongly typed wrapper methods.
-        public long Write(string tag, string message)
+        public long Write(string tag, string message, bool canMaskSecrets = true)
         {
-            string msg = HostContext.SecretMasker.MaskSecrets($"{tag}{message}");
+            string msg = message;
+            if (canMaskSecrets)
+            {
+                msg = HostContext.SecretMasker.MaskSecrets($"{tag}{message}");
+            }
             long totalLines;
             lock (_loggerLock)
             {
@@ -921,10 +925,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
 
         // Do not add a format string overload. See comment on ExecutionContext.Write().
-        public static void Output(this IExecutionContext context, string message)
+        public static void Output(this IExecutionContext context, string message, bool canMaskSecrets = true)
         {
             ArgUtil.NotNull(context, nameof(context));
-            context.Write(null, message);
+            context.Write(null, message, canMaskSecrets);
         }
 
         // Do not add a format string overload. See comment on ExecutionContext.Write().
