@@ -130,11 +130,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             return target.Map(mapFuncs);
         }
 
-        public static readonly Dictionary<string, string> TargetVarsForReplacement = new Dictionary<string, string>
+        public static readonly Dictionary<string, string> TargetVarsForReplacement = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
-            ["System.DefinitionName".ToLower()] = "SYSTEM_DEFINITIONNAME",
-            ["Build.DefinitionName".ToLower()] = "BUILD_DEFINITIONNAME",
-            ["Build.SourceVersionMessage".ToLower()] = "BUILD_SOURCEVERSIONMESSAGE"
+            [Constants.Variables.System.DefinitionName] = "SYSTEM_DEFINITIONNAME",
+            [Constants.Variables.Build.DefinitionName] = "BUILD_DEFINITIONNAME",
+            [Constants.Variables.Build.SourceVersionMessage] = "BUILD_SOURCEVERSIONMESSAGE"
         };
 
         public static void ExpandValues(
@@ -154,7 +154,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             {
                 ["PowerShell"] = "$env:",
                 ["Bash"] = "$",
-                ["CommandLine"] = "%"
+                ["CmdLine"] = "%"
             };
 
             var envVariablePostfixes = new Dictionary<string, string>
@@ -186,12 +186,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         length: suffixIndex - prefixIndex - Constants.Variables.MacroPrefix.Length);
                     trace.Verbose($"Found macro candidate: '{variableKey}'");
                     string variableValue;
-                    if (!string.IsNullOrEmpty(taskName) && TargetVarsForReplacement.Keys.Contains(variableKey.ToLower()))
+                    if (!string.IsNullOrEmpty(taskName) && TargetVarsForReplacement.Keys.Contains(variableKey))
                     {
                         targetValue =
                             targetValue[..prefixIndex]
                             + envVariablePrefixes[taskName]
-                            + TargetVarsForReplacement[variableKey.ToLower()]
+                            + TargetVarsForReplacement[variableKey]
                             + envVariablePostfixes[taskName]
                             + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
                     }
