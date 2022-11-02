@@ -186,22 +186,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         length: suffixIndex - prefixIndex - Constants.Variables.MacroPrefix.Length);
                     trace.Verbose($"Found macro candidate: '{variableKey}'");
 
-                    var isVariableKeyPresent = string.IsNullOrEmpty(variableKey);
-
-                    if (isVariableKeyPresent && !string.IsNullOrEmpty(taskName) && TargetVarsForReplacement.Keys.Contains(variableKey))
+                    var isVariableKeyPresent = !string.IsNullOrEmpty(variableKey);
+                    string variableValue;
+                    if (isVariableKeyPresent &&
+                        !string.IsNullOrEmpty(taskName) &&
+                        TryGetValue(trace, TargetVarsForReplacement, variableKey, out variableValue))
                     {
                         targetValue =
                             targetValue[..prefixIndex]
                             + envVariablePrefixes[taskName]
-                            + TargetVarsForReplacement[variableKey]
+                            + variableValue
                             + envVariablePostfixes[taskName]
                             + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
 
-                        // Not sure if it's right formula
-                        startIndex = prefixIndex + targetValue.Length;
+                        startIndex = prefixIndex + variableValue.Length;
                     }
                     else if (isVariableKeyPresent &&
-                        TryGetValue(trace, source, variableKey, out string variableValue))
+                        TryGetValue(trace, source, variableKey, out variableValue))
                     {
                         // A matching variable was found.
                         // Update the target value.
