@@ -10,7 +10,7 @@
         },
         {
           "Languages": "de-de;es-es;fr-fr;it-IT;ja-jp;ko-KR;ru-RU;zh-CN;zh-TW",
-          "SourceFile": "src\\Misc\\layoutbin\\en-US\\strings.json",
+          "SourceFile": "src\\Misc\\layoutbin\\en-US\\strings.resjson",
           "CopyOption": "LangIDOnName",
           "OutputPath": "src\\Misc\\layoutbin"
         }
