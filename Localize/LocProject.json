@@ -11,7 +11,7 @@
         {
           "Languages": "de-de;es-es;fr-fr;it-IT;ja-jp;ko-KR;ru-RU;zh-CN;zh-TW",
           "SourceFile": "src\\Misc\\layoutbin\\en-US\\strings.json",
-          "CopyOption": "LangIDOnName",
+          "CopyOption": "LangIDOnPath",
           "OutputPath": "src\\Misc\\layoutbin"
         }
       ]
