@@ -175,7 +175,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             bool taskHasNode16Data = Data is Node16HandlerData;
 
             string nodeFolder = "node";
-            if(PlatformUtil.RunningOnRHEL6 && taskHasNode16Data)
+            if (PlatformUtil.RunningOnRHEL6 && taskHasNode16Data)
             {
                 Trace.Info($"Detected RedHat 6, using node 10 as execution handler, instead node16");
                 nodeFolder = "node10";
