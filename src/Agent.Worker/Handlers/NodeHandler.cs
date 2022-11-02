@@ -179,7 +179,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 Trace.Info($"Detected RedHat 6, using node 10 as execution handler, instead node16");
                 nodeFolder = "node10";
-            } else if (taskHasNode16Data)
+            }
+            else if (taskHasNode16Data)
             {
                 Trace.Info($"Task.json has node16 handler data: {taskHasNode16Data}");
                 nodeFolder = "node16";
