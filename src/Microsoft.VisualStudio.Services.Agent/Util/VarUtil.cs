@@ -161,7 +161,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             {
                 ["PowerShell"] = "",
                 ["Bash"] = "",
-                ["CommandLine"] = "%"
+                ["CmdLine"] = "%"
             };
 
             // This algorithm does not perform recursive replacement.
@@ -185,8 +185,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         startIndex: prefixIndex + Constants.Variables.MacroPrefix.Length,
                         length: suffixIndex - prefixIndex - Constants.Variables.MacroPrefix.Length);
                     trace.Verbose($"Found macro candidate: '{variableKey}'");
-                    string variableValue;
-                    if (!string.IsNullOrEmpty(taskName) && TargetVarsForReplacement.Keys.Contains(variableKey))
+
+                    var isVariableKeyPresent = string.IsNullOrEmpty(variableKey);
+
+                    if (isVariableKeyPresent && !string.IsNullOrEmpty(taskName) && TargetVarsForReplacement.Keys.Contains(variableKey))
                     {
                         targetValue =
                             targetValue[..prefixIndex]
@@ -194,17 +196,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                             + TargetVarsForReplacement[variableKey]
                             + envVariablePostfixes[taskName]
                             + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
+
+                        // Not sure if it's right formula
+                        startIndex = prefixIndex + targetValue.Length;
                     }
-                    else if (!string.IsNullOrEmpty(variableKey) &&
-                        TryGetValue(trace, source, variableKey, out variableValue))
+                    else if (isVariableKeyPresent &&
+                        TryGetValue(trace, source, variableKey, out string variableValue))
                     {
                         // A matching variable was found.
                         // Update the target value.
                         trace.Verbose("Macro found.");
                         targetValue = string.Concat(
-                            targetValue.Substring(0, prefixIndex),
+                            targetValue[..prefixIndex],
                             variableValue ?? string.Empty,
-                            targetValue.Substring(suffixIndex + Constants.Variables.MacroSuffix.Length));
+                            targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..]);
 
                         // Bump the start index to prevent recursive replacement.
                         startIndex = prefixIndex + (variableValue ?? string.Empty).Length;
