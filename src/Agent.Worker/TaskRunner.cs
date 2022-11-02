@@ -576,7 +576,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ArgUtil.NotNull(taskDefinition.Data, nameof(taskDefinition.Data));
 
             var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
-            var expectedExecutionHandler = (taskDefinition.Data.Execution != null && taskDefinition.Data.Execution.All != null) ? string.Join(", ", taskDefinition.Data.Execution.All) : "";
+            var expectedExecutionHandler = (taskDefinition.Data.Execution?.All != null) ? string.Join(", ", taskDefinition.Data.Execution.All) : "";
             
             Dictionary<string, string> telemetryData = new Dictionary<string, string>
             {
