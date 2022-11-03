@@ -272,6 +272,27 @@ namespace Microsoft.VisualStudio.Services.Agent
             public static readonly string MacroPrefix = "$(";
             public static readonly string MacroSuffix = ")";
 
+            public static readonly Dictionary<string, string> EnvVariablesMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                [Constants.Variables.System.DefinitionName] = "SYSTEM_DEFINITIONNAME",
+                [Constants.Variables.Build.DefinitionName] = "BUILD_DEFINITIONNAME",
+                [Constants.Variables.Build.SourceVersionMessage] = "BUILD_SOURCEVERSIONMESSAGE"
+            };
+
+            public static readonly Dictionary<string, string> EnvVariablePrefixesPerShell = new Dictionary<string, string>
+            {
+                ["PowerShell"] = "$env:",
+                ["Bash"] = "$",
+                ["CmdLine"] = "%"
+            };
+
+            public static readonly Dictionary<string, string> EnvVariableSuffixesPerShell = new Dictionary<string, string>
+            {
+                ["PowerShell"] = "",
+                ["Bash"] = "",
+                ["CmdLine"] = "%"
+            };
+
             public static class Agent
             {
                 //

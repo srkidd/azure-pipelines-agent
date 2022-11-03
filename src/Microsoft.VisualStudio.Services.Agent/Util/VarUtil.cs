@@ -130,27 +130,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             return target.Map(mapFuncs);
         }
 
-        public static readonly Dictionary<string, string> TargetVarsForReplacement = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            [Constants.Variables.System.DefinitionName] = "SYSTEM_DEFINITIONNAME",
-            [Constants.Variables.Build.DefinitionName] = "BUILD_DEFINITIONNAME",
-            [Constants.Variables.Build.SourceVersionMessage] = "BUILD_SOURCEVERSIONMESSAGE"
-        };
-
-        public static readonly Dictionary<string, string> envVariablePrefixes = new Dictionary<string, string>
-        {
-            ["PowerShell"] = "$env:",
-            ["Bash"] = "$",
-            ["CmdLine"] = "%"
-        };
-
-        public static readonly Dictionary<string, string> envVariablePostfixes = new Dictionary<string, string>
-        {
-            ["PowerShell"] = "",
-            ["Bash"] = "",
-            ["CmdLine"] = "%"
-        };
-
         public static void ExpandValues(
             IHostContext context,
             IDictionary<string, string> source,
@@ -188,18 +167,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
                     var isVariableKeyPresent = !string.IsNullOrEmpty(variableKey);
                     string variableValue;
-                    var scriptTasks = envVariablePrefixes.Keys;
+                    var scriptTasks = Constants.Variables.EnvVariablePrefixesPerShell.Keys;
 
                     if (isVariableKeyPresent &&
                         !string.IsNullOrEmpty(taskName) &&
                         scriptTasks.Contains(taskName) &&
-                        TryGetValue(trace, TargetVarsForReplacement, variableKey, out variableValue))
+                        TryGetValue(trace, Constants.Variables.EnvVariablesMap, variableKey, out variableValue))
                     {
                         targetValue =
                             targetValue[..prefixIndex]
-                            + envVariablePrefixes[taskName]
+                            + Constants.Variables.EnvVariablePrefixesPerShell[taskName]
                             + variableValue
-                            + envVariablePostfixes[taskName]
+                            + Constants.Variables.EnvVariableSuffixesPerShell[taskName]
                             + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
 
                         startIndex = prefixIndex + variableValue.Length;
