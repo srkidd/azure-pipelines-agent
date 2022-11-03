@@ -272,11 +272,16 @@ namespace Microsoft.VisualStudio.Services.Agent
             public static readonly string MacroPrefix = "$(";
             public static readonly string MacroSuffix = ")";
 
-            public static readonly Dictionary<string, string> EnvVariablesMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            /// <summary>
+            /// This variables potentially may be used to execute scripts without the knowledge of the owner of the pipelines.
+            /// We want to prevent this by not expanding them and replacing these variables in user scripts with environment variables.
+            /// Note that the replacement will only take place for inline scripts.
+            /// </summary>
+            public static readonly Dictionary<string, string> VariablesVulnerableToExecution = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
             {
-                [Constants.Variables.System.DefinitionName] = "SYSTEM_DEFINITIONNAME",
-                [Constants.Variables.Build.DefinitionName] = "BUILD_DEFINITIONNAME",
-                [Constants.Variables.Build.SourceVersionMessage] = "BUILD_SOURCEVERSIONMESSAGE"
+                [System.DefinitionName] = "SYSTEM_DEFINITIONNAME",
+                [Build.DefinitionName] = "BUILD_DEFINITIONNAME",
+                [Build.SourceVersionMessage] = "BUILD_SOURCEVERSIONMESSAGE"
             };
 
             public static readonly Dictionary<string, string> EnvVariablePrefixesPerShell = new Dictionary<string, string>

@@ -481,7 +481,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Process each variable in the dictionary.
                 foreach (string name in _nonexpanded.Keys)
                 {
-                    if (Constants.Variables.EnvVariablesMap.ContainsKey(name.ToLower()))
+                    if (Constants.Variables.VariablesVulnerableToExecution.ContainsKey(name.ToLower()))
                     {
                         continue;
                     }

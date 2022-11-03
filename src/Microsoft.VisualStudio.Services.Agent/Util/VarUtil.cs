@@ -172,7 +172,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     if (isVariableKeyPresent &&
                         !string.IsNullOrEmpty(taskName) &&
                         scriptTasks.Contains(taskName) &&
-                        TryGetValue(trace, Constants.Variables.EnvVariablesMap, variableKey, out variableValue))
+                        TryGetValue(trace, Constants.Variables.VariablesVulnerableToExecution, variableKey, out variableValue))
                     {
                         targetValue =
                             targetValue[..prefixIndex]
