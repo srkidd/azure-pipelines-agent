@@ -137,6 +137,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             [Constants.Variables.Build.SourceVersionMessage] = "BUILD_SOURCEVERSIONMESSAGE"
         };
 
+        public static readonly Dictionary<string, string> envVariablePrefixes = new Dictionary<string, string>
+        {
+            ["PowerShell"] = "$env:",
+            ["Bash"] = "$",
+            ["CmdLine"] = "%"
+        };
+
+        public static readonly Dictionary<string, string> envVariablePostfixes = new Dictionary<string, string>
+        {
+            ["PowerShell"] = "",
+            ["Bash"] = "",
+            ["CmdLine"] = "%"
+        };
+
         public static void ExpandValues(
             IHostContext context,
             IDictionary<string, string> source,
@@ -149,20 +163,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             Tracing trace = context.GetTrace(nameof(VarUtil));
             trace.Entering();
             target ??= new Dictionary<string, string>();
-
-            var envVariablePrefixes = new Dictionary<string, string>
-            {
-                ["PowerShell"] = "$env:",
-                ["Bash"] = "$",
-                ["CmdLine"] = "%"
-            };
-
-            var envVariablePostfixes = new Dictionary<string, string>
-            {
-                ["PowerShell"] = "",
-                ["Bash"] = "",
-                ["CmdLine"] = "%"
-            };
 
             // This algorithm does not perform recursive replacement.
 
@@ -188,8 +188,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
                     var isVariableKeyPresent = !string.IsNullOrEmpty(variableKey);
                     string variableValue;
+                    var scriptTasks = envVariablePrefixes.Keys;
+
                     if (isVariableKeyPresent &&
                         !string.IsNullOrEmpty(taskName) &&
+                        scriptTasks.Contains(taskName) &&
                         TryGetValue(trace, TargetVarsForReplacement, variableKey, out variableValue))
                     {
                         targetValue =
