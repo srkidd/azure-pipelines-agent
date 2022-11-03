@@ -575,15 +575,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ArgUtil.NotNull(Task.Reference, nameof(Task.Reference));
             ArgUtil.NotNull(taskDefinition.Data, nameof(taskDefinition.Data));
 
-            var useNode10 = AgentKnobs.UseNode16.GetValue(ExecutionContext).AsString();
-            
+            var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
+            var expectedExecutionHandler = (taskDefinition.Data.Execution?.All != null) ? string.Join(", ", taskDefinition.Data.Execution.All) : "";
+
             Dictionary<string, string> telemetryData = new Dictionary<string, string>
             {
                 { "TaskName", Task.Reference.Name },
                 { "TaskId", Task.Reference.Id.ToString() },
                 { "Version", Task.Reference.Version },
                 { "OS", PlatformUtil.HostOS.ToString() },
-                { "ExpectedExecutionHandler", string.Join(", ", taskDefinition.Data.Execution.All) },
+                { "ExpectedExecutionHandler", expectedExecutionHandler },
                 { "RealExecutionHandler", handlerData.ToString() },
                 { "UseNode10", useNode10 },
                 { "JobId", ExecutionContext.Variables.System_JobId.ToString()},
