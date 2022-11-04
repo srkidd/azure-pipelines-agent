@@ -33,6 +33,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         }
 
         [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void KeepSameIfNoTaskSpecified()
         {
             using TestHostContext hc = new TestHostContext(this);
@@ -46,6 +48,67 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             Assert.Equal(target["system.DefinitionName var"], target["system.DefinitionName var"]);
             Assert.Equal(target["build.DefinitionName var"], target["build.DefinitionName var"]);
             Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void ExpandNestedVariableTest()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+
+            var source = new Dictionary<string, string>
+            {
+                ["sourceVar"] = "sourceValue",
+            };
+            var target = new Dictionary<string, string>
+            {
+                ["targetVar"] = "targetValue $(sourceVar)",
+            };
+
+            VarUtil.ExpandValues(hc, source, target);
+
+            Assert.Equal("targetValue sourceValue", target["targetVar"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void KeepValueSameIfNotMatchingWithTarget()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+
+            var source = new Dictionary<string, string>();
+            var target = new Dictionary<string, string>
+            {
+                ["targetVar"] = "targetValue $(sourceVar)",
+            };
+
+            VarUtil.ExpandValues(hc, source, target);
+
+            Assert.Equal("targetValue $(sourceVar)", target["targetVar"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void ReqursiveExpandingNotSupportedTest()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+
+            var source = new Dictionary<string, string>
+            {
+                ["sourceVar1"] = "sourceValue1",
+                ["sourceVar2"] = "sourceValue1 $(sourceVar1)",
+            };
+            var target = new Dictionary<string, string>
+            {
+                ["targetVar"] = "targetValue $(sourceVar2)",
+            };
+
+            VarUtil.ExpandValues(hc, source, target);
+
+            Assert.Equal("targetValue sourceValue1 $(sourceVar1)", target["targetVar"]);
         }
 
         private Dictionary<string, string> GetTargetValuesWithVulnerableVariables()
