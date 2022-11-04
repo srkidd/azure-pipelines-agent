@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
+using static Microsoft.Azure.Pipelines.WebApi.PipelinesResources;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 {
@@ -72,6 +73,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         // git config --get-all <key>
         Task<bool> GitConfigExist(IExecutionContext context, string repositoryPath, string configKey);
+
+        // git config --get-all <key>
+        Task<bool> GitConfigExist(IExecutionContext context, string repositoryPath, string configKey, IList<string> existingConfigValues);
+
+        // git config --get-regexp <configKeyPattern>
+        Task<bool> GitConfigRegexExist(IExecutionContext context, string repositoryPath, string configKeyPattern);
 
         // git config --unset-all <key>
         Task<int> GitConfigUnset(IExecutionContext context, string repositoryPath, string configKey);
@@ -235,6 +242,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 refSpec = refSpec.Where(r => !string.IsNullOrEmpty(r)).ToList();
             }
 
+            // Git 2.20 changed its fetch behavior, rejecting tag updates if the --force flag is not provided
+            // See https://git-scm.com/docs/git-fetch for more details
+            string forceTag = string.Empty;
+
+            if (_gitVersion >= new Version(2, 20))
+            {
+                forceTag = "--force";
+            }
+
             string tags = "--tags";
             if (!fetchTags)
             {
@@ -255,7 +271,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
             //define options for fetch
             string options = $"{tags} --prune {pruneTags} --progress --no-recurse-submodules {remoteName} {depth} {string.Join(" ", refSpec)}";
-
 
             return await ExecuteGitCommandAsync(context, repositoryPath, "fetch", options, additionalCommandLine, cancellationToken);
         }
@@ -494,6 +509,35 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // ignore any outputs by redirect them into a string list, since the output might contains secrets.
             List<string> outputStrings = new List<string>();
             int exitcode = await ExecuteGitCommandAsync(context, repositoryPath, "config", StringUtil.Format($"--get-all {configKey}"), outputStrings);
+
+            return exitcode == 0;
+        }
+
+        // git config --get-all <key>
+        public async Task<bool> GitConfigExist(IExecutionContext context, string repositoryPath, string configKey, IList<string> existingConfigValues)
+        {
+            // git config --get-all {configKey} will return 0 and print the value if the config exist.
+            context.Debug($"Checking git config {configKey} exist or not");
+
+            // ignore any outputs by redirect them into a string list, since the output might contains secrets.
+            if (existingConfigValues == null)
+            {
+                existingConfigValues = new List<string>();
+            }
+
+            int exitcode = await ExecuteGitCommandAsync(context, repositoryPath, "config", StringUtil.Format($"--get-all {configKey}"), existingConfigValues);
+            return exitcode == 0;
+        }
+
+        // git config --get-regexp <configKeyPattern>
+        public async Task<bool> GitConfigRegexExist(IExecutionContext context, string repositoryPath, string configKeyPattern)
+        {
+            // git config --get-regexp {configKeyPattern} will return 0 and print the value if the config exist.
+            context.Debug($"Checking git config {configKeyPattern} exist or not");
+
+            // ignore any outputs by redirect them into a string list, since the output might contains secrets.
+            List<string> outputStrings = new List<string>();
+            int exitcode = await ExecuteGitCommandAsync(context, repositoryPath, "config", StringUtil.Format($"--get-regexp {configKeyPattern}"), outputStrings);
 
             return exitcode == 0;
         }
