@@ -401,9 +401,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
             bool gitUseSecureParameterPassing = AgentKnobs.GitUseSecureParameterPassing.GetValue(executionContext).AsBoolean();
 
+            Dictionary<string, string> gitEnv = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+            // Git-lfs will try to pull down asset if any of the local/user/system setting exist.
+            // If customer didn't enable `LFS` in their pipeline definition, we will use ENV to disable LFS fetch/checkout.
+            if (!gitLfsSupport)
+            {
+                gitEnv["GIT_LFS_SKIP_SMUDGE"] = "1";
+            }
+
             // Initialize git command manager
             _gitCommandManager = HostContext.GetService<IGitCommandManager>();
-            await _gitCommandManager.LoadGitExecutionInfo(executionContext, useBuiltInGit: !preferGitFromPath);
+            await _gitCommandManager.LoadGitExecutionInfo(executionContext, useBuiltInGit: !preferGitFromPath, gitEnv);
 
             // Read 'disable fetch by commit' value from the execution variable first, then from the environment variable if the first one is not set
             bool fetchByCommit = GitSupportsFetchingCommitBySha1Hash(_gitCommandManager) && !AgentKnobs.DisableFetchByCommit.GetValue(executionContext).AsBoolean();
