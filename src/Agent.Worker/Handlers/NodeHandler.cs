@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -22,6 +23,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
     public sealed class NodeHandler : Handler, INodeHandler
     {
+        private static string nodeFolder = "node";
+        private static string node10Folder = "node10";
+        private static string node16Folder = "node16";
+        private const string useNodeKnobLtsKey = "LTS";
+        private const string useNodeKnobUpgradeKey = "UPGRADE";
+        private string[] possibleNodeFolders = { nodeFolder, node10Folder, node16Folder };
         private static Regex _vstsTaskLibVersionNeedsFix = new Regex("^[0-2]\\.[0-9]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static string[] _extensionsNode6 ={
             "if (process.versions.node && process.versions.node.match(/^5\\./)) {",
@@ -115,10 +122,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 file = GetNodeLocation();
 
                 ExecutionContext.Debug("Using node path: " + file);
-                if (!File.Exists(file))
-                {
-                    throw new FileNotFoundException(StringUtil.Loc("MissingNodePath", file));
-                }
             }
 
             // Format the arguments passed to node.
@@ -173,33 +176,68 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             bool useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsBoolean();
             bool taskHasNode10Data = Data is Node10HandlerData;
             bool taskHasNode16Data = Data is Node16HandlerData;
+            string useNode = AgentKnobs.UseNode.GetValue(ExecutionContext).AsString();
 
-            string nodeFolder = "node";
+            string nodeFolder = NodeHandler.nodeFolder;
             if (PlatformUtil.RunningOnRHEL6 && taskHasNode16Data)
             {
                 Trace.Info($"Detected RedHat 6, using node 10 as execution handler, instead node16");
-                nodeFolder = "node10";
+                nodeFolder = NodeHandler.node10Folder;
             }
             else if (taskHasNode16Data)
             {
                 Trace.Info($"Task.json has node16 handler data: {taskHasNode16Data}");
-                nodeFolder = "node16";
+                nodeFolder = NodeHandler.node16Folder;
             }
             else if (taskHasNode10Data)
             {
                 Trace.Info($"Task.json has node10 handler data: {taskHasNode10Data}");
-                nodeFolder = "node10";
+                nodeFolder = NodeHandler.node10Folder;
             }
+
             if (useNode10)
             {
                 Trace.Info($"Found UseNode10 knob, use node10 for node tasks: {useNode10}");
-                nodeFolder = "node10";
+                nodeFolder = NodeHandler.node10Folder;
             }
 
-            return Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals),
-                nodeFolder,
-                "bin",
-                $"node{IOUtil.ExeExtension}");
+            if (!IsNodeFolderExist(nodeFolder))
+            {
+                string[] filteredPossibleNodeFolders = GetFilteredPossibleNodeFolders(nodeFolder);
+
+                if (!String.IsNullOrWhiteSpace(useNode) && filteredPossibleNodeFolders.Length > 0)
+                {
+                    Trace.Info($"Found UseNode knob with value \"{useNode}\", will try to find appropriate Node Runner");
+
+                    switch (useNode.ToUpper())
+                    {
+                        case NodeHandler.useNodeKnobLtsKey:
+                            if (IsNodeFolderExist(NodeHandler.node16Folder))
+                            {
+                                Trace.Info($"Found LTS version of node installed");
+                                return GetNodeFolderPath(NodeHandler.node16Folder);
+                            }
+                            break;
+                        case NodeHandler.useNodeKnobUpgradeKey:
+                            foreach (string possibleNodeFolder in filteredPossibleNodeFolders)
+                            {
+                                if (IsNodeFolderExist(possibleNodeFolder))
+                                {
+                                    Trace.Info($"Found {possibleNodeFolder} installed");
+                                    return GetNodeFolderPath(possibleNodeFolder);
+                                }
+                            }
+                            break;
+                        default:
+                            Trace.Info($"Value of UseNode knob cannot be recognized");
+                            break;
+                    }
+                }
+
+                throw new FileNotFoundException(StringUtil.Loc("MissingNodePath", GetNodeFolderPath(nodeFolder)));
+            }
+
+            return GetNodeFolderPath(nodeFolder);
         }
 
         private void OnDataReceived(object sender, ProcessDataReceivedEventArgs e)
@@ -266,6 +304,27 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     Trace.Error(ex);
                 }
             }
+        }
+
+        private bool IsNodeFolderExist(string nodeFolderName) => File.Exists(GetNodeFolderPath(nodeFolderName));
+
+        private string GetNodeFolderPath(string nodeFolderName) => Path.Combine(
+            HostContext.GetDirectory(WellKnownDirectory.Externals),
+            nodeFolder,
+            "bin",
+            $"node{IOUtil.ExeExtension}");
+
+        private string[] GetFilteredPossibleNodeFolders(string nodeFolderName)
+        {
+            for (int i = 0; i < possibleNodeFolders.Length; i++)
+            {
+                if (possibleNodeFolders[i] == nodeFolderName)
+                {
+                    return possibleNodeFolders.Skip(i + 1).ToArray();
+                }
+            }
+
+            return Array.Empty<string>();
         }
     }
 }
