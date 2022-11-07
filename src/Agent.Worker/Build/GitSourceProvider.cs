@@ -370,6 +370,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             if (!gitLfsSupport)
             {
                 gitEnv["GIT_LFS_SKIP_SMUDGE"] = "1";
+                executionContext.Debug("GIT_LFS_SKIP_SMUDGE variable set to 1");
             }
 
             // Initialize git command manager
