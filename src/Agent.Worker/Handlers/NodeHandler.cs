@@ -310,7 +310,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
         private string GetNodeFolderPath(string nodeFolderName) => Path.Combine(
             HostContext.GetDirectory(WellKnownDirectory.Externals),
-            nodeFolder,
+            nodeFolderName,
             "bin",
             $"node{IOUtil.ExeExtension}");
 
