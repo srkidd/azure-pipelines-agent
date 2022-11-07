@@ -255,11 +255,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // See https://git-scm.com/docs/git-fetch for more details
             string forceTag = string.Empty;
 
-            if (_gitVersion >= new Version(2, 20))
-            {
-                forceTag = "--force";
-            }
-
             string tags = "--tags";
             if (!fetchTags)
             {
