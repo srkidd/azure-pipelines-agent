@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.IO;
+using static Microsoft.Azure.Pipelines.WebApi.PipelinesResources;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 {
@@ -285,7 +286,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             string depth = fetchDepth > 0 ? $"--depth={fetchDepth}" : (File.Exists(Path.Combine(repositoryPath, ".git", "shallow")) ? "--unshallow" : string.Empty );
 
             //define options for fetch
-            string options = $"{forceTag} {tags} --prune {pruneTags} --progress --no-recurse-submodules {remoteName} {depth} {string.Join(" ", refSpec)}";
+            string options = $"{tags} --prune {pruneTags} --progress --no-recurse-submodules {remoteName} {depth} {string.Join(" ", refSpec)}";
 
             return await ExecuteGitCommandAsync(context, repositoryPath, "fetch", options, additionalCommandLine, cancellationToken);
         }

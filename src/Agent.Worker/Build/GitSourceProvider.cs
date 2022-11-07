@@ -21,10 +21,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
     public class ExternalGitSourceProvider : GitSourceProvider
     {
         public override string RepositoryType => TeamFoundation.DistributedTask.Pipelines.RepositoryTypes.ExternalGit;
-        public override bool GitSupportsFetchingCommitBySha1Hash(IGitCommandManager gitCommandManager)
-        {
-            return false;
-        }
 
         // external git repository won't use auth header cmdline arg, since we don't know the auth scheme.
         public override bool GitUseAuthHeaderCmdlineArg => false;
@@ -111,51 +107,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
     public sealed class GitHubSourceProvider : AuthenticatedGitSourceProvider
     {
         public override string RepositoryType => TeamFoundation.DistributedTask.Pipelines.RepositoryTypes.GitHub;
-
-        public override bool GitSupportsFetchingCommitBySha1Hash(IGitCommandManager gitCommandManager)
-        {
-            if (gitCommandManager.EnsureGitVersion(_minGitVersionDefaultV2, throwOnNotMatch: false))
-            {
-
-                return true;
-            }
-
-            return false;
-        }
     }
 
     public sealed class GitHubEnterpriseSourceProvider : AuthenticatedGitSourceProvider
     {
         public override string RepositoryType => TeamFoundation.DistributedTask.Pipelines.RepositoryTypes.GitHubEnterprise;
-        public override bool GitSupportsFetchingCommitBySha1Hash(IGitCommandManager gitCommandManager)
-        {
-            if (gitCommandManager.EnsureGitVersion(_minGitVersionDefaultV2, throwOnNotMatch: false))
-            {
-
-                return true;
-            }
-
-            return false;
-        }
     }
 
     public sealed class BitbucketSourceProvider : AuthenticatedGitSourceProvider
     {
         public override string RepositoryType => TeamFoundation.DistributedTask.Pipelines.RepositoryTypes.Bitbucket;
-
-        public override bool GitSupportsFetchingCommitBySha1Hash(IGitCommandManager gitCommandManager)
-        {
-            return true;
-        }
     }
 
     public sealed class TfsGitSourceProvider : GitSourceProvider
     {
         public override string RepositoryType => TeamFoundation.DistributedTask.Pipelines.RepositoryTypes.Git;
-        public override bool GitSupportsFetchingCommitBySha1Hash(IGitCommandManager gitCommandManager)
-        {
-            return true;
-        }
 
         public override bool GitUseAuthHeaderCmdlineArg
         {
@@ -273,9 +239,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         // Minimum git-lfs version that supports adding the extra auth header
         protected Version _minGitLfsVersionSupportAuthHeader = new Version(2, 1);
 
-        // min git version where v2 is defaulted
-        protected Version _minGitVersionDefaultV2 = new Version(2, 26);
-
         // min git version that supports new way to pass config via --config-env
         // Info: https://github.com/git/git/commit/ce81b1da230cf04e231ce337c2946c0671ffb303
         protected Version _minGitVersionConfigEnv = new Version(2, 31);
@@ -283,7 +246,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
         public abstract bool GitUseAuthHeaderCmdlineArg { get; }
         public abstract bool GitLfsUseAuthHeaderCmdlineArg { get; }
         public abstract void RequirementCheck(IExecutionContext executionContext, ServiceEndpoint endpoint);
-        public abstract bool GitSupportsFetchingCommitBySha1Hash(IGitCommandManager gitCommandManager);
         public abstract bool GitSupportsConfigEnv(IExecutionContext executionContext, IGitCommandManager gitCommandManager);
 
         public abstract string GenerateAuthHeader(string username, string password);
@@ -413,9 +375,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // Initialize git command manager
             _gitCommandManager = HostContext.GetService<IGitCommandManager>();
             await _gitCommandManager.LoadGitExecutionInfo(executionContext, useBuiltInGit: !preferGitFromPath, gitEnv);
-
-            // Read 'disable fetch by commit' value from the execution variable first, then from the environment variable if the first one is not set
-            bool fetchByCommit = GitSupportsFetchingCommitBySha1Hash(_gitCommandManager) && !AgentKnobs.DisableFetchByCommit.GetValue(executionContext).AsBoolean();
+            await _gitCommandManager.LoadGitExecutionInfo(executionContext, useBuiltInGit: !preferGitFromPath);
 
             // Make sure the build machine met all requirements for the git repository
             // For now, the requirement we have are:
@@ -704,21 +664,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 await RemoveGitConfig(executionContext, targetPath, $"http.{repositoryUrl.AbsoluteUri}.extraheader", string.Empty);
             }
 
-            var existingExtraheaders = new List<string>();
-            if (await _gitCommandManager.GitConfigExist(executionContext, targetPath, $"http.extraheader", existingExtraheaders))
-            {
-                executionContext.Debug("Remove http.extraheader setting from git config.");
-                foreach (var configValue in existingExtraheaders)
-                {
-                    await RemoveGitConfig(executionContext, targetPath, $"http.extraheader", configValue);
-                }
-            }
-
-            if (await _gitCommandManager.GitConfigRegexExist(executionContext, targetPath, ".*extraheader"))
-            {
-                executionContext.Warning($"Git config still contains extraheader keys. It may cause errors.  To remove the credential, execute \"git config --unset-all key-name\" from the repository root");
-            }
-
             // always remove any possible left proxy setting from git config, the proxy setting may contains credential
             if (await _gitCommandManager.GitConfigExist(executionContext, targetPath, $"http.proxy"))
             {
@@ -728,15 +673,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
             List<string> additionalFetchArgs = new List<string>();
             List<string> additionalLfsFetchArgs = new List<string>();
-
-            // Force Git to HTTP/1.1. Otherwise IIS will reject large pushes to Azure Repos due to the large content-length header
-            // This is caused by these header limits - https://docs.microsoft.com/en-us/iis/configuration/system.webserver/security/requestfiltering/requestlimits/headerlimits/
-            int exitCode_configHttp = await _gitCommandManager.GitConfig(executionContext, targetPath, "http.version", "HTTP/1.1");
-            if (exitCode_configHttp != 0)
-            {
-                executionContext.Warning($"Forcing Git to HTTP/1.1 failed with exit code: {exitCode_configHttp}");
-            }
-
             if (!_selfManageGitCreds)
             {
                 // v2.9 git support provide auth header as cmdline arg.
@@ -867,50 +803,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // If this is a build for a pull request, then include
             // the pull request reference as an additional ref.
             List<string> additionalFetchSpecs = new List<string>();
-            string refFetchedByCommit = null;
             if (IsPullRequest(sourceBranch))
             {
-                // Build a 'fetch-by-commit' refspec iff the server allows us to do so in the shallow fetch scenario
-                // Otherwise, fall back to fetch all branches and pull request ref
-                if (fetchDepth > 0 && fetchByCommit && !string.IsNullOrEmpty(sourceVersion))
-                {
-                    refFetchedByCommit = $"{_remoteRefsPrefix}{sourceVersion}";
-                    additionalFetchSpecs.Add($"+{sourceVersion}:{refFetchedByCommit}");
-                }
-                else
-                {
-                    additionalFetchSpecs.Add("+refs/heads/*:refs/remotes/origin/*");
-                    additionalFetchSpecs.Add($"+{sourceBranch}:{GetRemoteRefName(sourceBranch)}");
-                }
-            }
-            else
-            {
-                // Build a refspec iff the server allows us to fetch a specific commit in the shallow fetch scenario
-                // Otherwise, use the default fetch behavior (i.e. with no refspecs)
-                if (fetchDepth > 0 && fetchByCommit && !string.IsNullOrEmpty(sourceVersion))
-                {
-                    refFetchedByCommit = $"{_remoteRefsPrefix}{sourceVersion}";
-                    additionalFetchSpecs.Add($"+{sourceVersion}:{refFetchedByCommit}");
-                }
+                additionalFetchSpecs.Add("+refs/heads/*:refs/remotes/origin/*");
+                additionalFetchSpecs.Add(StringUtil.Format("+{0}:{1}", sourceBranch, GetRemoteRefName(sourceBranch)));
             }
 
             int exitCode_fetch = await _gitCommandManager.GitFetch(executionContext, targetPath, "origin", fetchDepth, fetchTags, additionalFetchSpecs, string.Join(" ", additionalFetchArgs), cancellationToken);
             if (exitCode_fetch != 0)
             {
                 throw new InvalidOperationException($"Git fetch failed with exit code: {exitCode_fetch}");
-            }
-
-            // If checking out by commit, explicity fetch it
-            // This is done as a separate fetch rather than adding an additional refspec on the proceeding fetch to prevent overriding previous behavior which may have dependencies in other tasks
-            // i.e. "git fetch origin" versus "git fetch origin commit"
-            if (fetchByCommit && !string.IsNullOrEmpty(sourceVersion))
-            {
-                List<string> commitFetchSpecs = new List<string>() { $"+{sourceVersion}" };
-                exitCode_fetch = await _gitCommandManager.GitFetch(executionContext, targetPath, "origin", fetchDepth, fetchTags, commitFetchSpecs, string.Join(" ", additionalFetchArgs), cancellationToken);
-                if (exitCode_fetch != 0)
-                {
-                    throw new InvalidOperationException($"Git fetch failed with exit code: {exitCode_fetch}");
-                }
             }
 
             // Checkout
@@ -921,12 +823,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             cancellationToken.ThrowIfCancellationRequested();
             executionContext.Progress(80, "Starting checkout...");
             string sourcesToBuild;
-
-            if (refFetchedByCommit != null)
-            {
-                sourcesToBuild = refFetchedByCommit;
-            }
-            else if (IsPullRequest(sourceBranch) || string.IsNullOrEmpty(sourceVersion))
+            if (IsPullRequest(sourceBranch) || string.IsNullOrEmpty(sourceVersion))
             {
                 sourcesToBuild = GetRemoteRefName(sourceBranch);
             }
