@@ -379,7 +379,7 @@ namespace Agent.Sdk.Knob
 
         public static readonly Knob UseNode = new Knob(
             nameof(UseNode),
-            "Forces the agent to use latest version of node if specified Node runner in task.json is not available",
+            "Forces the agent to use different version of node if specified Node in task.json is not available. Possible values: LTS - make agent use latest LTS version of Node; UPGRADE - make agent use next available version of Node",
             new RuntimeKnobSource("AGENT_USE_NODE"),
             new EnvironmentKnobSource("AGENT_USE_NODE"),
             new BuiltInDefaultKnobSource(string.Empty));
