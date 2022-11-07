@@ -176,7 +176,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             bool useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsBoolean();
             bool taskHasNode10Data = Data is Node10HandlerData;
             bool taskHasNode16Data = Data is Node16HandlerData;
-            string useNode = AgentKnobs.UseNode.GetValue(ExecutionContext).AsString();
+            string useNodeKnob = AgentKnobs.UseNode.GetValue(ExecutionContext).AsString();
 
             string nodeFolder = NodeHandler.nodeFolder;
             if (PlatformUtil.RunningOnRHEL6 && taskHasNode16Data)
@@ -205,11 +205,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 string[] filteredPossibleNodeFolders = GetFilteredPossibleNodeFolders(nodeFolder);
 
-                if (!String.IsNullOrWhiteSpace(useNode) && filteredPossibleNodeFolders.Length > 0)
+                if (!String.IsNullOrWhiteSpace(useNodeKnob) && filteredPossibleNodeFolders.Length > 0)
                 {
-                    Trace.Info($"Found UseNode knob with value \"{useNode}\", will try to find appropriate Node Runner");
+                    Trace.Info($"Found UseNode knob with value \"{useNodeKnob}\", will try to find appropriate Node Runner");
 
-                    switch (useNode.ToUpper())
+                    switch (useNodeKnob.ToUpper())
                     {
                         case NodeHandler.useNodeKnobLtsKey:
                             if (IsNodeFolderExist(NodeHandler.node16Folder))
