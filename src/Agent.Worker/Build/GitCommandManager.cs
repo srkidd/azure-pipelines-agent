@@ -251,10 +251,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 refSpec = refSpec.Where(r => !string.IsNullOrEmpty(r)).ToList();
             }
 
-            // Git 2.20 changed its fetch behavior, rejecting tag updates if the --force flag is not provided
-            // See https://git-scm.com/docs/git-fetch for more details
-            string forceTag = string.Empty;
-
             string tags = "--tags";
             if (!fetchTags)
             {
