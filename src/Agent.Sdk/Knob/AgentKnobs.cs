@@ -376,5 +376,12 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AGENT_MIN_SECRET_LENGTH"),
             new EnvironmentKnobSource("AGENT_MIN_SECRET_LENGTH"),
             new BuiltInDefaultKnobSource("0"));
+
+        public static readonly Knob UseNode = new Knob(
+            nameof(UseNode),
+            "Forces the agent to use latest version of node if specified Node runner in task.json is not available",
+            new RuntimeKnobSource("AGENT_USE_NODE"),
+            new EnvironmentKnobSource("AGENT_USE_NODE"),
+            new BuiltInDefaultKnobSource(string.Empty));
     }
 }
