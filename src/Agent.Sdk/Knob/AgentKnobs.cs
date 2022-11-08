@@ -370,13 +370,6 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("VSTSAGENT_DUMP_PACKAGES_VERIFICATION_RESULTS"),
             new BuiltInDefaultKnobSource("false"));
 
-        public static readonly Knob MaskedSecretMinLength = new Knob(
-            nameof(MaskedSecretMinLength),
-            "Minimum lenght of secret which will be masked in logs",
-            new RuntimeKnobSource("AGENT_MIN_SECRET_LENGTH"),
-            new EnvironmentKnobSource("AGENT_MIN_SECRET_LENGTH"),
-            new BuiltInDefaultKnobSource("0"));
-
         public static readonly Knob UseNode = new Knob(
             nameof(UseNode),
             "Forces the agent to use different version of Node if when configured runner is not available. Possible values: LTS - make agent use latest LTS version of Node; UPGRADE - make agent use next available version of Node",
