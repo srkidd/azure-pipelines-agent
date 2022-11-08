@@ -77,11 +77,10 @@ function detect_platform_and_runtime_id ()
 
 function launch_MSBuild (){
     TARGET=$1
-
+    heading "Creating ${TARGET}"
     echo "MSBuild target = ${TARGET}"
 
     if  [[ "$ADO_ENABLE_LOGISSUE" == "true" ]]; then
-
         dotnet msbuild -t:"${TARGET}" -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:CodeAnalysis="true" \
          | sed -e "/\: warning /s/^/${DOTNET_WARNING_PREFIX} /;" \
          | sed -e "/\: error /s/^/${DOTNET_ERROR_PREFIX} /;" \
@@ -90,28 +89,19 @@ function launch_MSBuild (){
         dotnet msbuild -t:"${TARGET}" -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:CodeAnalysis="true" \
          || failed build
     fi
+
+    mkdir -p "${LAYOUT_DIR}/bin/en-US"
+    grep --invert-match '^ *"CLI-WIDTH-' ./Misc/layoutbin/en-US/strings.json > "${LAYOUT_DIR}/bin/en-US/strings.json"
 }
 
 function cmd_build ()
 {
-    heading "Building"
-
-    TARGET="Build"
-    launch_MSBuild $TARGET
-
-    mkdir -p "${LAYOUT_DIR}/bin/en-US"
-    grep --invert-match '^ *"CLI-WIDTH-' ./Misc/layoutbin/en-US/strings.json > "${LAYOUT_DIR}/bin/en-US/strings.json"
+    launch_MSBuild Build
 }
 
 function cmd_layout ()
 {
-    heading "Creating layout"
-
-    TARGET="layout"
-    launch_MSBuild $TARGET
-
-    mkdir -p "${LAYOUT_DIR}/bin/en-US"
-    grep --invert-match '^ *"CLI-WIDTH-' ./Misc/layoutbin/en-US/strings.json > "${LAYOUT_DIR}/bin/en-US/strings.json"
+    launch_MSBuild Layout
 
     #change execution flag to allow running with sudo
     if [[ ("$CURRENT_PLATFORM" == "linux") || ("$CURRENT_PLATFORM" == "darwin") ]]; then
