@@ -217,7 +217,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void UseLTSNodeIfUseNodeKnobIsLTSAndLTSNotAvailable()
+        public void ThrowExceptionIfUseNodeKnobIsLTSAndLTSNotAvailable()
         {
             using (TestHostContext thc = CreateTestHostContext())
             {
@@ -251,7 +251,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void UseLTSNodeIfUseNodeKnobIsLTSAndFilteredPossibleNodeFoldersEmpty()
+        public void ThrowExceptionIfUseNodeKnobIsLTSAndFilteredPossibleNodeFoldersEmpty()
         {
             using (TestHostContext thc = CreateTestHostContext())
             {
@@ -280,7 +280,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void UseLTSNodeIfUseNodeKnobIsUpgrade()
+        public void UseFirstAvailableNodeIfUseNodeKnobIsUpgrade()
         {
             using (TestHostContext thc = CreateTestHostContext())
             {
@@ -318,7 +318,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void UseLTSNodeIfUseNodeKnobIsUpgradeFilteredNodeFoldersFirstNotAvailable()
+        public void UseSecondAvailableNodeIfUseNodeKnobIsUpgradeFilteredNodeFoldersFirstNotAvailable()
         {
             using (TestHostContext thc = CreateTestHostContext())
             {
@@ -357,7 +357,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void UseLTSNodeIfUseNodeKnobIsUpgradeFilteredNodeFoldersAllNotAvailable()
+        public void ThrowExceptionIfUseNodeKnobIsUpgradeFilteredNodeFoldersAllNotAvailable()
         {
             using (TestHostContext thc = CreateTestHostContext())
             {
