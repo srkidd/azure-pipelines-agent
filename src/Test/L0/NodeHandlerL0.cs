@@ -10,7 +10,6 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Agent.Worker;
 using Microsoft.VisualStudio.Services.Agent.Worker.Handlers;
 using Moq;
-using Moq.Protected;
 using Xunit;
 using Agent.Sdk;
 using Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker;
