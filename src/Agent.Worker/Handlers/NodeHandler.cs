@@ -59,6 +59,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         private static string nodeFolder = "node";
         private static string node10Folder = "node10";
         private static string node16Folder = "node16";
+        private static string nodeLTS = node16Folder;
         private const string useNodeKnobLtsKey = "LTS";
         private const string useNodeKnobUpgradeKey = "UPGRADE";
         private string[] possibleNodeFolders = { nodeFolder, node10Folder, node16Folder };
@@ -255,11 +256,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     switch (useNodeKnob.ToUpper())
                     {
                         case NodeHandler.useNodeKnobLtsKey:
-                            if (nodeHandlerHelper.IsNodeFolderExist(NodeHandler.node16Folder, HostContext))
+                            if (nodeHandlerHelper.IsNodeFolderExist(NodeHandler.nodeLTS, HostContext))
                             {
-                                ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, latest available LTS version will be used");
+                                ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, latest LTS version {NodeHandler.nodeLTS} will be used");
                                 Trace.Info($"Found LTS version of node installed");
-                                return nodeHandlerHelper.GetNodeFolderPath(NodeHandler.node16Folder, HostContext);
+                                return nodeHandlerHelper.GetNodeFolderPath(NodeHandler.nodeLTS, HostContext);
                             }
                             break;
                         case NodeHandler.useNodeKnobUpgradeKey:
@@ -274,7 +275,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                             }
                             break;
                         default:
-                            Trace.Info($"Value of UseNode knob cannot be recognized");
+                            Trace.Error($"Value of UseNode knob cannot be recognized");
                             break;
                     }
                 }
