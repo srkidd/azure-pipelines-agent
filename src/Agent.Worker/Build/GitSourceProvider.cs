@@ -376,7 +376,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             // Initialize git command manager
             _gitCommandManager = HostContext.GetService<IGitCommandManager>();
             await _gitCommandManager.LoadGitExecutionInfo(executionContext, useBuiltInGit: !preferGitFromPath, gitEnv);
-            await _gitCommandManager.LoadGitExecutionInfo(executionContext, useBuiltInGit: !preferGitFromPath);
 
             // Make sure the build machine met all requirements for the git repository
             // For now, the requirement we have are:
