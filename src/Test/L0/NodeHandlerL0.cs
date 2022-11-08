@@ -10,13 +10,22 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Agent.Worker;
 using Microsoft.VisualStudio.Services.Agent.Worker.Handlers;
 using Moq;
+using Moq.Protected;
 using Xunit;
 using Agent.Sdk;
+using Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests
 {
     public sealed class NodeHandlerL0
     {
+        private INodeHandlerHelper nodeHandlerHalper;
+
+        public NodeHandlerL0()
+        {
+            nodeHandlerHalper = GetMockedNodeHandlerHelper();
+        }
+
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
@@ -27,7 +36,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 thc.SetSingleton(new WorkerCommandManager() as IWorkerCommandManager);
                 thc.SetSingleton(new ExtensionManager() as IExtensionManager);
 
-                NodeHandler nodeHandler = new NodeHandler();
+                NodeHandler nodeHandler = new NodeHandler(nodeHandlerHalper);
 
                 nodeHandler.Initialize(thc);
                 nodeHandler.ExecutionContext = CreateTestExecutionContext(thc);
@@ -54,7 +63,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 thc.SetSingleton(new WorkerCommandManager() as IWorkerCommandManager);
                 thc.SetSingleton(new ExtensionManager() as IExtensionManager);
 
-                NodeHandler nodeHandler = new NodeHandler();
+                NodeHandler nodeHandler = new NodeHandler(nodeHandlerHalper);
 
                 nodeHandler.Initialize(thc);
                 nodeHandler.ExecutionContext = CreateTestExecutionContext(thc);
@@ -88,7 +97,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                     thc.SetSingleton(new WorkerCommandManager() as IWorkerCommandManager);
                     thc.SetSingleton(new ExtensionManager() as IExtensionManager);
 
-                    NodeHandler nodeHandler = new NodeHandler();
+                    NodeHandler nodeHandler = new NodeHandler(nodeHandlerHalper);
 
                     nodeHandler.Initialize(thc);
                     nodeHandler.ExecutionContext = CreateTestExecutionContext(thc);
@@ -122,7 +131,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
 
                 variables.Add("AGENT_USE_NODE10", new VariableValue("true"));
 
-                NodeHandler nodeHandler = new NodeHandler();
+                NodeHandler nodeHandler = new NodeHandler(nodeHandlerHalper);
 
                 nodeHandler.Initialize(thc);
                 nodeHandler.ExecutionContext = CreateTestExecutionContext(thc, variables);
@@ -152,7 +161,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 // Explicitly set variable feature flag to false
                 variables.Add("AGENT_USE_NODE10", new VariableValue("false"));
 
-                NodeHandler nodeHandler = new NodeHandler();
+                NodeHandler nodeHandler = new NodeHandler(nodeHandlerHalper);
 
                 nodeHandler.Initialize(thc);
                 nodeHandler.ExecutionContext = CreateTestExecutionContext(thc, variables);
@@ -201,6 +210,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 });
 
             return executionContext.Object;
+        }
+
+        private INodeHandlerHelper GetMockedNodeHandlerHelper()
+        {
+            var nodeHandlerHelper = new Mock<INodeHandlerHelper>();
+
+            nodeHandlerHelper
+                .Setup(x => x.IsNodeFolderExist(It.IsAny<string>(), It.IsAny<IHostContext>()))
+                .Returns(true);
+
+            nodeHandlerHelper
+                .Setup(x => x.GetNodeFolderPath(It.IsAny<string>(), It.IsAny<IHostContext>()))
+                .Returns((string nodeFolderName, IHostContext hostContext) => Path.Combine(
+                    hostContext.GetDirectory(WellKnownDirectory.Externals),
+                    nodeFolderName,
+                    "bin",
+                    $"node{IOUtil.ExeExtension}"));
+
+            nodeHandlerHelper
+                .Setup(x => x.GetFilteredPossibleNodeFolders(It.IsAny<string>(), It.IsAny<string[]>()))
+                .Returns(Array.Empty<string>);
+
+            return nodeHandlerHelper.Object;
         }
     }
 }
