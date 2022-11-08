@@ -82,9 +82,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             "};"
         };
 
-        public NodeHandler(INodeHandlerHelper nodeHandlerHelper = null)
+        public NodeHandler()
         {
-            this.nodeHandlerHelper = nodeHandlerHelper ?? new NodeHandlerHelper();
+            this.nodeHandlerHelper = new NodeHandlerHelper();
+        }
+
+        public NodeHandler(INodeHandlerHelper nodeHandlerHelper)
+        {
+            this.nodeHandlerHelper = nodeHandlerHelper;
         }
 
         public BaseNodeHandlerData Data { get; set; }
