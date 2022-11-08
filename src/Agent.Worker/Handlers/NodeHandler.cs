@@ -21,8 +21,41 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         BaseNodeHandlerData Data { get; set; }
     }
 
+    [ServiceLocator(Default = typeof(NodeHandlerHelper))]
+    public interface INodeHandlerHelper
+    {
+        string[] GetFilteredPossibleNodeFolders(string nodeFolderName, string[] possibleNodeFolders);
+        string GetNodeFolderPath(string nodeFolderName, IHostContext hostContext);
+        bool IsNodeFolderExist(string nodeFolderName, IHostContext hostContext);
+    }
+
+    public class NodeHandlerHelper : INodeHandlerHelper
+    {
+        public bool IsNodeFolderExist(string nodeFolderName, IHostContext hostContext) => File.Exists(GetNodeFolderPath(nodeFolderName, hostContext));
+
+        public string GetNodeFolderPath(string nodeFolderName, IHostContext hostContext) => Path.Combine(
+            hostContext.GetDirectory(WellKnownDirectory.Externals),
+            nodeFolderName,
+            "bin",
+            $"node{IOUtil.ExeExtension}");
+
+        public string[] GetFilteredPossibleNodeFolders(string nodeFolderName, string[] possibleNodeFolders)
+        {
+            for (int i = 0; i < possibleNodeFolders.Length; i++)
+            {
+                if (possibleNodeFolders[i] == nodeFolderName)
+                {
+                    return possibleNodeFolders.Skip(i + 1).ToArray();
+                }
+            }
+
+            return Array.Empty<string>();
+        }
+    }
+
     public sealed class NodeHandler : Handler, INodeHandler
     {
+        private readonly INodeHandlerHelper nodeHandlerHelper;
         private static string nodeFolder = "node";
         private static string node10Folder = "node10";
         private static string node16Folder = "node16";
@@ -48,6 +81,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             "   return str1 === str;",
             "};"
         };
+
+        public NodeHandler(INodeHandlerHelper nodeHandlerHelper = null)
+        {
+            this.nodeHandlerHelper = nodeHandlerHelper ?? new NodeHandlerHelper();
+        }
 
         public BaseNodeHandlerData Data { get; set; }
 
@@ -201,9 +239,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 nodeFolder = NodeHandler.node10Folder;
             }
 
-            if (!IsNodeFolderExist(nodeFolder))
+            if (!nodeHandlerHelper.IsNodeFolderExist(nodeFolder, HostContext))
             {
-                string[] filteredPossibleNodeFolders = GetFilteredPossibleNodeFolders(nodeFolder);
+                string[] filteredPossibleNodeFolders = nodeHandlerHelper.GetFilteredPossibleNodeFolders(nodeFolder, possibleNodeFolders);
 
                 if (!String.IsNullOrWhiteSpace(useNodeKnob) && filteredPossibleNodeFolders.Length > 0)
                 {
@@ -212,21 +250,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     switch (useNodeKnob.ToUpper())
                     {
                         case NodeHandler.useNodeKnobLtsKey:
-                            if (IsNodeFolderExist(NodeHandler.node16Folder))
+                            if (nodeHandlerHelper.IsNodeFolderExist(NodeHandler.node16Folder, HostContext))
                             {
                                 ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, latest available LTS version will be used");
                                 Trace.Info($"Found LTS version of node installed");
-                                return GetNodeFolderPath(NodeHandler.node16Folder);
+                                return nodeHandlerHelper.GetNodeFolderPath(NodeHandler.node16Folder, HostContext);
                             }
                             break;
                         case NodeHandler.useNodeKnobUpgradeKey:
                             foreach (string possibleNodeFolder in filteredPossibleNodeFolders)
                             {
-                                if (IsNodeFolderExist(possibleNodeFolder))
+                                if (nodeHandlerHelper.IsNodeFolderExist(possibleNodeFolder, HostContext))
                                 {
                                     ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, next available version will be used");
                                     Trace.Info($"Found {possibleNodeFolder} installed");
-                                    return GetNodeFolderPath(possibleNodeFolder);
+                                    return nodeHandlerHelper.GetNodeFolderPath(possibleNodeFolder, HostContext);
                                 }
                             }
                             break;
@@ -236,10 +274,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     }
                 }
 
-                throw new FileNotFoundException(StringUtil.Loc("MissingNodePath", GetNodeFolderPath(nodeFolder)));
+                throw new FileNotFoundException(StringUtil.Loc("MissingNodePath", nodeHandlerHelper.GetNodeFolderPath(nodeFolder, HostContext)));
             }
 
-            return GetNodeFolderPath(nodeFolder);
+            return nodeHandlerHelper.GetNodeFolderPath(nodeFolder, HostContext);
         }
 
         private void OnDataReceived(object sender, ProcessDataReceivedEventArgs e)
@@ -308,25 +346,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             }
         }
 
-        private bool IsNodeFolderExist(string nodeFolderName) => File.Exists(GetNodeFolderPath(nodeFolderName));
-
-        private string GetNodeFolderPath(string nodeFolderName) => Path.Combine(
-            HostContext.GetDirectory(WellKnownDirectory.Externals),
-            nodeFolderName,
-            "bin",
-            $"node{IOUtil.ExeExtension}");
-
-        private string[] GetFilteredPossibleNodeFolders(string nodeFolderName)
-        {
-            for (int i = 0; i < possibleNodeFolders.Length; i++)
-            {
-                if (possibleNodeFolders[i] == nodeFolderName)
-                {
-                    return possibleNodeFolders.Skip(i + 1).ToArray();
-                }
-            }
-
-            return Array.Empty<string>();
-        }
+        
     }
 }
