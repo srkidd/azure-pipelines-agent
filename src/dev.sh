@@ -95,8 +95,8 @@ function launch_MSBuild (){
 function cmd_build ()
 {
     heading "Building"
-    TARGET="Build"
 
+    TARGET="Build"
     launch_MSBuild $TARGET
 
     mkdir -p "${LAYOUT_DIR}/bin/en-US"
@@ -106,8 +106,8 @@ function cmd_build ()
 function cmd_layout ()
 {
     heading "Creating layout"
-    TARGET="layout"
 
+    TARGET="layout"
     launch_MSBuild $TARGET
 
     mkdir -p "${LAYOUT_DIR}/bin/en-US"
