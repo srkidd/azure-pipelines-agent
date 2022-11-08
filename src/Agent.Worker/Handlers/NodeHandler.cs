@@ -208,12 +208,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 if (!String.IsNullOrWhiteSpace(useNodeKnob) && filteredPossibleNodeFolders.Length > 0)
                 {
                     Trace.Info($"Found UseNode knob with value \"{useNodeKnob}\", will try to find appropriate Node Runner");
-
+                    
                     switch (useNodeKnob.ToUpper())
                     {
                         case NodeHandler.useNodeKnobLtsKey:
                             if (IsNodeFolderExist(NodeHandler.node16Folder))
                             {
+                                ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, latest available LTS version will be used");
                                 Trace.Info($"Found LTS version of node installed");
                                 return GetNodeFolderPath(NodeHandler.node16Folder);
                             }
@@ -223,6 +224,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                             {
                                 if (IsNodeFolderExist(possibleNodeFolder))
                                 {
+                                    ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, next available version will be used");
                                     Trace.Info($"Found {possibleNodeFolder} installed");
                                     return GetNodeFolderPath(possibleNodeFolder);
                                 }
