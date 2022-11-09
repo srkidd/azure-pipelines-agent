@@ -59,6 +59,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Pipelines.AgentJobRequestMessage jobMessage;
                 try
                 {
+                    Trace.Error($"Failed to parse jobMessage from {channelMessage.Body}");
                     jobMessage = JsonUtility.FromString<Pipelines.AgentJobRequestMessage>(channelMessage.Body);
                 }
                 catch
