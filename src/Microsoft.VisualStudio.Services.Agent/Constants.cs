@@ -288,7 +288,9 @@ namespace Microsoft.VisualStudio.Services.Agent
             {
                 [System.DefinitionName] = "SYSTEM_DEFINITIONNAME",
                 [Build.DefinitionName] = "BUILD_DEFINITIONNAME",
-                [Build.SourceVersionMessage] = "BUILD_SOURCEVERSIONMESSAGE"
+                [Build.SourceVersionMessage] = "BUILD_SOURCEVERSIONMESSAGE",
+                [Release.ReleaseDefinitionName] = "RELEASE_DEFINITIONNAME",
+                [Release.ReleaseEnvironmentName] = "RELEASE_ENVIRONMENTNAME", // TODO: Make it through generic meachanism
             };
 
             public static readonly Dictionary<WellKnownScriptShells, string> EnvVariablePrefixesPerShell = new Dictionary<WellKnownScriptShells, string>
