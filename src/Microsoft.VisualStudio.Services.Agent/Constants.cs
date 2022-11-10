@@ -41,7 +41,7 @@ namespace Microsoft.VisualStudio.Services.Agent
         TaskExceptionList // We need to remove this config file - once Node 6 handler is dropped
     }
 
-    public enum WellKnownScriptShells
+    public enum WellKnownScriptShell
     {
         Bash,
         Cmd,
@@ -293,18 +293,18 @@ namespace Microsoft.VisualStudio.Services.Agent
                 [Release.ReleaseEnvironmentName] = "RELEASE_ENVIRONMENTNAME", // TODO: Make it through generic meachanism
             };
 
-            public static readonly Dictionary<WellKnownScriptShells, string> EnvVariablePrefixesPerShell = new Dictionary<WellKnownScriptShells, string>
+            public static readonly Dictionary<WellKnownScriptShell, string> EnvVariablePrefixesPerShell = new Dictionary<WellKnownScriptShell, string>
             {
-                [WellKnownScriptShells.PowerShell] = "$env:",
-                [WellKnownScriptShells.Bash] = "$",
-                [WellKnownScriptShells.Cmd] = "%"
+                [WellKnownScriptShell.PowerShell] = "$env:",
+                [WellKnownScriptShell.Bash] = "$",
+                [WellKnownScriptShell.Cmd] = "%"
             };
 
-            public static readonly Dictionary<WellKnownScriptShells, string> EnvVariableSuffixesPerShell = new Dictionary<WellKnownScriptShells, string>
+            public static readonly Dictionary<WellKnownScriptShell, string> EnvVariableSuffixesPerShell = new Dictionary<WellKnownScriptShell, string>
             {
-                [WellKnownScriptShells.PowerShell] = "",
-                [WellKnownScriptShells.Bash] = "",
-                [WellKnownScriptShells.Cmd] = "%"
+                [WellKnownScriptShell.PowerShell] = "",
+                [WellKnownScriptShell.Bash] = "",
+                [WellKnownScriptShell.Cmd] = "%"
             };
 
             public static class Agent
@@ -493,11 +493,11 @@ namespace Microsoft.VisualStudio.Services.Agent
                 public static readonly string SkipTranslatorForCheckout = "task.skipTranslatorForCheckout";
             }
 
-            public static readonly Dictionary<string, WellKnownScriptShells> ScriptShellsPerTasks = new Dictionary<string, WellKnownScriptShells>
+            public static readonly Dictionary<string, WellKnownScriptShell> ScriptShellsPerTasks = new Dictionary<string, WellKnownScriptShell>
             {
-                ["PowerShell"] = WellKnownScriptShells.PowerShell,
-                ["Bash"] = WellKnownScriptShells.Bash,
-                ["CmdLine"] = WellKnownScriptShells.Cmd
+                ["PowerShell"] = WellKnownScriptShell.PowerShell,
+                ["Bash"] = WellKnownScriptShell.Bash,
+                ["CmdLine"] = WellKnownScriptShell.Cmd
             };
 
             public static List<string> ReadOnlyVariables = new List<string>(){
