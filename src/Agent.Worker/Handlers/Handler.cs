@@ -101,7 +101,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     foreach (KeyValuePair<string, string> pair in endpoint.Authorization.Parameters)
                     {
                         AddEnvironmentVariable(
-                            key: $"ENDPOINT_AUTH_PARAMETER_{partialKey}_{pair.Key?.Replace(' ', '_').ToUpperInvariant()}",
+                            key: $"ENDPOINT_AUTH_PARAMETER_{partialKey}_{VarUtil.ConvertToEnvVariableFormat(pair.Key)}",
                             value: pair.Value);
                     }
                 }
@@ -117,7 +117,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                         foreach (KeyValuePair<string, string> pair in endpoint.Data)
                         {
                             AddEnvironmentVariable(
-                                key: $"ENDPOINT_DATA_{partialKey}_{pair.Key?.Replace(' ', '_').ToUpperInvariant()}",
+                                key: $"ENDPOINT_DATA_{partialKey}_{VarUtil.ConvertToEnvVariableFormat(pair.Key)}",
                                 value: pair.Value);
                         }
                     }
@@ -159,7 +159,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             foreach (KeyValuePair<string, string> pair in Inputs)
             {
                 AddEnvironmentVariable(
-                    key: $"INPUT_{pair.Key?.Replace(' ', '_').ToUpperInvariant()}",
+                    key: $"INPUT_{VarUtil.ConvertToEnvVariableFormat(pair.Key)}",
                     value: pair.Value);
             }
         }
