@@ -10,7 +10,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         {
             { "Bash", new string[]{ "$SYSTEM_DEFINITIONNAME", "$BUILD_DEFINITIONNAME", "$BUILD_SOURCEVERSIONMESSAGE" } },
             { "PowerShell", new string[]{ "$env:SYSTEM_DEFINITIONNAME", "$env:BUILD_DEFINITIONNAME", "$env:BUILD_SOURCEVERSIONMESSAGE" }},
-            { "CmdLine", new string[]{ "%SYSTEM_DEFINITIONNAME%", "%BUILD_DEFINITIONNAME%", "%BUILD_SOURCEVERSIONMESSAGE%" }},
         };
 
         [Theory]
@@ -109,6 +108,34 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             VarUtil.ExpandValues(hc, source, target);
 
             Assert.Equal("targetValue sourceValue1 $(sourceVar1)", target["targetVar"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void CommandShellInputExpanding()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+
+            var source = new Dictionary<string, string>
+            {
+                ["sourceVar1"] = "sourceValue1",
+                ["sourceVar2"] = "1 & echo 2",
+                ["sourceVar3"] = "3 | 4",
+                ["sourceVar4"] = "5 < 6",
+            };
+            var target = new Dictionary<string, string>
+            {
+                ["targetVar1"] = "echo $(sourceVar1)",
+                ["targetVar2"] = "echo $(sourceVar1) & echo $(sourceVar2)",
+                ["targetVar3"] = "echo $(sourceVar3) | echo $(sourceVar4)",
+            };
+
+            VarUtil.ExpandValues(hc, source, target, "CmdLine");
+
+            Assert.Equal("echo sourceValue1", target["targetVar1"]);
+            Assert.Equal("echo sourceValue1 & echo 1 ^& echo 2", target["targetVar2"]);
+            Assert.Equal("echo 3 ^| 4 | echo 5 ^< 6", target["targetVar3"]);
         }
 
         private Dictionary<string, string> GetTargetValuesWithVulnerableVariables()
