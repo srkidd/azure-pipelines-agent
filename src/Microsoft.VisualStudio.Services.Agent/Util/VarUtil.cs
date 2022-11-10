@@ -167,10 +167,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
                     var isVariableKeyPresent = !string.IsNullOrEmpty(variableKey);
                     string variableValue;
+                    WellKnownScriptShell shellName;
 
                     if (isVariableKeyPresent &&
                         !string.IsNullOrEmpty(taskName) &&
-                        Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out var shellName) &&
+                        Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
+                        shellName != WellKnownScriptShell.Cmd &&
                         TryGetValue(trace, Constants.Variables.VariablesVulnerableToExecution, variableKey, out variableValue))
                     {
                         targetValue =
@@ -188,9 +190,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         // A matching variable was found.
                         // Update the target value.
                         trace.Verbose("Macro found.");
+
+                        if (!string.IsNullOrEmpty(taskName) &&
+                            Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
+                            shellName == WellKnownScriptShell.Cmd)
+                        {
+                            var cmdCommandCharacters = new string[] { "&", "|", "<", ">" };
+                            foreach (var commandChar in cmdCommandCharacters)
+                            {
+                                variableValue = variableValue.Replace(commandChar, $"^{commandChar}");
+                            }
+                        }
+
                         targetValue = string.Concat(
                             targetValue[..prefixIndex],
-                            variableValue ?? string.Empty,
+                            variableValue,
                             targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..]);
 
                         // Bump the start index to prevent recursive replacement.
