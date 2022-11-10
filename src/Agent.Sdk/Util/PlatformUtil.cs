@@ -118,7 +118,7 @@ namespace Agent.Sdk
         {
             if (RunningOnLinux && File.Exists("/etc/os-release"))
             {
-                Regex linuxVersionIdRegex = new Regex("^VERSION_ID\\s*=\\s*\"(?<id>[0-9a-z._-]+)\"");
+                Regex linuxVersionIdRegex = new Regex("^VERSION_ID\\s*=\\s*\"?(?<id>[0-9a-z._-]+)\"?");
 
                 using (StreamReader reader = new StreamReader("/etc/os-release"))
                 {
@@ -142,7 +142,7 @@ namespace Agent.Sdk
         {
             if (RunningOnLinux && File.Exists("/etc/os-release"))
             {
-                Regex linuxIdRegex = new Regex("^ID\\s*=\\s*\"(?<id>[0-9a-z._-]+)\"");
+                Regex linuxIdRegex = new Regex("^ID\\s*=\\s*\"?(?<id>[0-9a-z._-]+)\"?");
 
                 using (StreamReader reader = new StreamReader("/etc/os-release"))
                 {
