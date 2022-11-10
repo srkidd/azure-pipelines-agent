@@ -1,5 +1,7 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using Microsoft.VisualStudio.Services.Agent.Util;
-using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
