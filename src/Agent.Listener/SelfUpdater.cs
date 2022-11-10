@@ -119,6 +119,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         private async Task<bool> UpdateNeeded(string targetVersion, CancellationToken token)
         {
+            Trace.Info("Linux name = {0}", PlatformUtil.LinuxId);
+            Trace.Info("Linux Version = {0}", PlatformUtil.LinuxIdVersion);
+
             // when talk to old version tfs server, always prefer latest package.
             // old server won't send target version as part of update message.
             if (string.IsNullOrEmpty(targetVersion))
