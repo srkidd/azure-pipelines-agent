@@ -4,6 +4,7 @@
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using Agent.Sdk.Knob;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
@@ -12,7 +13,7 @@ namespace Agent.Sdk
     public static class PlatformUtil
     {
         private static UtilKnobValueContext _knobContext = UtilKnobValueContext.Instance();
-        
+
         // System.Runtime.InteropServices.OSPlatform is a struct, so it is
         // not suitable for switch statements.
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1717: Only FlagsAttribute enums should have plural names")]
@@ -75,6 +76,16 @@ namespace Agent.Sdk
             }
         }
 
+        public static string LinuxId
+        {
+            get => GetLinuxId();
+        }
+
+        public static string LinuxIdVersion
+        {
+            get => GetLinuxIdVersion();
+        }
+
         private static void DetectRHEL6()
         {
             lock (detectedRHEL6lock)
@@ -101,6 +112,54 @@ namespace Agent.Sdk
                     }
                 }
             }
+        }
+
+        private static string GetLinuxIdVersion()
+        {
+            if (RunningOnLinux && File.Exists("/etc/os-release"))
+            {
+                Regex linuxVersionIdRegex = new Regex("^VERSION_ID\\s*=\\s*\"(?<id>[0-9a-z._-]+)\"");
+
+                using (StreamReader reader = new StreamReader("/etc/os-release"))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        string line = reader.ReadLine();
+                        var linuxVersionIdRegexMatch = linuxVersionIdRegex.Match(line);
+
+                        if (linuxVersionIdRegexMatch.Success)
+                        {
+                            return linuxVersionIdRegexMatch.Groups["id"].Value;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetLinuxId()
+        {
+            if (RunningOnLinux && File.Exists("/etc/os-release"))
+            {
+                Regex linuxIdRegex = new Regex("^ID\\s*=\\s*\"(?<id>[0-9a-z._-]+)\"");
+
+                using (StreamReader reader = new StreamReader("/etc/os-release"))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        string line = reader.ReadLine();
+                        var linuxIdRegexMatch = linuxIdRegex.Match(line);
+
+                        if (linuxIdRegexMatch.Success)
+                        {
+                            return linuxIdRegexMatch.Groups["id"].Value;
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
 
         private static bool? detectedRHEL6 = null;
