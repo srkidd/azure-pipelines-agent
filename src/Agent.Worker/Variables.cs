@@ -265,7 +265,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             Constants.Variables.Build.SourceVersionMessage,
             Constants.Variables.System.SourceVersionMessage,
             Constants.Variables.Build.DefinitionName,
-            Constants.Variables.System.DefinitionName
+            Constants.Variables.System.DefinitionName,
+            Constants.Variables.Release.ReleaseDefinitionName,
+            Constants.Variables.Release.ReleaseEnvironmentName
         };
 
         public void ExpandValues(IDictionary<string, string> target)
