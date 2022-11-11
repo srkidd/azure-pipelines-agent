@@ -123,12 +123,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                 ["sourceVar2"] = "1 & echo 2",
                 ["sourceVar3"] = "3 | 4",
                 ["sourceVar4"] = "5 < 6",
+                ["sourceVar5"] = "7 &&>|<echo 34",
             };
             var target = new Dictionary<string, string>
             {
                 ["targetVar1"] = "echo $(sourceVar1)",
                 ["targetVar2"] = "echo $(sourceVar1) & echo $(sourceVar2)",
                 ["targetVar3"] = "echo $(sourceVar3) | echo $(sourceVar4)",
+                ["targetVar4"] = "echo $(sourceVar5) && 123",
             };
 
             VarUtil.ExpandValues(hc, source, target, "CmdLine");
@@ -136,6 +138,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             Assert.Equal("echo sourceValue1", target["targetVar1"]);
             Assert.Equal("echo sourceValue1 & echo 1 ^& echo 2", target["targetVar2"]);
             Assert.Equal("echo 3 ^| 4 | echo 5 ^< 6", target["targetVar3"]);
+            Assert.Equal("echo 7 ^&^&^>^|^<echo 34 && 123", target["targetVar4"]);
         }
 
         private Dictionary<string, string> GetTargetValuesWithVulnerableVariables()
