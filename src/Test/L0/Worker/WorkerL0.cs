@@ -233,7 +233,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void VerifyJobRequestMessageVsoCommandsDeactivated()
         {
-            Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobwitvsocommands");
+            Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobWithVsoCommands");
 
             message.Variables[Constants.Variables.Build.SourceVersionMessage] = "##vso[setVariable]etc1";
             message.Variables[Constants.Variables.System.SourceVersionMessage] = "##vso[setVariable]etc2";
@@ -253,7 +253,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void VerifyIfOtherVariablesNotDeactivatesVsoCommands()
         {
-            Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobwitvsocommands");
+            Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobWithVsoCommands");
 
             message.Variables[Constants.Variables.Build.RepoName] = "##vso[setVariable]etc1";
             message.Variables[Constants.Variables.System.JobId] = "##vso[setVariable]etc2";
@@ -269,7 +269,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void VerifyJobRequestMessageVsoCommandsDeactivatedIfVariableCasesNotMatch()
         {
-            Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobwitvsocommands");
+            Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobWithVsoCommands");
 
             message.Variables[Constants.Variables.Build.SourceVersionMessage.ToUpper()] = "##vso[setVariable]etc1";
             message.Variables[Constants.Variables.System.SourceVersionMessage.ToUpper()] = "##vso[setVariable]etc2";
@@ -289,7 +289,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Trait("Category", "Worker")]
         public void VerifyJobRequestMessageVsoCommandsDeactivatedIfVariableCasesHandlesNullValues()
         {
-            Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobwitvsocommands");
+            Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobWithVsoCommands");
 
             message.Variables[Constants.Variables.Build.SourceVersionMessage] = "";
             message.Variables[Constants.Variables.System.SourceVersionMessage] = null;
