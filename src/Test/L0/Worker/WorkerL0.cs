@@ -284,6 +284,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             Assert.Equal("**vso[setVariable]etc4", scrubbedMessage.Variables[Constants.Variables.System.DefinitionName]);
         }
 
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public void VerifyJobRequestMessageVsoCommandsDeactivatedIfVariableCasesHandlesNullValues()
+        {
+            Pipelines.AgentJobRequestMessage message = CreateJobRequestMessage("jobwitvsocommands");
+
+            message.Variables[Constants.Variables.Build.SourceVersionMessage] = "";
+            message.Variables[Constants.Variables.System.SourceVersionMessage] = null;
+            message.Variables[Constants.Variables.Build.DefinitionName] = " ";
+
+            var scrubbedMessage = WorkerUtilities.DeactivateVsoCommandsFromJobMessageVariables(message);
+
+            Assert.Equal("", scrubbedMessage.Variables[Constants.Variables.Build.SourceVersionMessage]);
+            Assert.Equal("", scrubbedMessage.Variables[Constants.Variables.System.SourceVersionMessage]);
+            Assert.Equal(" ", scrubbedMessage.Variables[Constants.Variables.Build.DefinitionName]);
+        }
+
         private bool IsMessageIdentical(Pipelines.AgentJobRequestMessage source, Pipelines.AgentJobRequestMessage target)
         {
             if (source == null && target == null)
