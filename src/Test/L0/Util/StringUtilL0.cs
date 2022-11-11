@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [InlineData("#vso", "#vso")]
         [InlineData("##vs", "##vs")]
         [InlineData("##VsO", "**vso")]
-        [InlineData("","")]
+        [InlineData("", "")]
         [InlineData(null, "")]
         [InlineData(" ", " ")]
         public void DeactivateVsoCommandsFromStringTest(string input, string expected)
