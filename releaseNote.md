@@ -1,24 +1,6 @@
-## Features
- - Implement AGENT_MIN_SECRET_LENGTH knob (#3962)
- - FEATURE: Agent should gather telemetry on Task runner invocations (#3973)
- - Added CloudId property to agent variables (#3984)
- - Add onlyGitHubRelease param for the release pipeline (#3990)
-
 ## Bugs
- - BUG 1972388: vsbuild task in YAML build pipeline hangs forever in ADO even though the task has already logged completion (#3979)
- - Fix vso commands execution in vulnerable variables (#3987)
- - [Bug 1942506](P2): [Pipelines]: PAT invalid in auto-generated PowerShell script for add VM resource in New Environment in ADO Server #3561 (#3992)
- - Migration powershell script of release pipeline for Az 1.0.0 (#4010)
- - Fixed NullReferenceException in v3.212.0 preview version Agent (#4018)
- - Rhel 6 add node10 fallback (#4020)
- - Revert "Implement AGENT_MIN_SECRET_LENGTH knob (#3962)" (#4040)
 
-## Misc
- - Update mingit to 2.37.3 (#3983)
- - Upgraded MinGit version to v2.38.1 (#4000)
- - Fix vsts release conditions (#4024)
- - Upload to Azure Blob - remove condition (#4026)
-
+- Fix error when job message variables contains null or empty values (#4053)
 
 ## Agent Downloads
 
