@@ -15,6 +15,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [InlineData(".tesT vaLue 4", "_TEST_VALUE_4")]
         [InlineData("TEST_VALUE_5", "TEST_VALUE_5")]
         [InlineData(".. TEST   VALUE. 6", "___TEST___VALUE__6")]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData(" ", "_")]
+        [InlineData(".", "_")]
         public void TestConverterToEnvVariableFormat(string input, string expected)
         {
             var result = VarUtil.ConvertToEnvVariableFormat(input);
