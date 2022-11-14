@@ -1,3 +1,6 @@
+variables:
+  AGENT_USE_NODE10: true
+
 parameters:
 
 - name: jobName
