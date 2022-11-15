@@ -150,7 +150,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 var variables = new Dictionary<string, VariableValue>();
 
                 // Explicitly set variable feature flag to false
-                variables.Add("AGENT_USE_NODE10", new VariableValue("false"));
+                variables.Add("AGENT_USE_NODE_10", new VariableValue("false"));
 
                 NodeHandler nodeHandler = new NodeHandler();
 
