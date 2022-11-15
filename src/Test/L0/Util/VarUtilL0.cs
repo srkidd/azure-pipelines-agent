@@ -1,5 +1,8 @@
-﻿using Microsoft.VisualStudio.Services.Agent.Util;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using System.Collections.Generic;
+using Microsoft.VisualStudio.Services.Agent.Util;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
@@ -141,6 +144,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             Assert.Equal("echo 7 ^&^&^>^|^<echo 34 && 123", target["targetVar4"]);
         }
 
+        [Theory]
+        [InlineData("test.value1", "TEST_VALUE1")]
+        [InlineData("test value2", "TEST_VALUE2")]
+        [InlineData("tesT vaLue.3", "TEST_VALUE_3")]
+        [InlineData(".tesT vaLue 4", "_TEST_VALUE_4")]
+        [InlineData("TEST_VALUE_5", "TEST_VALUE_5")]
+        [InlineData(".. TEST   VALUE. 6", "___TEST___VALUE__6")]
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData(" ", "_")]
+        [InlineData(".", "_")]
+        public void TestConverterToEnvVariableFormat(string input, string expected)
+        {
+            var result = VarUtil.ConvertToEnvVariableFormat(input);
+
+            Assert.Equal(expected, result);
+        }
+
         private Dictionary<string, string> GetTargetValuesWithVulnerableVariables()
         {
             return new Dictionary<string, string>()
@@ -149,6 +170,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                 ["build.DefinitionName var"] = $"test $({Constants.Variables.Build.DefinitionName})",
                 ["build.SourceVersionMessage var"] = $"test $({Constants.Variables.Build.SourceVersionMessage})",
             };
+
         }
     }
 }
