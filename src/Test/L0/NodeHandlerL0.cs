@@ -24,13 +24,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         {
             using (TestHostContext thc = CreateTestHostContext())
             {
+               
                 thc.SetSingleton(new WorkerCommandManager() as IWorkerCommandManager);
                 thc.SetSingleton(new ExtensionManager() as IExtensionManager);
 
                 NodeHandler nodeHandler = new NodeHandler();
 
                 nodeHandler.Initialize(thc);
-                nodeHandler.ExecutionContext = CreateTestExecutionContext(thc);
+                nodeHandler.ExecutionContext = CreateTestExecutionContext(thc, new Dictionary<string, VariableValue>());
                 nodeHandler.Data = new NodeHandlerData();
 
                 string actualLocation = nodeHandler.GetNodeLocation();
@@ -150,7 +151,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                 var variables = new Dictionary<string, VariableValue>();
 
                 // Explicitly set variable feature flag to false
-                variables.Add("AGENT_USE_NODE_10", new VariableValue("false"));
+                variables.Add("AGENT_USE_NODE10", new VariableValue("false"));
 
                 NodeHandler nodeHandler = new NodeHandler();
 
