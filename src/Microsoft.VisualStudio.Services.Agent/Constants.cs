@@ -284,13 +284,12 @@ namespace Microsoft.VisualStudio.Services.Agent
             /// We want to prevent this by not expanding them and replacing these variables in user scripts with environment variables.
             /// Note that the replacement will only take place for inline scripts.
             /// </summary>
-            public static readonly Dictionary<string, string> VariablesVulnerableToExecution = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            public static readonly List<string> VariablesVulnerableToExecution = new List<string>
             {
-                [System.DefinitionName] = "SYSTEM_DEFINITIONNAME",
-                [Build.DefinitionName] = "BUILD_DEFINITIONNAME",
-                [Build.SourceVersionMessage] = "BUILD_SOURCEVERSIONMESSAGE",
-                [Release.ReleaseDefinitionName] = "RELEASE_DEFINITIONNAME",
-                [Release.ReleaseEnvironmentName] = "RELEASE_ENVIRONMENTNAME", // TODO: Make it through generic meachanism
+                Build.SourceVersionMessage,
+                System.SourceVersionMessage,
+                Build.DefinitionName,
+                System.DefinitionName
             };
 
             public static readonly Dictionary<WellKnownScriptShell, string> EnvVariablePrefixesPerShell = new Dictionary<WellKnownScriptShell, string>

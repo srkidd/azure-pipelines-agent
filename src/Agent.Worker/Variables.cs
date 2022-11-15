@@ -260,14 +260,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             "RequestedFor"
         };
 
-        public static readonly List<string> VariablesVulnerableToExecution = new List<string>
-        {
-            Constants.Variables.Build.SourceVersionMessage,
-            Constants.Variables.System.SourceVersionMessage,
-            Constants.Variables.Build.DefinitionName,
-            Constants.Variables.System.DefinitionName
-        };
-
         public void ExpandValues(IDictionary<string, string> target, string taskName = null)
         {
             ArgUtil.NotNull(target, nameof(target));
@@ -481,10 +473,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Process each variable in the dictionary.
                 foreach (string name in _nonexpanded.Keys)
                 {
-                    if (Constants.Variables.VariablesVulnerableToExecution.ContainsKey(name.ToLower()))
+                    if (Constants.Variables.VariablesVulnerableToExecution.Contains(name, StringComparer.OrdinalIgnoreCase))
                     {
                         continue;
                     }
+
                     bool secret = _nonexpanded[name].Secret;
                     bool readOnly = _nonexpanded[name].ReadOnly;
                     _trace.Verbose($"Processing expansion for variable: '{name}'");

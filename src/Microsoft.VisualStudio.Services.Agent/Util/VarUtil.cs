@@ -184,16 +184,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         !string.IsNullOrEmpty(taskName) &&
                         Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
                         shellName != WellKnownScriptShell.Cmd &&
-                        TryGetValue(trace, Constants.Variables.VariablesVulnerableToExecution, variableKey, out variableValue))
+                        Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey))
                     {
+                        var envVariableName = ConvertToEnvVariableFormat(variableKey);
                         targetValue =
                             targetValue[..prefixIndex]
                             + Constants.Variables.EnvVariablePrefixesPerShell[shellName]
-                            + variableValue
+                            + envVariableName
                             + Constants.Variables.EnvVariableSuffixesPerShell[shellName]
                             + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
 
-                        startIndex = prefixIndex + variableValue.Length;
+                        startIndex = prefixIndex + envVariableName.Length;
                     }
                     else if (isVariableKeyPresent &&
                         TryGetValue(trace, source, variableKey, out variableValue))
