@@ -2,11 +2,17 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Xml;
+using System.Xml.Linq;
 using Agent.Sdk.Knob;
+using BuildXL.Cache.MemoizationStore.Interfaces.Caches;
 using Microsoft.VisualStudio.Services.Agent.Util;
+using Microsoft.Win32;
 
 namespace Agent.Sdk
 {
@@ -76,14 +82,40 @@ namespace Agent.Sdk
             }
         }
 
-        public static string LinuxId
+        public static string SystemId
         {
-            get => GetLinuxId();
+            get
+            {
+                switch(PlatformUtil.HostOS)
+                {
+                    case PlatformUtil.OS.Linux:
+                        return GetLinuxId();
+                    case PlatformUtil.OS.OSX:
+                        return "MacOS";
+                    case PlatformUtil.OS.Windows:
+                        return "Windows";
+                    default:
+                        return null;
+                }
+            }
         }
 
-        public static string LinuxIdVersion
+        public static OSVersion SystemVersion
         {
-            get => GetLinuxIdVersion();
+            get
+            {
+                switch (PlatformUtil.HostOS)
+                {
+                    case PlatformUtil.OS.Linux:
+                        return new OSVersion(GetLinuxName(), null);
+                    case PlatformUtil.OS.OSX:
+                        return new OSVersion(GetOSxName(), null);
+                    case PlatformUtil.OS.Windows:
+                        return new OSVersion(GetWindowsName(), GetWindowsVersion());
+                    default:
+                        return null;
+                }
+            }
         }
 
         private static void DetectRHEL6()
@@ -114,7 +146,31 @@ namespace Agent.Sdk
             }
         }
 
-        private static string GetLinuxIdVersion()
+        private static string GetLinuxId()
+        {
+            if (RunningOnLinux && File.Exists("/etc/os-release"))
+            {
+                Regex linuxIdRegex = new Regex("^ID\\s*=\\s*\"?(?<id>[0-9a-z._-]+)\"?");
+
+                using (StreamReader reader = new StreamReader("/etc/os-release"))
+                {
+                    while (!reader.EndOfStream)
+                    {
+                        string line = reader.ReadLine();
+                        var linuxIdRegexMatch = linuxIdRegex.Match(line);
+
+                        if (linuxIdRegexMatch.Success)
+                        {
+                            return linuxIdRegexMatch.Groups["id"].Value;
+                        }
+                    }
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetLinuxName()
         {
             if (RunningOnLinux && File.Exists("/etc/os-release"))
             {
@@ -138,24 +194,49 @@ namespace Agent.Sdk
             return null;
         }
 
-        private static string GetLinuxId()
+        private static string GetOSxName()
         {
-            if (RunningOnLinux && File.Exists("/etc/os-release"))
+            if (RunningOnMacOS && File.Exists("/System/Library/CoreServices/SystemVersion.plist"))
             {
-                Regex linuxIdRegex = new Regex("^ID\\s*=\\s*\"?(?<id>[0-9a-z._-]+)\"?");
+                var systemVersionFile = XDocument.Load("/System/Library/CoreServices/SystemVersion.plist");
+                var parsedSystemVersionFile = systemVersionFile.Descendants("dict")
+                    .SelectMany(d => d.Elements("key").Zip(d.Elements().Where(e => e.Name != "key"), (k, v) => new { Key = k, Value = v }))
+                    .ToDictionary(i => i.Key.Value, i => i.Value.Value);
+                return parsedSystemVersionFile.ContainsKey("ProductVersion") ? parsedSystemVersionFile["ProductVersion"] : null;
+            }
 
-                using (StreamReader reader = new StreamReader("/etc/os-release"))
+            return null;
+        }
+
+        private static string GetWindowsName()
+        {
+            Regex productNameRegex = new Regex("Windows\\s(Server)?\\s(?<versionNumber>[\\d.]+)");
+
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+            {
+                if (key != null)
                 {
-                    while (!reader.EndOfStream)
+                    var productName = key.GetValue("ProductName");
+                    var productNameRegexMatch = productNameRegex.Match(productName?.ToString());
+                    
+                    if (productNameRegexMatch.Success)
                     {
-                        string line = reader.ReadLine();
-                        var linuxIdRegexMatch = linuxIdRegex.Match(line);
-
-                        if (linuxIdRegexMatch.Success)
-                        {
-                            return linuxIdRegexMatch.Groups["id"].Value;
-                        }
+                        return productNameRegexMatch.Groups["versionNumber"]?.Value;
                     }
+                }
+            }
+
+            return null;
+        }
+
+        private static string GetWindowsVersion()
+        {
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+            {
+                if (key != null)
+                {
+                    var productName = key.GetValue("CurrentBuildNumber");
+                    return productName?.ToString();
                 }
             }
 
@@ -216,6 +297,110 @@ namespace Agent.Sdk
             // a temporary knob so they can re-enable it.
             // https://github.com/dotnet/runtime/issues/35365#issuecomment-667467706
             get => AgentKnobs.UseLegacyHttpHandler.GetValue(_knobContext).AsBoolean();
+        }
+    }
+
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+    public class OSVersion
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+    {
+        public ParsedVersion Name { get; }
+
+        public ParsedVersion Version { get; }
+
+        public OSVersion(string systemName, string systemVersion)
+        {
+            if (systemName == null && systemVersion == null) {
+                throw new Exception("You need to provide at least one not-nullable parameter");
+            }
+
+            if (systemName != null)
+            {
+                this.Name = new ParsedVersion(systemName);
+            }
+
+            if (systemVersion != null)
+            {
+                this.Version = new ParsedVersion(systemVersion);
+            }
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is OSVersion comparingOSVersion)
+            {
+                return ((this.Name != null && comparingOSVersion.Name != null)
+                    ? this.Name.Equals(comparingOSVersion.Name)
+                    : true) && ((this.Version != null && comparingOSVersion.Version != null)
+                    ? this.Version.Equals(comparingOSVersion.Version)
+                    : true);
+            }
+
+            return false;
+        }
+
+        public override string ToString()
+        {
+            return string.Format("OS name: {0}, OS version: {1}",
+                this.Name?.ToString() ?? "'Not set'",
+                this.Version?.ToString() ?? "'Not set'");
+        }
+    }
+
+#pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+    public class ParsedVersion
+#pragma warning restore CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
+    {
+        private readonly Regex parsedVersionRegex = new Regex("^((?<Major>[\\d]+)(\\.(?<Minor>[\\d]+))?(\\.(?<Build>[\\d]+))?(\\.(?<Revision>[\\d]+))?)(?<suffix>[^+]+)?(?<minFlag>[+])?$");
+        private readonly string originalString;
+
+        public Version Version { get; }
+
+        public string Syffix { get; }
+
+        public bool MinFlag { get; }
+
+        public ParsedVersion(string version)
+        {
+            this.originalString = version;
+
+            var parsedVersionRegexMatch = parsedVersionRegex.Match(version.Trim());
+
+            if (!parsedVersionRegexMatch.Success)
+            {
+                throw new Exception($"String {version} can't be parsed");
+            }
+
+            string versionString = string.Format(
+                "{0}.{1}.{2}.{3}",
+                parsedVersionRegexMatch.Groups["Major"].Value,
+                !string.IsNullOrEmpty(parsedVersionRegexMatch.Groups["Minor"].Value) ? parsedVersionRegexMatch.Groups["Minor"].Value : "0",
+                !string.IsNullOrEmpty(parsedVersionRegexMatch.Groups["Build"].Value) ? parsedVersionRegexMatch.Groups["Build"].Value : "0",
+                !string.IsNullOrEmpty(parsedVersionRegexMatch.Groups["Revision"].Value) ? parsedVersionRegexMatch.Groups["Revision"].Value : "0");
+
+            this.Version = new Version(versionString);
+            this.Syffix = parsedVersionRegexMatch.Groups["suffix"]?.Value;
+            this.MinFlag = parsedVersionRegexMatch.Groups["minFlag"] != null;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (obj is ParsedVersion comparingVersion)
+            {
+                return this.MinFlag
+                    ? this.Version <= comparingVersion.Version
+                    : this.Version == comparingVersion.Version
+                    && (this.Syffix != null && comparingVersion.Syffix != null
+                        ? this.Syffix.Equals(comparingVersion.Syffix, StringComparison.OrdinalIgnoreCase)
+                        : true);
+            }
+
+            return false;
+        }
+
+        public override string ToString()
+        {
+            return this.originalString;
         }
     }
 }
