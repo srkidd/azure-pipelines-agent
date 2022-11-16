@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
@@ -13,6 +14,7 @@ using Agent.Sdk.Knob;
 using BuildXL.Cache.MemoizationStore.Interfaces.Caches;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace Agent.Sdk
 {
@@ -93,7 +95,7 @@ namespace Agent.Sdk
                     case PlatformUtil.OS.OSX:
                         return "MacOS";
                     case PlatformUtil.OS.Windows:
-                        return "Windows";
+                        return GetWindowsId();
                     default:
                         return null;
                 }
@@ -208,9 +210,29 @@ namespace Agent.Sdk
             return null;
         }
 
+        private static string GetWindowsId()
+        {
+            StringBuilder result = new StringBuilder();
+            result.Append("Windows");
+
+            using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
+            {
+                if (key != null)
+                {
+                    var installationType = key.GetValue("InstallationType");
+                    if (installationType != null)
+                    {
+                        result.Append($" {installationType}");
+                    }
+                }
+            }
+
+            return result.ToString();
+        }
+
         private static string GetWindowsName()
         {
-            Regex productNameRegex = new Regex("Windows\\s(Server)?\\s(?<versionNumber>[\\d.]+)");
+            Regex productNameRegex = new Regex("(Windows)(\\sServer)?\\s(?<versionNumber>[\\d.]+)");
 
             using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows NT\CurrentVersion"))
             {
@@ -235,8 +257,8 @@ namespace Agent.Sdk
             {
                 if (key != null)
                 {
-                    var productName = key.GetValue("CurrentBuildNumber");
-                    return productName?.ToString();
+                    var currentBuildNumber = key.GetValue("CurrentBuildNumber");
+                    return currentBuildNumber?.ToString();
                 }
             }
 
@@ -308,20 +330,21 @@ namespace Agent.Sdk
 
         public ParsedVersion Version { get; }
 
-        public OSVersion(string systemName, string systemVersion)
+        [JsonConstructor]
+        public OSVersion(string name, string version)
         {
-            if (systemName == null && systemVersion == null) {
+            if (name == null && version == null) {
                 throw new Exception("You need to provide at least one not-nullable parameter");
             }
 
-            if (systemName != null)
+            if (name != null)
             {
-                this.Name = new ParsedVersion(systemName);
+                this.Name = new ParsedVersion(name);
             }
 
-            if (systemVersion != null)
+            if (version != null)
             {
-                this.Version = new ParsedVersion(systemVersion);
+                this.Version = new ParsedVersion(version);
             }
         }
 
@@ -379,8 +402,8 @@ namespace Agent.Sdk
                 !string.IsNullOrEmpty(parsedVersionRegexMatch.Groups["Revision"].Value) ? parsedVersionRegexMatch.Groups["Revision"].Value : "0");
 
             this.Version = new Version(versionString);
-            this.Syffix = parsedVersionRegexMatch.Groups["suffix"]?.Value;
-            this.MinFlag = parsedVersionRegexMatch.Groups["minFlag"] != null;
+            this.Syffix = parsedVersionRegexMatch.Groups["suffix"].Value;
+            this.MinFlag = !string.IsNullOrEmpty(parsedVersionRegexMatch.Groups["minFlag"].Value);
         }
 
         public override bool Equals(object obj)

@@ -1,0 +1,69 @@
+[
+  {
+    "id": "Windows Client",
+    "versions": [
+      {
+        "name": "7",
+        "version": "7601+"
+      },
+      {
+        "name": "8.1"
+      },
+      {
+        "name": "10",
+        "version": "14393+"
+      },
+      {
+        "name": "11",
+        "version": "22000+"
+      }
+    ]
+  },
+  {
+    "id": "Windows Server",
+    "versions": [
+      {
+        "name": "2012+"
+      }
+    ]
+  },
+  {
+    "id": "Windows Server Core",
+    "versions": [
+      {
+        "name": "2012+"
+      }
+    ]
+  },
+  {
+    "id": "Windows Nano Server",
+    "versions": [
+      {
+        "version": "17763+"
+      }
+    ]
+  },
+  {
+    "id": "ubuntu",
+    "versions": [
+      {
+        "name": "16.04"
+      },
+      {
+        "name": "18.04"
+      },
+      {
+        "name": "20.04+"
+      }
+
+    ]
+  },
+  {
+    "id": "macOS",
+    "versions": [
+      {
+        "name": "10.15+"
+      }
+    ]
+  }
+]
