@@ -286,17 +286,17 @@ namespace Microsoft.VisualStudio.Services.Agent
             /// </summary>
             public static readonly List<string> VariablesVulnerableToExecution = new List<string>
             {
-                Constants.Variables.Agent.MachineName,
-                Constants.Variables.Agent.Name,
-                Constants.Variables.Build.DefinitionName,
-                Constants.Variables.Build.SourceVersionMessage,
-                Constants.Variables.Release.ReleaseDefinitionName,
-                Constants.Variables.Release.ReleaseEnvironmentName,
-                Constants.Variables.System.DefinitionName,
-                Constants.Variables.System.JobDisplayName,
-                Constants.Variables.System.PhaseDisplayName,
-                Constants.Variables.System.SourceVersionMessage,
-                Constants.Variables.System.StageDisplayName
+                Agent.MachineName,
+                Agent.Name,
+                Build.DefinitionName,
+                Build.SourceVersionMessage,
+                Release.ReleaseDefinitionName,
+                Release.ReleaseEnvironmentName,
+                System.DefinitionName,
+                System.JobDisplayName,
+                System.PhaseDisplayName,
+                System.SourceVersionMessage,
+                System.StageDisplayName
             };
 
             public static readonly Dictionary<WellKnownScriptShell, string> EnvVariablePrefixesPerShell = new Dictionary<WellKnownScriptShell, string>
