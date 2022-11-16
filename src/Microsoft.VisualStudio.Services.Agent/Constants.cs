@@ -324,11 +324,11 @@ namespace Microsoft.VisualStudio.Services.Agent
                 //
                 public static readonly string ArtifactStagingDirectory = "build.artifactstagingdirectory";
                 public static readonly string BinariesDirectory = "build.binariesdirectory";
-                public static readonly string Number = "build.buildNumber";
                 public static readonly string Clean = "build.clean";
                 public static readonly string DefinitionName = "build.definitionname";
                 public static readonly string GatedRunCI = "build.gated.runci";
                 public static readonly string GatedShelvesetName = "build.gated.shelvesetname";
+                public static readonly string Number = "build.buildNumber";
                 public static readonly string RepoClean = "build.repository.clean";
                 public static readonly string RepoGitSubmoduleCheckout = "build.repository.git.submodulecheckout";
                 public static readonly string RepoId = "build.repository.id";
@@ -392,17 +392,17 @@ namespace Microsoft.VisualStudio.Services.Agent
                 public static readonly string ArtifactsDirectory = "system.artifactsDirectory";
                 public static readonly string AttemptNumber = "release.attemptNumber";
                 public static readonly string DisableRobocopy = "release.disableRobocopy";
+                public static readonly string ReleaseDefinitionId = "release.definitionId";
                 public static readonly string ReleaseDefinitionName = "release.definitionName";
+                public static readonly string ReleaseDescription = "release.releaseDescription";
+                public static readonly string ReleaseDownloadBufferSize = "release.artifact.download.buffersize";
                 public static readonly string ReleaseEnvironmentName = "release.environmentName";
                 public static readonly string ReleaseEnvironmentUri = "release.environmentUri";
-                public static readonly string ReleaseDefinitionId = "release.definitionId";
-                public static readonly string ReleaseDescription = "release.releaseDescription";
                 public static readonly string ReleaseId = "release.releaseId";
                 public static readonly string ReleaseName = "release.releaseName";
+                public static readonly string ReleaseParallelDownloadLimit = "release.artifact.download.parallellimit";
                 public static readonly string ReleaseRequestedForId = "release.requestedForId";
                 public static readonly string ReleaseUri = "release.releaseUri";
-                public static readonly string ReleaseDownloadBufferSize = "release.artifact.download.buffersize";
-                public static readonly string ReleaseParallelDownloadLimit = "release.artifact.download.parallellimit";
                 public static readonly string ReleaseWebUrl = "release.releaseWebUrl";
                 public static readonly string RequestorId = "release.requestedFor";
                 public static readonly string RobocopyMT = "release.robocopyMT";
@@ -469,9 +469,9 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Agent.ContainerMapping,
                 Agent.ContainerNetwork,
                 Agent.Diagnostic,
+                Agent.GitUseSChannel,
                 Agent.HomeDirectory,
                 Agent.Id,
-                Agent.GitUseSChannel,
                 Agent.JobName,
                 Agent.JobStatus,
                 Agent.MachineName,
@@ -479,20 +479,20 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Agent.OS,
                 Agent.OSArchitecture,
                 Agent.OSVersion,
+                Agent.ProxyBypassList,
+                Agent.ProxyPassword,
                 Agent.ProxyUrl,
                 Agent.ProxyUsername,
-                Agent.ProxyPassword,
-                Agent.ProxyBypassList,
-                Agent.RetainDefaultEncoding,
                 Agent.ReadOnlyVariables,
+                Agent.RetainDefaultEncoding,
                 Agent.RootDirectory,
                 Agent.RunMode,
                 Agent.ServerOMDirectory,
                 Agent.ServicePortPrefix,
                 Agent.SslCAInfo,
                 Agent.SslClientCert,
-                Agent.SslClientCertKey,
                 Agent.SslClientCertArchive,
+                Agent.SslClientCertKey,
                 Agent.SslClientCertPassword,
                 Agent.SslSkipCertValidation,
                 Agent.TempDirectory,
@@ -503,11 +503,11 @@ namespace Microsoft.VisualStudio.Services.Agent
                 // Build variables
                 Build.ArtifactStagingDirectory,
                 Build.BinariesDirectory,
-                Build.Number,
                 Build.Clean,
                 Build.DefinitionName,
                 Build.GatedRunCI,
                 Build.GatedShelvesetName,
+                Build.Number,
                 Build.RepoClean,
                 Build.RepoGitSubmoduleCheckout,
                 Build.RepoId,
@@ -538,17 +538,17 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Release.ArtifactsDirectory,
                 Release.AttemptNumber,
                 Release.DisableRobocopy,
+                Release.ReleaseDefinitionId,
                 Release.ReleaseDefinitionName,
+                Release.ReleaseDescription,
+                Release.ReleaseDownloadBufferSize,
                 Release.ReleaseEnvironmentName,
                 Release.ReleaseEnvironmentUri,
-                Release.ReleaseDefinitionId,
-                Release.ReleaseDescription,
                 Release.ReleaseId,
                 Release.ReleaseName,
+                Release.ReleaseParallelDownloadLimit,
                 Release.ReleaseRequestedForId,
                 Release.ReleaseUri,
-                Release.ReleaseDownloadBufferSize,
-                Release.ReleaseParallelDownloadLimit,
                 Release.ReleaseWebUrl,
                 Release.RequestorId,
                 Release.RobocopyMT,
