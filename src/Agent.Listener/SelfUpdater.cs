@@ -119,8 +119,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         private async Task<bool> UpdateNeeded(string targetVersion, CancellationToken token)
         {
-            Trace.Info("Linux name = {0}", PlatformUtil.LinuxId);
-            Trace.Info("Linux Version = {0}", PlatformUtil.LinuxIdVersion);
+            Trace.Info($"You are running on {PlatformUtil.SystemId} {PlatformUtil.SystemVersion}");
 
             // when talk to old version tfs server, always prefer latest package.
             // old server won't send target version as part of update message.
@@ -149,6 +148,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             PackageVersion serverVersion = new PackageVersion(_targetPackage.Version);
             Trace.Info($"Current running agent version is {BuildConstants.AgentPackage.Version}");
             PackageVersion agentVersion = new PackageVersion(BuildConstants.AgentPackage.Version);
+
+            //Checking if current system support .NET 6 agent
+            if (agentVersion.Major == 2 && serverVersion.Major == 3)
+            {
+                //    OS[] supportedSystems = GetSupportedSystemsNet6();
+
+                //    string systemId = PlatformUtil.SystemId;
+                //    string systemVersionId = PlatformUtil.StystemVersionId;
+
+                //    if (!supportedSystems.Any((system) => system.Equal(systemId, systemVersionId)))
+                //    {
+                //        Trace.Info($"System {systemId} ({systemVersionId}) doesn't look like it supports .NET 6, skipping update");
+                //        return false;
+                //    }
+            }
 
             if (serverVersion.CompareTo(agentVersion) > 0)
             {
@@ -649,6 +663,17 @@ You can skip checksum validation for the agent package by setting the environmen
 
             return true;
         }
+
+        //private OS[] GetSupportedSystemsNet6()
+        //{
+        //    string supportOSfilePath = "net6.json";
+        //    if (!File.Exists(supportOSfilePath)) {
+        //        return Array.Empty<OS>();
+        //    }
+
+        //    string supportOSfileContent = File.ReadAllText(supportOSfilePath);
+        //    return JsonSerializer.Deserialize<OS[]>(supportOSfileContent)!;
+        //}
     }
 
     public class UpdaterKnobValueContext : IKnobValueContext
@@ -663,4 +688,34 @@ You can skip checksum validation for the agent package by setting the environmen
             return new SystemEnvironment();
         }
     }
+
+    //public class OS
+    //{
+    //    public string Id { get; set; }
+
+    //    public OSVersion[] Versions { get; set; }
+
+    //    public OS() { }
+
+    //    public bool Equal(string systemId, string systemVersionId)
+    //    {
+    //        return this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase) 
+    //            && this.Versions.Any((version) => CompareVersion(version, systemVersionId));
+    //    }
+
+    //    private bool CompareVersion(string version, string systemVersionId)
+    //    {
+    //        var versionRegex = new Regex("^(?<id>[\\d.]+)(?<syffix>[+])$");
+    //        var versionRegexMatch = versionRegex.Match(version);
+    //        if (versionRegexMatch.Success)
+    //        {
+    //            double numericVersion = double.Parse(versionRegexMatch.Groups["id"].Value);
+    //            double numericSystemVersionId = double.Parse(systemVersionId);
+    //            return numericVersion == numericSystemVersionId
+    //                ? true
+    //                : numericSystemVersionId > numericVersion && versionRegexMatch.Groups["syffix"] != null;
+    //        }
+    //        return false;
+    //    }
+    //}
 }
