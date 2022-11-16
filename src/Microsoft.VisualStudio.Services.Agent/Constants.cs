@@ -425,6 +425,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 public static readonly string EnableAccessToken = "system.enableAccessToken";
                 public static readonly string HostType = "system.hosttype";
                 public static readonly string JobAttempt = "system.jobAttempt";
+                public static readonly string JobDisplayName = "system.jobDisplayName";
                 public static readonly string JobId = "system.jobId";
                 public static readonly string JobName = "system.jobName";
                 public static readonly string PhaseAttempt = "system.phaseAttempt";
@@ -436,6 +437,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 public static readonly string ServerType = "system.servertype";
                 public static readonly string SourceVersionMessage = "system.sourceVersionMessage";
                 public static readonly string StageAttempt = "system.stageAttempt";
+                public static readonly string StageDisplayName = "system.stageDisplayName";
                 public static readonly string StageName = "system.stageName";
                 public static readonly string TFServerUrl = "system.TeamFoundationServerUri"; // back compat variable, do not document
                 public static readonly string TeamProject = "system.teamproject";
