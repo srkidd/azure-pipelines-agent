@@ -59,6 +59,62 @@
     ]
   },
   {
+    "id": "alpine",
+    "versions": [
+      {
+        "name": "3.13+"
+      }
+    ]
+  },
+  {
+    "id": "centos",
+    "versions": [
+      {
+        "name": "7+"
+      }
+    ]
+  },
+  {
+    "id": "debian",
+    "versions": [
+      {
+        "name": "10+"
+      }
+    ]
+  },
+  {
+    "id": "fedora",
+    "versions": [
+      {
+        "name": "33+"
+      }
+    ]
+  },
+  {
+    "id": "opensuse-leap",
+    "versions": [
+      {
+        "name": "15+"
+      }
+    ]
+  },
+  {
+    "id": "rhel",
+    "versions": [
+      {
+        "name": "7+"
+      }
+    ]
+  },
+  {
+    "id": "sles",
+    "versions": [
+      {
+        "name": "12.2+"
+      }
+    ]
+  },
+  {
     "id": "macOS",
     "versions": [
       {
