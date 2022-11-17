@@ -177,7 +177,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     trace.Verbose($"Found macro candidate: '{variableKey}'");
 
                     var isVariableKeyPresent = !string.IsNullOrEmpty(variableKey);
-                    string variableValue;
                     WellKnownScriptShell shellName;
 
                     if (isVariableKeyPresent &&
@@ -186,6 +185,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         shellName != WellKnownScriptShell.Cmd &&
                         Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey))
                     {
+                        trace.Verbose("Found a macro with vulnerable variables. Replace with env variables.");
+
                         var envVariableName = ConvertToEnvVariableFormat(variableKey);
                         targetValue =
                             targetValue[..prefixIndex]
@@ -197,7 +198,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         startIndex = prefixIndex + envVariableName.Length;
                     }
                     else if (isVariableKeyPresent &&
-                        TryGetValue(trace, source, variableKey, out variableValue))
+                        TryGetValue(trace, source, variableKey, out string variableValue))
                     {
                         // A matching variable was found.
                         // Update the target value.
@@ -207,6 +208,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                             Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
                             shellName == WellKnownScriptShell.Cmd)
                         {
+                            trace.Verbose("The CMD shell is found. processing the macro in a custom way.");
+
                             var cmdCommandCharacters = new string[] { "&", "|", "<", ">" };
                             foreach (var commandChar in cmdCommandCharacters)
                             {
