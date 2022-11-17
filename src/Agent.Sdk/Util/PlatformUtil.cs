@@ -12,6 +12,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Agent.Sdk.Knob;
 using BuildXL.Cache.MemoizationStore.Interfaces.Caches;
+using BuildXL.Utilities;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -364,9 +365,22 @@ namespace Agent.Sdk
 
         public override string ToString()
         {
-            return string.Format("OS name: {0}, OS version: {1}",
-                this.Name?.ToString() ?? "'Not set'",
-                this.Version?.ToString() ?? "'Not set'");
+            StringBuilder result = new StringBuilder();
+
+            if (this.Name != null)
+            {
+                result.Append($"OS name: {this.Name}");
+            }
+
+            if (this.Version != null)
+            {
+               
+                result.Append(string.Format("{0}OS version: {1}",
+                    string.IsNullOrEmpty(result.ToString()) ? string.Empty : " ",
+                    this.Version));
+            }
+
+            return result.ToString();
         }
     }
 

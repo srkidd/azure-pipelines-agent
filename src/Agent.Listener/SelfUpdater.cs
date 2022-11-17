@@ -154,16 +154,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             //Checking if current system support .NET 6 agent
             //if (agentVersion.Major == 2 && serverVersion.Major == 3)
             if (true)
-                {
+            {
+                Trace.Verbose("Checking if system supports .NET 6");
                 OS[] supportedSystems = GetSupportedSystemsNet6();
 
                 string systemId = PlatformUtil.SystemId;
                 OSVersion systemVersion = PlatformUtil.SystemVersion;
 
+                Trace.Verbose($"System you are running on: '{systemId}' ({systemVersion})");
+
                 if (!supportedSystems.Any((system) => system.Equals(systemId, systemVersion)))
                 {
                     Trace.Info($"It doesn't look like system '{systemId}' ({systemVersion}) supports .NET 6, skipping update");
                     return false;
+                } else
+                {
+                    Trace.Verbose("Your system persists in list of systems supporting .NET 6");
                 }
             }
 
