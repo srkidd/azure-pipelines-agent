@@ -121,8 +121,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         private async Task<bool> UpdateNeeded(string targetVersion, CancellationToken token)
         {
-            Trace.Info($"You are running on {PlatformUtil.SystemId} {PlatformUtil.SystemVersion}");
-
             // when talk to old version tfs server, always prefer latest package.
             // old server won't send target version as part of update message.
             if (string.IsNullOrEmpty(targetVersion))
@@ -155,21 +153,30 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             //if (agentVersion.Major == 2 && serverVersion.Major == 3)
             if (true)
             {
-                Trace.Verbose("Checking if system supports .NET 6");
-                OS[] supportedSystems = GetSupportedSystemsNet6();
+                Trace.Verbose("Checking if your system supports .NET 6");
 
-                string systemId = PlatformUtil.SystemId;
-                OSVersion systemVersion = PlatformUtil.SystemVersion;
-
-                Trace.Verbose($"System you are running on: '{systemId}' ({systemVersion})");
-
-                if (!supportedSystems.Any((system) => system.Equals(systemId, systemVersion)))
+                try
                 {
-                    Trace.Info($"It doesn't look like system '{systemId}' ({systemVersion}) supports .NET 6, skipping update");
-                    return false;
-                } else
+                    OS[] supportedSystems = GetSupportedSystemsNet6();
+
+                    string systemId = PlatformUtil.SystemId;
+                    OSVersion systemVersion = PlatformUtil.SystemVersion;
+
+                    Trace.Verbose($"The system you are running on: '{systemId}' ({systemVersion})");
+
+                    if (!supportedSystems.Any((system) => system.Equals(systemId, systemVersion)))
+                    {
+                        Trace.Warning($"It doesn't look like the system '{systemId}' ({systemVersion}) supports .NET 6, skipping update");
+                        return false;
+                    }
+                    else
+                    {
+                        Trace.Verbose("The system persists in the list of systems supporting .NET 6");
+                    }
+                }
+                catch (Exception ex)
                 {
-                    Trace.Verbose("Your system persists in list of systems supporting .NET 6");
+                    Trace.Error($"Error has occurred while checking if system supports .NET 6: {ex} ");
                 }
             }
 

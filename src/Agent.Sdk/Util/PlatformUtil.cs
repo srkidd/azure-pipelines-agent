@@ -376,7 +376,7 @@ namespace Agent.Sdk
             {
                
                 result.Append(string.Format("{0}OS version: {1}",
-                    string.IsNullOrEmpty(result.ToString()) ? string.Empty : " ",
+                    string.IsNullOrEmpty(result.ToString()) ? string.Empty : ", ",
                     this.Version));
             }
 
