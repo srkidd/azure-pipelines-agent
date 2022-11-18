@@ -165,7 +165,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
                     if (!supportedSystems.Any((system) => system.Equals(systemId, systemVersion)))
                     {
-                        Trace.Warning($"It doesn't look like the system '{systemId}' ({systemVersion}) supports .NET 6, skipping update");
+                        Trace.Warning($"It doesn't look like the system supports .NET 6, skipping update");
                         return false;
                     }
                     else
