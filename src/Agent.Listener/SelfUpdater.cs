@@ -150,8 +150,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             PackageVersion agentVersion = new PackageVersion(BuildConstants.AgentPackage.Version);
 
             //Checking if current system support .NET 6 agent
-            //if (agentVersion.Major == 2 && serverVersion.Major == 3)
-            if (true)
+            if (agentVersion.Major == 2 && serverVersion.Major == 3)
             {
                 Trace.Verbose("Checking if your system supports .NET 6");
 
