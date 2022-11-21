@@ -183,7 +183,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         !string.IsNullOrEmpty(taskName) &&
                         Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
                         shellName != WellKnownScriptShell.Cmd &&
-                        Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey))
+                        Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase))
                     {
                         trace.Verbose("Found a macro with vulnerable variables. Replace with env variables.");
 

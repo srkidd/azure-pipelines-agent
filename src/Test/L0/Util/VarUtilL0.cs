@@ -37,6 +37,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void ReplaceVulnerableVariablesIgnoringCase()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+
+            var source = new Dictionary<string, string>();
+
+            var target = new Dictionary<string, string>()
+            {
+                ["system.DefinitionName var"] = $"test $(systeM.DeFiNiTiNnName)",
+                ["build.DefinitionName var"] = $"test $(BuilD.DefinitionnamE)",
+                ["build.SourceVersionMessage var"] = $"test $(buiLd.sourCeVersionMeSsagE)",
+            };
+
+            VarUtil.ExpandValues(hc, source, target);
+
+            Assert.Equal(target["system.DefinitionName var"], target["system.DefinitionName var"]);
+            Assert.Equal(target["build.DefinitionName var"], target["build.DefinitionName var"]);
+            Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void KeepSameIfNoTaskSpecified()
         {
             using TestHostContext hc = new TestHostContext(this);
