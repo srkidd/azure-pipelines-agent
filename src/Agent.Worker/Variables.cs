@@ -10,7 +10,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using BuildWebApi = Microsoft.TeamFoundation.Build.WebApi;
-using Microsoft.TeamFoundation.DistributedTask.Logging;
 using Newtonsoft.Json.Linq;
 using Agent.Sdk.Util;
 
