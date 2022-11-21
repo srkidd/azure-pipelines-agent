@@ -45,16 +45,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
 
             var target = new Dictionary<string, string>()
             {
-                ["system.DefinitionName var"] = $"test $(systeM.DeFiNiTiNnName)",
-                ["build.DefinitionName var"] = $"test $(BuilD.DefinitionnamE)",
-                ["build.SourceVersionMessage var"] = $"test $(buiLd.sourCeVersionMeSsagE)",
+                ["system.DefinitionName var"] = $"$(systeM.DeFiNiTioNname)",
+                ["build.DefinitionName var"] = $"$(BuilD.DefinitionnamE)",
+                ["build.SourceVersionMessage var"] = $"$(buiLd.sourCeVersionMeSsagE)",
             };
 
-            VarUtil.ExpandValues(hc, source, target);
+            VarUtil.ExpandValues(hc, source, target, "Bash");
 
-            Assert.Equal(target["system.DefinitionName var"], target["system.DefinitionName var"]);
-            Assert.Equal(target["build.DefinitionName var"], target["build.DefinitionName var"]);
-            Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
+            Assert.Equal("$SYSTEM_DEFINITIONNAME", target["system.DefinitionName var"]);
+            Assert.Equal("$BUILD_DEFINITIONNAME", target["build.DefinitionName var"]);
+            Assert.Equal("$BUILD_SOURCEVERSIONMESSAGE", target["build.SourceVersionMessage var"]);
         }
 
         [Fact]
