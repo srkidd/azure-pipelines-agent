@@ -280,7 +280,7 @@ namespace Microsoft.VisualStudio.Services.Agent
             public static readonly string MacroSuffix = ")";
 
             /// <summary>
-            /// This variables potentially may be used to execute scripts without the knowledge of the owner of the pipelines.
+            /// These variables potentially may be used to execute scripts without the knowledge of the owner of the pipelines.
             /// We want to prevent this by not expanding them and replacing these variables in user scripts with environment variables.
             /// Note that the replacement will only take place for inline scripts.
             /// </summary>

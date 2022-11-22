@@ -185,7 +185,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         shellName != WellKnownScriptShell.Cmd &&
                         Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase))
                     {
-                        trace.Verbose("Found a macro with vulnerable variables. Replace with env variables.");
+                        trace.Verbose("Found a macro with vulnerable variables. Replacing with env variables.");
 
                         var envVariableName = ConvertToEnvVariableFormat(variableKey);
                         targetValue =
