@@ -654,18 +654,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             // Hook up JobServerQueueThrottling event, we will log warning on server tarpit.
             _jobServerQueue.JobServerQueueThrottling += JobServerQueueThrottling_EventReceived;
 
-            Trace.Verbose("Checking if your system supports .NET 6");
-
             try
             {
+                Trace.Verbose("Checking if your system supports .NET 6");
+
                 string systemId = PlatformUtil.GetSystemId();
                 SystemVersion systemVersion = PlatformUtil.GetSystemVersion();
 
-                Trace.Verbose($"The system you are running on: '{systemId}' ({systemVersion})");
-
                 if (!PlatformUtil.IsNet6Supported())
                 {
-                    AddIssue(new Issue() { Type = IssueType.Warning, Message = "Agent is running on the system which doesn't look like it supports .NET 6" });
+                    AddIssue(new Issue() { Type = IssueType.Warning, Message = $"Agent is running on the system '{systemId}' ({systemVersion}) which doesn't look supporting .NET 6" });
                 }
             }
             catch (Exception ex)
