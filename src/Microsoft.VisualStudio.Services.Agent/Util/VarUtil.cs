@@ -185,7 +185,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         shellName != WellKnownScriptShell.Cmd &&
                         Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase))
                     {
-                        trace.Verbose("Found a macro with vulnerable variables. Replacing with env variables.");
+                        trace.Verbose($"Found a macro with vulnerable variables. Replacing with env variables for the {shellName} shell.");
 
                         var envVariableName = ConvertToEnvVariableFormat(variableKey);
                         targetValue =
@@ -208,7 +208,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                             Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
                             shellName == WellKnownScriptShell.Cmd)
                         {
-                            trace.Verbose("The CMD shell is found. processing the macro in a custom way.");
+                            trace.Verbose("CMD shell found. Custom macro processing.");
 
                             var cmdCommandCharacters = new string[] { "&", "|", "<", ">" };
                             foreach (var commandChar in cmdCommandCharacters)

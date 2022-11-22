@@ -474,6 +474,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     if (Constants.Variables.VariablesVulnerableToExecution.Contains(name, StringComparer.OrdinalIgnoreCase))
                     {
+                        _trace.Verbose($"Skipping expansion for variable: '{name}'");
                         continue;
                     }
 
