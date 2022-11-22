@@ -85,39 +85,33 @@ namespace Agent.Sdk
             }
         }
 
-        public static string SystemId
+        public static string GetSystemId()
         {
-            get
+            switch (PlatformUtil.HostOS)
             {
-                switch(PlatformUtil.HostOS)
-                {
-                    case PlatformUtil.OS.Linux:
-                        return GetLinuxId();
-                    case PlatformUtil.OS.OSX:
-                        return "MacOS";
-                    case PlatformUtil.OS.Windows:
-                        return GetWindowsId();
-                    default:
-                        return null;
-                }
+                case PlatformUtil.OS.Linux:
+                    return GetLinuxId();
+                case PlatformUtil.OS.OSX:
+                    return "MacOS";
+                case PlatformUtil.OS.Windows:
+                    return GetWindowsId();
+                default:
+                    return null;
             }
         }
 
-        public static OSVersion SystemVersion
+        public static OSVersion GetSystemVersion()
         {
-            get
+            switch (PlatformUtil.HostOS)
             {
-                switch (PlatformUtil.HostOS)
-                {
-                    case PlatformUtil.OS.Linux:
-                        return new OSVersion(GetLinuxName(), null);
-                    case PlatformUtil.OS.OSX:
-                        return new OSVersion(GetOSxName(), null);
-                    case PlatformUtil.OS.Windows:
-                        return new OSVersion(GetWindowsName(), GetWindowsVersion());
-                    default:
-                        return null;
-                }
+                case PlatformUtil.OS.Linux:
+                    return new OSVersion(GetLinuxName(), null);
+                case PlatformUtil.OS.OSX:
+                    return new OSVersion(GetOSxName(), null);
+                case PlatformUtil.OS.Windows:
+                    return new OSVersion(GetWindowsName(), GetWindowsVersion());
+                default:
+                    return null;
             }
         }
 

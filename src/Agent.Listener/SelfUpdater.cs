@@ -158,8 +158,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 {
                     OS[] supportedSystems = GetSupportedSystemsNet6();
 
-                    string systemId = PlatformUtil.SystemId;
-                    OSVersion systemVersion = PlatformUtil.SystemVersion;
+                    string systemId = PlatformUtil.GetSystemId();
+                    OSVersion systemVersion = PlatformUtil.GetSystemVersion();
 
                     Trace.Verbose($"The system you are running on: '{systemId}' ({systemVersion})");
 
