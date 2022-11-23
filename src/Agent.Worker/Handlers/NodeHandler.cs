@@ -56,10 +56,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
     public sealed class NodeHandler : Handler, INodeHandler
     {
         private readonly INodeHandlerHelper nodeHandlerHelper;
-        private static string nodeFolder = "node";
-        private static string node10Folder = "node10";
-        private static string node16Folder = "node16";
-        private static string nodeLTS = node16Folder;
+        private const string nodeFolder = "node";
+        private const string node10Folder = "node10";
+        private const string node16Folder = "node16";
+        private const string nodeLTS = node16Folder;
         private const string useNodeKnobLtsKey = "LTS";
         private const string useNodeKnobUpgradeKey = "UPGRADE";
         private string[] possibleNodeFolders = { nodeFolder, node10Folder, node16Folder };
