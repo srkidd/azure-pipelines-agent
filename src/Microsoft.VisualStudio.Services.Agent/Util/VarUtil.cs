@@ -9,6 +9,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json.Linq;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.VisualStudio.Services.Agent.Util
 {
@@ -210,11 +211,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         {
                             trace.Verbose("CMD shell found. Custom macro processing.");
 
-                            var cmdCommandCharacters = new string[] { "&", "|", "<", ">" };
-                            foreach (var commandChar in cmdCommandCharacters)
-                            {
-                                variableValue = variableValue.Replace(commandChar, $"^{commandChar}");
-                            }
+                            // When matching "&", "|", "<" and ">" cmd commands adds "^" before them.
+                            var cmdCommandsRegex = new Regex(@"[&|\||<|>]");
+                            variableValue = cmdCommandsRegex.Replace(variableValue, "^$&");
                         }
 
                         targetValue = string.Concat(

@@ -248,7 +248,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                 ["sourceVar1"] = "sourceValue1",
                 ["sourceVar2"] = "1 & echo 2",
                 ["sourceVar3"] = "3 | 4",
-                ["sourceVar4"] = "5 < 6",
+                ["sourceVar4"] = "5 < 6 > 1",
                 ["sourceVar5"] = "7 &&>|<echo 34",
             };
             var target = new Dictionary<string, string>
@@ -263,7 +263,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
 
             Assert.Equal("echo sourceValue1", target["targetVar1"]);
             Assert.Equal("echo sourceValue1 & echo 1 ^& echo 2", target["targetVar2"]);
-            Assert.Equal("echo 3 ^| 4 | echo 5 ^< 6", target["targetVar3"]);
+            Assert.Equal("echo 3 ^| 4 | echo 5 ^< 6 ^> 1", target["targetVar3"]);
             Assert.Equal("echo 7 ^&^&^>^|^<echo 34 && 123", target["targetVar4"]);
         }
 
