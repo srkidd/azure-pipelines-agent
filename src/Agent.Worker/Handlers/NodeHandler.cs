@@ -41,15 +41,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
         public string[] GetFilteredPossibleNodeFolders(string nodeFolderName, string[] possibleNodeFolders)
         {
-            for (int i = 0; i < possibleNodeFolders.Length; i++)
-            {
-                if (possibleNodeFolders[i] == nodeFolderName)
-                {
-                    return possibleNodeFolders.Skip(i + 1).ToArray();
-                }
-            }
+            int nodeFolderIndex = Array.IndexOf(possibleNodeFolders, nodeFolderName);
 
-            return Array.Empty<string>();
+            return nodeFolderIndex >= 0 ?
+                possibleNodeFolders.Skip(nodeFolderIndex + 1).ToArray()
+                : Array.Empty<string>();
         }
     }
 
@@ -264,14 +260,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                             }
                             break;
                         case NodeHandler.useNodeKnobUpgradeKey:
-                            foreach (string possibleNodeFolder in filteredPossibleNodeFolders)
+                            string firstExistedNodeFolder = filteredPossibleNodeFolders.FirstOrDefault(nf => nodeHandlerHelper.IsNodeFolderExist(nf, HostContext));
+
+                            if (firstExistedNodeFolder != null)
                             {
-                                if (nodeHandlerHelper.IsNodeFolderExist(possibleNodeFolder, HostContext))
-                                {
-                                    ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, next available version will be used");
-                                    Trace.Info($"Found {possibleNodeFolder} installed");
-                                    return nodeHandlerHelper.GetNodeFolderPath(possibleNodeFolder, HostContext);
-                                }
+                                ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, next available version will be used");
+                                Trace.Info($"Found {firstExistedNodeFolder} installed");
+                                return nodeHandlerHelper.GetNodeFolderPath(firstExistedNodeFolder, HostContext);
                             }
                             break;
                         default:
