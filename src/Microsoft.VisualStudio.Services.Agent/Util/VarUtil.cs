@@ -191,9 +191,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         var envVariableName = ConvertToEnvVariableFormat(variableKey);
                         targetValue =
                             targetValue[..prefixIndex]
-                            + Constants.Variables.EnvVariablePrefixesPerShell[shellName]
+                            + Constants.ScriptShells.Variables.EnvVariablePrefixesPerShell[shellName]
                             + envVariableName
-                            + Constants.Variables.EnvVariableSuffixesPerShell[shellName]
+                            + Constants.ScriptShells.Variables.EnvVariableSuffixesPerShell[shellName]
                             + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
 
                         startIndex = prefixIndex + envVariableName.Length;

@@ -299,20 +299,6 @@ namespace Microsoft.VisualStudio.Services.Agent
                 System.StageDisplayName
             };
 
-            public static readonly Dictionary<WellKnownScriptShell, string> EnvVariablePrefixesPerShell = new Dictionary<WellKnownScriptShell, string>
-            {
-                [WellKnownScriptShell.PowerShell] = "$env:",
-                [WellKnownScriptShell.Bash] = "$",
-                [WellKnownScriptShell.Cmd] = "%"
-            };
-
-            public static readonly Dictionary<WellKnownScriptShell, string> EnvVariableSuffixesPerShell = new Dictionary<WellKnownScriptShell, string>
-            {
-                [WellKnownScriptShell.PowerShell] = "",
-                [WellKnownScriptShell.Bash] = "",
-                [WellKnownScriptShell.Cmd] = "%"
-            };
-
             public static class Agent
             {
                 //
@@ -635,6 +621,26 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Task.DisplayName,
                 Task.SkipTranslatorForCheckout
             };
+        }
+
+        public static class ScriptShells
+        {
+            public static class Variables
+            {
+                public static readonly Dictionary<WellKnownScriptShell, string> EnvVariablePrefixesPerShell = new Dictionary<WellKnownScriptShell, string>
+                {
+                    [WellKnownScriptShell.PowerShell] = "$env:",
+                    [WellKnownScriptShell.Bash] = "$",
+                    [WellKnownScriptShell.Cmd] = "%"
+                };
+
+                public static readonly Dictionary<WellKnownScriptShell, string> EnvVariableSuffixesPerShell = new Dictionary<WellKnownScriptShell, string>
+                {
+                    [WellKnownScriptShell.PowerShell] = "",
+                    [WellKnownScriptShell.Bash] = "",
+                    [WellKnownScriptShell.Cmd] = "%"
+                };
+            }
         }
     }
 }
