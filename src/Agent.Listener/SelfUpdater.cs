@@ -158,7 +158,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     string systemId = PlatformUtil.GetSystemId();
                     SystemVersion systemVersion = PlatformUtil.GetSystemVersion();
 
-                    Trace.Verbose($"The system you are running on: '{systemId}' ({systemVersion})");
+                    Trace.Verbose($"The system you are running on: \"{systemId}\" ({systemVersion})");
 
                     if (!PlatformUtil.IsNet6Supported())
                     {
