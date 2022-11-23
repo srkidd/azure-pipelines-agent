@@ -241,7 +241,7 @@ function cmd_report ()
 
     if [[ ("$CURRENT_PLATFORM" != "windows") ]]; then
         echo "Coverage reporting only available on Windows"
-        exit -1
+        exit 1
     fi
 
     mkdir -p "$REPORT_DIR"
