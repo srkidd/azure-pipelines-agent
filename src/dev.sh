@@ -99,16 +99,14 @@ function cmd_build ()
 {
     heading "Building"
 
-    TARGET="Build"
-    make_build $TARGET
+    make_build "Build"
 }
 
 function cmd_layout ()
 {
     heading "Creating layout"
 
-    TARGET="layout"
-    make_build $TARGET
+    make_build "Layout"
 
     #change execution flag to allow running with sudo
     if [[ ("$CURRENT_PLATFORM" == "linux") || ("$CURRENT_PLATFORM" == "darwin") ]]; then
