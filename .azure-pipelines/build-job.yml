@@ -87,6 +87,8 @@ jobs:
     DisableCFSDetector: true
     DisableDockerDetector: true
     NugetSecurityAnalysisWarningLevel: "none"
+    ${{ if eq(parameters.os, 'rhel.6') }}:
+      AGENT_USE_NODE10: true
 
   steps:
 
