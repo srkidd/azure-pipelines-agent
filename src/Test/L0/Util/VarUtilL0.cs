@@ -9,136 +9,116 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
 {
     public class VarUtilL0
     {
-        public static TheoryData<string, string[]> InputsForVariablesReplacementTest => new TheoryData<string, string[]>()
+        public static TheoryData<string, string[]> InputsForVariablesReplacementTest => new TheoryData<string, string[]>
         {
-            { "Bash", new string[]{ "$SYSTEM_DEFINITIONNAME", "$BUILD_DEFINITIONNAME", "$BUILD_SOURCEVERSIONMESSAGE" } },
-            { "PowerShell", new string[]{ "$env:SYSTEM_DEFINITIONNAME", "$env:BUILD_DEFINITIONNAME", "$env:BUILD_SOURCEVERSIONMESSAGE" }},
+            { "Bash", new string[]{ "$SYSTEM_DEFINITIONNAME", "$BUILD_SOURCEVERSIONMESSAGE" } },
+            { "PowerShell", new string[]{ "$env:SYSTEM_DEFINITIONNAME", "$env:BUILD_SOURCEVERSIONMESSAGE" }},
         };
 
         [Theory]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
         [MemberData(nameof(InputsForVariablesReplacementTest))]
-        public void ReplacingToEnvVariablesForTask(string taskName, string[] expectedVariables)
+        public void ExpandValues_Replaces_VulnerableVariables_To_EnvVariables_Per_ShellTask(string taskName, string[] expectedVariables)
         {
             using TestHostContext hc = new TestHostContext(this);
-
             var source = new Dictionary<string, string>();
-
             var target = GetTargetValuesWithVulnerableVariables();
 
             VarUtil.ExpandValues(hc, source, target, taskName);
 
             Assert.Equal($"test {expectedVariables[0]}", target["system.DefinitionName var"]);
-            Assert.Equal($"test {expectedVariables[1]}", target["build.DefinitionName var"]);
-            Assert.Equal($"test {expectedVariables[2]}", target["build.SourceVersionMessage var"]);
+            Assert.Equal($"test {expectedVariables[1]}", target["build.SourceVersionMessage var"]);
         }
-
 
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void ReplaceVulnerableVariablesIgnoringCase()
+        public void ExpandValues_Replaces_VulnerableVariables_Ignoring_LetterCase()
         {
             using TestHostContext hc = new TestHostContext(this);
-
             var source = new Dictionary<string, string>();
-
             var target = new Dictionary<string, string>()
             {
                 ["system.DefinitionName var"] = $"$(systeM.DeFiNiTioNname)",
-                ["build.DefinitionName var"] = $"$(BuilD.DefinitionnamE)",
                 ["build.SourceVersionMessage var"] = $"$(buiLd.sourCeVersionMeSsagE)",
             };
 
             VarUtil.ExpandValues(hc, source, target, "Bash");
 
             Assert.Equal("$SYSTEM_DEFINITIONNAME", target["system.DefinitionName var"]);
-            Assert.Equal("$BUILD_DEFINITIONNAME", target["build.DefinitionName var"]);
             Assert.Equal("$BUILD_SOURCEVERSIONMESSAGE", target["build.SourceVersionMessage var"]);
         }
 
-        [Fact]
+        [Theory]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void CheckIfTargetNullOrEmpty()
+        [InlineData(null, "")]
+        [InlineData("", "")]
+        [InlineData(" ", " ")]
+        public void ExpandValues_Prevents_InvalidValues_In_Target(string targetValue, string extectedValue)
         {
             using TestHostContext hc = new TestHostContext(this);
-
             var source = new Dictionary<string, string>();
-
             var target = new Dictionary<string, string>()
             {
-                ["nullVar"] = null,
-                ["emptyVar"] = "",
-                ["spaceVar"] = " ",
-            };
-
-            VarUtil.ExpandValues(hc, source, target, "Bash");
-
-            Assert.Equal("", target["nullVar"]);
-            Assert.Equal("", target["emptyVar"]);
-            Assert.Equal(" ", target["spaceVar"]);
-        }
-
-        [Fact]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
-        public void CheckIfSourceNullOrEmpty()
-        {
-            using TestHostContext hc = new TestHostContext(this);
-
-            var source = new Dictionary<string, string>()
-            {
-                ["nullSource"] = null,
-                ["emptySource"] = "",
-                ["spaceSource"] = " ",
-            };
-
-            var target = new Dictionary<string, string>()
-            {
-                ["nullTarget"] = "source = '$(nullSource)'",
-                ["emptyTarget"] = "source = '$(emptySource)'",
-                ["spaceTarget"] = "source = '$(spaceSource)'",
+                ["targetVar"] = targetValue
             };
 
             VarUtil.ExpandValues(hc, source, target);
 
-            Assert.Equal("source = ''", target["nullTarget"]);
-            Assert.Equal("source = ''", target["emptyTarget"]);
-            Assert.Equal("source = ' '", target["spaceTarget"]);
+            Assert.Equal(extectedValue, target["targetVar"]);
+        }
+
+        [Theory]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        [InlineData("testVar", "source = 'testVar'")]
+        [InlineData(null, "source = ''")]
+        [InlineData("", "source = ''")]
+        [InlineData(" ", "source = ' '")]
+        [InlineData("_", "source = '_'")]
+        public void ExpandValues_Replaces_Variable_To_SourceValue_In_Target(string sourceValue, string expectedValue)
+        {
+            using TestHostContext hc = new TestHostContext(this);
+            var source = new Dictionary<string, string>()
+            {
+                ["sourceVar"] = sourceValue,
+            };
+            var target = new Dictionary<string, string>()
+            {
+                ["targetVar"] = "source = '$(sourceVar)'",
+            };
+
+            VarUtil.ExpandValues(hc, source, target);
+
+            Assert.Equal(expectedValue, target["targetVar"]);
         }
 
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void CheckIfMultipleVulnerableVariablesPresent()
+        public void ExpandValues_Replaces_Multiple_VulnerableVariables_In_Target()
         {
             using TestHostContext hc = new TestHostContext(this);
-
             var source = new Dictionary<string, string>();
-
             var target = new Dictionary<string, string>()
             {
-                ["target1"] = "variable1 = $(system.DefinitionName) variable2 = $(build.DefinitionName)",
-                ["target2"] = "variable1 = $(system.stageDisplayName) variable2 = $(system.phaseDisplayName) variable3 = $(release.environmentName)",
+                ["targetVar"] = "variable1 = $(system.stageDisplayName); variable2 = $(system.phaseDisplayName); variable3 = $(release.environmentName)",
             };
 
             VarUtil.ExpandValues(hc, source, target, "Bash");
 
-            Assert.Equal($"variable1 = $SYSTEM_DEFINITIONNAME variable2 = $BUILD_DEFINITIONNAME", target["target1"]);
-            Assert.Equal($"variable1 = $SYSTEM_STAGEDISPLAYNAME variable2 = $SYSTEM_PHASEDISPLAYNAME variable3 = $RELEASE_ENVIRONMENTNAME", target["target2"]);
+            Assert.Equal($"variable1 = $SYSTEM_STAGEDISPLAYNAME; variable2 = $SYSTEM_PHASEDISPLAYNAME; variable3 = $RELEASE_ENVIRONMENTNAME", target["targetVar"]);
         }
 
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void KeepSameIfNoTaskSpecified()
+        public void ExpandValues_Keeping_Same_If_No_Task_Specified()
         {
             using TestHostContext hc = new TestHostContext(this);
-
             var source = new Dictionary<string, string>();
-
             var target = GetTargetValuesWithVulnerableVariables();
 
             VarUtil.ExpandValues(hc, source, target);
@@ -151,28 +131,26 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void KeepSameIfWrongTaskNameSpecified()
+        public void ExpandValues_Keeping_Same_If_Wrong_TaskName_Specified()
         {
             using TestHostContext hc = new TestHostContext(this);
-
             var source = new Dictionary<string, string>();
-
-            var target = GetTargetValuesWithVulnerableVariables();
+            var target = new Dictionary<string, string>()
+            {
+                ["targetVar"] = $"test $(system.definitionName)",
+            };
 
             VarUtil.ExpandValues(hc, source, target, "SomeRandomName");
 
-            Assert.Equal(target["system.DefinitionName var"], target["system.DefinitionName var"]);
-            Assert.Equal(target["build.DefinitionName var"], target["build.DefinitionName var"]);
-            Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
+            Assert.Equal("test $(system.definitionName)", target["targetVar"]);
         }
 
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void ExpandNestedVariableTest()
+        public void ExpandValues_ExpandNestedVariableTest()
         {
             using TestHostContext hc = new TestHostContext(this);
-
             var source = new Dictionary<string, string>
             {
                 ["sourceVar"] = "sourceValue",
@@ -190,28 +168,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void KeepValueSameIfNotMatchingWithTarget()
+        public void ExpandValues_Keeping_Same_Value_If_No_Match_With_Target()
         {
             using TestHostContext hc = new TestHostContext(this);
-
-            var source = new Dictionary<string, string>();
+            var source = new Dictionary<string, string>
+            {
+                ["sourceVar1"] = "source value"
+            };
             var target = new Dictionary<string, string>
             {
-                ["targetVar"] = "targetValue $(sourceVar)",
+                ["targetVar"] = "targetValue $(sourceVar2)",
             };
 
             VarUtil.ExpandValues(hc, source, target);
 
-            Assert.Equal("targetValue $(sourceVar)", target["targetVar"]);
+            Assert.Equal("targetValue $(sourceVar2)", target["targetVar"]);
         }
 
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void ReqursiveExpandingNotSupportedTest()
+        public void ExpandValues_RecursiveExpanding_NotHappening()
         {
             using TestHostContext hc = new TestHostContext(this);
-
             var source = new Dictionary<string, string>
             {
                 ["sourceVar1"] = "sourceValue1",
@@ -230,10 +209,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void CommandShellInputExpanding()
+        public void ExpandValues_CommandShell_InputExpanding()
         {
             using TestHostContext hc = new TestHostContext(this);
-
             var source = new Dictionary<string, string>
             {
                 ["sourceVar1"] = "sourceValue1",
@@ -284,7 +262,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                 ["build.DefinitionName var"] = $"test $({Constants.Variables.Build.DefinitionName})",
                 ["build.SourceVersionMessage var"] = $"test $({Constants.Variables.Build.SourceVersionMessage})",
             };
-
         }
     }
 }
