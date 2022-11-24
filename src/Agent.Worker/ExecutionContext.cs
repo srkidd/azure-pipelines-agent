@@ -668,7 +668,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                     if (!PlatformUtil.IsNet6Supported())
                     {
-                        AddIssue(new Issue() { Type = IssueType.Warning, Message = $"Agent is running on the system \"{systemId}\" ({systemVersion}) which doesn't look supporting .NET 6" });
+                        AddIssue(new Issue() { Type = IssueType.Warning, Message = $"The operating system the agent is running on is \"{ systemId }\" ({systemVersion}), which will not be supported by the .NET 6 based v3 agent. Please upgrade the Operating System of this host to ensure compatibility with the v3 agent. See https://devblogs.microsoft.com/devops/upgrade-of-net-agent-for-azure-pipelines/" });
                     }
                 }
                 catch (Exception ex)
