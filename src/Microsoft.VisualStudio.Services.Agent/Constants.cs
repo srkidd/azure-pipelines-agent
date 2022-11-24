@@ -625,22 +625,12 @@ namespace Microsoft.VisualStudio.Services.Agent
 
         public static class ScriptShells
         {
-            public static class Variables
+            public static Dictionary<WellKnownScriptShell, EnvVariableParts> EnvVariablePartsPerShell = new Dictionary<WellKnownScriptShell, EnvVariableParts>
             {
-                public static readonly Dictionary<WellKnownScriptShell, string> EnvVariablePrefixesPerShell = new Dictionary<WellKnownScriptShell, string>
-                {
-                    [WellKnownScriptShell.PowerShell] = "$env:",
-                    [WellKnownScriptShell.Bash] = "$",
-                    [WellKnownScriptShell.Cmd] = "%"
-                };
-
-                public static readonly Dictionary<WellKnownScriptShell, string> EnvVariableSuffixesPerShell = new Dictionary<WellKnownScriptShell, string>
-                {
-                    [WellKnownScriptShell.PowerShell] = "",
-                    [WellKnownScriptShell.Bash] = "",
-                    [WellKnownScriptShell.Cmd] = "%"
-                };
-            }
+                [WellKnownScriptShell.PowerShell] = new EnvVariableParts { Prefix = "$env:", Suffix = "" },
+                [WellKnownScriptShell.Bash] = new EnvVariableParts { Prefix = "$", Suffix = "" },
+                [WellKnownScriptShell.Cmd] = new EnvVariableParts { Prefix = "%", Suffix = "" }
+            };
         }
     }
 }

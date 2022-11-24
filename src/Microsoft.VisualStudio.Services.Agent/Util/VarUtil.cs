@@ -188,12 +188,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     {
                         trace.Verbose($"Found a macro with vulnerable variables. Replacing with env variables for the {shellName} shell.");
 
+                        var envVariableParts = Constants.ScriptShells.EnvVariablePartsPerShell[shellName];
                         var envVariableName = ConvertToEnvVariableFormat(variableKey);
+
                         targetValue =
                             targetValue[..prefixIndex]
-                            + Constants.ScriptShells.Variables.EnvVariablePrefixesPerShell[shellName]
+                            + envVariableParts.Prefix
                             + envVariableName
-                            + Constants.ScriptShells.Variables.EnvVariableSuffixesPerShell[shellName]
+                            + envVariableParts.Suffix
                             + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
 
                         startIndex = prefixIndex + envVariableName.Length;
