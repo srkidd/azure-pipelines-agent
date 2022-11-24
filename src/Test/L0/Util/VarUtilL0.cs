@@ -178,6 +178,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        public void KeepSameIfWrongTaskNameSpecified()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+
+            var source = new Dictionary<string, string>();
+
+            var target = GetTargetValuesWithVulnerableVariables();
+
+            VarUtil.ExpandValues(hc, source, target, "SomeRandomName");
+
+            Assert.Equal(target["system.DefinitionName var"], target["system.DefinitionName var"]);
+            Assert.Equal(target["build.DefinitionName var"], target["build.DefinitionName var"]);
+            Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
         public void ExpandNestedVariableTest()
         {
             using TestHostContext hc = new TestHostContext(this);
