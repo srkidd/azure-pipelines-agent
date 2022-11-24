@@ -190,15 +190,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
                         var envVariableParts = Constants.ScriptShells.EnvVariablePartsPerShell[shellName];
                         var envVariableName = ConvertToEnvVariableFormat(variableKey);
+                        var envVariable = envVariableParts.Prefix + envVariableName + envVariableParts.Suffix;
 
                         targetValue =
                             targetValue[..prefixIndex]
-                            + envVariableParts.Prefix
-                            + envVariableName
-                            + envVariableParts.Suffix
+                            + envVariable
                             + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
 
-                        startIndex = prefixIndex + envVariableName.Length;
+                        startIndex = prefixIndex + envVariable.Length;
                     }
                     else if (isVariableKeyPresent &&
                         TryGetValue(trace, source, variableKey, out string variableValue))
