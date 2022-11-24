@@ -34,26 +34,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             Assert.Equal($"test {expectedVariables[2]}", target["build.SourceVersionMessage var"]);
         }
 
-        [Fact]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
-        public void ReplacingToEnvVariablesForTaskMultiple()
-        {
-            using TestHostContext hc = new TestHostContext(this);
-
-            var source = new Dictionary<string, string>();
-
-            var target = new Dictionary<string, string>()
-            {
-                ["target1"] = "variable1 = $(system.DefinitionName) variable2 = $(build.DefinitionName)",
-                ["target2"] = "variable1 = $(system.stageDisplayName) variable2 = $(system.phaseDisplayName) variable3 = $(release.environmentName)",
-            };
-
-            VarUtil.ExpandValues(hc, source, target, "Bash");
-
-            Assert.Equal($"variable1 = $SYSTEM_DEFINITIONNAME variable2 = $BUILD_DEFINITIONNAME", target["target1"]);
-            Assert.Equal($"variable1 = $SYSTEM_STAGEDISPLAYNAME variable2 = $SYSTEM_PHASEDISPLAYNAME variable3 = $RELEASE_ENVIRONMENTNAME", target["target2"]);
-        }
 
         [Fact]
         [Trait("Level", "L0")]
@@ -136,25 +116,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         {
             using TestHostContext hc = new TestHostContext(this);
 
-            var source = new Dictionary<string, string>()
-            {
-                ["nullSource"] = null,
-                ["emptySource"] = "",
-                ["spaceSource"] = " ",
-            };
+            var source = new Dictionary<string, string>();
 
             var target = new Dictionary<string, string>()
             {
-                ["nullTarget"] = "source = '$(nullSource)'",
-                ["emptyTarget"] = "source = '$(emptySource)'",
-                ["spaceTarget"] = "source = '$(spaceSource)'",
+                ["target1"] = "variable1 = $(system.DefinitionName) variable2 = $(build.DefinitionName)",
+                ["target2"] = "variable1 = $(system.stageDisplayName) variable2 = $(system.phaseDisplayName) variable3 = $(release.environmentName)",
             };
 
             VarUtil.ExpandValues(hc, source, target, "Bash");
 
-            Assert.Equal("source = ''", target["nullTarget"]);
-            Assert.Equal("source = ''", target["emptyTarget"]);
-            Assert.Equal("source = ' '", target["spaceTarget"]);
+            Assert.Equal($"variable1 = $SYSTEM_DEFINITIONNAME variable2 = $BUILD_DEFINITIONNAME", target["target1"]);
+            Assert.Equal($"variable1 = $SYSTEM_STAGEDISPLAYNAME variable2 = $SYSTEM_PHASEDISPLAYNAME variable3 = $RELEASE_ENVIRONMENTNAME", target["target2"]);
         }
 
         [Fact]
