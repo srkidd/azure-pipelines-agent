@@ -108,8 +108,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.CodeCoverage
         {
             _ec = new Mock<IExecutionContext>();
             _ec.Setup(x => x.Write(It.IsAny<string>(), It.IsAny<string>(), true))
-                .Callback<string, string>
-                ((tag, message) =>
+                .Callback<string, string, bool>
+                ((tag, message,canMaskSecrets) =>
                 {
                     _outputMessages.Add(message);
                 });
