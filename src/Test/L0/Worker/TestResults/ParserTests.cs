@@ -404,8 +404,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
             var variables = new Variables(hc, new Dictionary<string, VariableValue>(), out warnings);
             _ec.Setup(x => x.Variables).Returns(variables);
             _ec.Setup(x => x.Write(It.IsAny<string>(), It.IsAny<string>(), true))
-                .Callback<string, string>
-                ((tag, message) =>
+                .Callback<string, string, bool>
+                ((tag, message, canMaskSecrets) =>
                 {
                     Console.Error.WriteLine(tag + ": " + message);
                 });
@@ -413,7 +413,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.TestResults
             _mockFeatureFlagService.Setup(x => x.GetFeatureFlagState(It.IsAny<string>(), It.IsAny<Guid>())).Returns(true);
             _ec.Setup(x => x.GetHostContext()).Returns(hc);
             hc.SetSingleton(_mockFeatureFlagService.Object);
-
         }
     }
 }
