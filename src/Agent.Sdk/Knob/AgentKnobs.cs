@@ -262,9 +262,9 @@ namespace Agent.Sdk.Knob
 
         public static readonly Knob MaskedSecretMinLength = new Knob(
             nameof(MaskedSecretMinLength),
-            "Minimum lenght of secret which will be masked in logs",
-            new RuntimeKnobSource("AGENT_MIN_SECRET_LENGTH"),
-            new EnvironmentKnobSource("AGENT_MIN_SECRET_LENGTH"),
+            "Specify the length of the secrets, which, if shorter, will be ignored in the logs.",
+            new RuntimeKnobSource("AZP_IGNORE_SECRETS_SHORTER_THAN"),
+            new EnvironmentKnobSource("AZP_IGNORE_SECRETS_SHORTER_THAN"),
             new BuiltInDefaultKnobSource("0"));
 
         // Misc
