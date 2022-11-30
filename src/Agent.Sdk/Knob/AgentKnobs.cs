@@ -260,6 +260,13 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AZP_USE_CREDSCAN_REGEXES"),
             new BuiltInDefaultKnobSource("false"));
 
+        public static readonly Knob MaskedSecretMinLength = new Knob(
+            nameof(MaskedSecretMinLength),
+            "Minimum lenght of secret which will be masked in logs",
+            new RuntimeKnobSource("AGENT_MIN_SECRET_LENGTH"),
+            new EnvironmentKnobSource("AGENT_MIN_SECRET_LENGTH"),
+            new BuiltInDefaultKnobSource("0"));
+
         // Misc
         public static readonly Knob DisableAgentDowngrade = new Knob(
             nameof(DisableAgentDowngrade),
@@ -369,13 +376,6 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("VSTSAGENT_DUMP_PACKAGES_VERIFICATION_RESULTS"),
             new EnvironmentKnobSource("VSTSAGENT_DUMP_PACKAGES_VERIFICATION_RESULTS"),
             new BuiltInDefaultKnobSource("false"));
-
-        public static readonly Knob MaskedSecretMinLength = new Knob(
-            nameof(MaskedSecretMinLength),
-            "Minimum lenght of secret which will be masked in logs",
-            new RuntimeKnobSource("AGENT_MIN_SECRET_LENGTH"),
-            new EnvironmentKnobSource("AGENT_MIN_SECRET_LENGTH"),
-            new BuiltInDefaultKnobSource("0"));
 
         public static readonly Knob UseNode = new Knob(
             nameof(UseNode),
