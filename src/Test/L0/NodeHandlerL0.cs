@@ -30,6 +30,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Category", "Common")]
         public void UseNodeForNodeHandlerEnvVarNotSet()
         {
+            var agentUseNode10 = Environment.GetEnvironmentVariable("AGENT_USE_NODE10");
+            Environment.SetEnvironmentVariable("AGENT_USE_NODE10", null);
             using (TestHostContext thc = CreateTestHostContext())
             {
                 thc.SetSingleton(new WorkerCommandManager() as IWorkerCommandManager);
@@ -48,6 +50,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                     $"node{IOUtil.ExeExtension}");
                 Assert.Equal(expectedLocation, actualLocation);
             }
+            Environment.SetEnvironmentVariable("AGENT_USE_NODE10", agentUseNode10);
         }
 
         [Theory]
