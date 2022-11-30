@@ -478,6 +478,11 @@ namespace Agent.Sdk
 
         public OperatingSystem() { }
 
+        public bool Equals(string systemId)
+        {
+            return this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase);
+        }
+
         public bool Equals(string systemId, SystemVersion systemVersion)
         {
             if (!this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase))

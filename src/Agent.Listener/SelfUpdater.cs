@@ -695,36 +695,4 @@ You can skip checksum validation for the agent package by setting the environmen
             return new SystemEnvironment();
         }
     }
-<<<<<<< HEAD
-=======
-
-    public class OS
-    {
-        public string Id { get; set; }
-
-        public OSVersion[] Versions { get; set; }
-
-        public OS() { }
-
-        public bool Equals(string systemId)
-        {
-            return this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase);
-        }
-
-        public bool Equals(string systemId, OSVersion systemVersion)
-        {
-            if (!this.Equals(systemId))
-            {
-                return false;
-            }
-
-            if (this.Versions.Length == 0)
-            {
-                return false;
-            }
-
-            return this.Versions.Any(version => version.Equals(systemVersion));
-        }
-    }
->>>>>>> 63b6c99f9f44ae60a7c000cdd89feb072d52acf5
 }
