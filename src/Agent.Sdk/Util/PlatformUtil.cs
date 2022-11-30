@@ -337,6 +337,18 @@ namespace Agent.Sdk
             SystemVersion systemVersion = PlatformUtil.GetSystemVersion();
             return net6SupportedSystems.Any((s) => s.Equals(systemId, systemVersion));
         }
+
+        public static bool DoesSystemPersistsInNet6Whitelist()
+        {
+            if (net6SupportedSystems == null)
+            {
+                net6SupportedSystems = GetNet6SupportedSystems();
+            }
+
+            string systemId = PlatformUtil.GetSystemId();
+
+            return net6SupportedSystems.Any((s) => s.Equals(systemId));
+        }
     }
 
 #pragma warning disable CS0659 // Type overrides Object.Equals(object o) but does not override Object.GetHashCode()
