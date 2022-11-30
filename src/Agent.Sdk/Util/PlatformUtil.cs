@@ -323,10 +323,7 @@ namespace Agent.Sdk
 
         public static bool IsNet6Supported()
         {
-            if (net6SupportedSystems == null)
-            {
-                net6SupportedSystems = GetNet6SupportedSystems();
-            }
+            net6SupportedSystems ??= GetNet6SupportedSystems();
 
             string systemId = PlatformUtil.GetSystemId();
             SystemVersion systemVersion = PlatformUtil.GetSystemVersion();
@@ -473,25 +470,13 @@ namespace Agent.Sdk
 
         public OperatingSystem() { }
 
-        public bool Equals(string systemId)
-        {
-            return this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase);
-        }
+        public bool Equals(string systemId) => 
+            this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase);
 
-        public bool Equals(string systemId, SystemVersion systemVersion)
-        {
-            if (!this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase))
-            {
-                return false;
-            }
-
-            if (this.Versions.Length == 0)
-            {
-                return false;
-            }
-
-            return this.Versions.Any(version => version.Equals(systemVersion));
-        }
+        public bool Equals(string systemId, SystemVersion systemVersion) => 
+            this.Equals(systemId) || this.Versions.Length > 0 
+                ? this.Versions.Any(version => version.Equals(systemVersion))
+                : false;
     }
 
 }
