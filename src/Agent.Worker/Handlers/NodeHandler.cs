@@ -254,7 +254,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                         case NodeHandler.useNodeKnobLtsKey:
                             if (nodeHandlerHelper.IsNodeFolderExist(NodeHandler.nodeLTS, HostContext))
                             {
-                                ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, latest LTS version {NodeHandler.nodeLTS} will be used");
+                                ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, latest LTS version {NodeHandler.nodeLTS} will be used. See http://aka.ms/azdo-node-runner");
                                 Trace.Info($"Found LTS version of node installed");
                                 return nodeHandlerHelper.GetNodeFolderPath(NodeHandler.nodeLTS, HostContext);
                             }
@@ -264,7 +264,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
                             if (firstExistedNodeFolder != null)
                             {
-                                ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, next available version will be used");
+                                ExecutionContext.Warning($"Configured runner {nodeFolder} is not available, next available version will be used. See http://aka.ms/azdo-node-runner");
                                 Trace.Info($"Found {firstExistedNodeFolder} installed");
                                 return nodeHandlerHelper.GetNodeFolderPath(firstExistedNodeFolder, HostContext);
                             }
