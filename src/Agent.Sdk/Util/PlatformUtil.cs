@@ -85,32 +85,24 @@ namespace Agent.Sdk
 
         public static string GetSystemId()
         {
-            switch (PlatformUtil.HostOS)
+            return PlatformUtil.HostOS switch
             {
-                case PlatformUtil.OS.Linux:
-                    return GetLinuxId();
-                case PlatformUtil.OS.OSX:
-                    return "MacOS";
-                case PlatformUtil.OS.Windows:
-                    return GetWindowsId();
-                default:
-                    return null;
-            }
+                PlatformUtil.OS.Linux => GetLinuxId(),
+                PlatformUtil.OS.OSX => "MacOS",
+                PlatformUtil.OS.Windows => GetWindowsId(),
+                _ => null
+            };
         }
 
         public static SystemVersion GetSystemVersion()
         {
-            switch (PlatformUtil.HostOS)
+            return PlatformUtil.HostOS switch
             {
-                case PlatformUtil.OS.Linux:
-                    return new SystemVersion(GetLinuxName(), null);
-                case PlatformUtil.OS.OSX:
-                    return new SystemVersion(GetOSxName(), null);
-                case PlatformUtil.OS.Windows:
-                    return new SystemVersion(GetWindowsName(), GetWindowsVersion());
-                default:
-                    return null;
-            }
+                PlatformUtil.OS.Linux => new SystemVersion(GetLinuxName(), null),
+                PlatformUtil.OS.OSX => new SystemVersion(GetOSxName(), null),
+                PlatformUtil.OS.Windows => new SystemVersion(GetWindowsName(), GetWindowsVersion()),
+                _ => null
+            };
         }
 
         private static void DetectRHEL6()
