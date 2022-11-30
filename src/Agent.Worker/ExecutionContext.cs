@@ -671,11 +671,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         // the rule is command messages - which should be crafted using strongly typed wrapper methods.
         public long Write(string tag, string message, bool canMaskSecrets = true)
         {
-            string msg = message;
-            if (canMaskSecrets)
-            {
-                msg = HostContext.SecretMasker.MaskSecrets($"{tag}{message}");
-            }
+            string msg = canMaskSecrets ? HostContext.SecretMasker.MaskSecrets($"{tag}{message}") : message;
+
             long totalLines;
             lock (_loggerLock)
             {
