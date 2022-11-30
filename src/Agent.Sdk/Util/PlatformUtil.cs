@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -10,6 +11,8 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
 using Agent.Sdk.Knob;
+using BuildXL.Cache.MemoizationStore.Interfaces.Caches;
+using BuildXL.Utilities;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.Win32;
 using Newtonsoft.Json;
