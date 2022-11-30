@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -171,11 +172,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         public string GetNodeLocation()
         {
             bool useNode16 = AgentKnobs.UseNode16.GetValue(ExecutionContext).AsBoolean();
+            bool useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsBoolean();
             bool taskHasNode10Data = Data is Node10HandlerData;
             bool taskHasNode16Data = Data is Node16HandlerData;
 
             string nodeFolder = "node";
-            if (taskHasNode16Data)
+            if (PlatformUtil.RunningOnRHEL6 && taskHasNode16Data)
+            {
+                Trace.Info($"Detected RedHat 6, using node 10 as execution handler, instead node16");
+                nodeFolder = "node10";
+            }
+            else if (taskHasNode16Data)
             {
                 Trace.Info($"Task.json has node16 handler data: {taskHasNode16Data}");
                 nodeFolder = "node16";
@@ -185,7 +192,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 Trace.Info($"Task.json has node10 handler data: {taskHasNode10Data}");
                 nodeFolder = "node10";
             }
-            if(useNode16)
+            if (useNode16)
             {
                 Trace.Info($"Found UseNode16 knob, using node16 for node tasks {useNode16}");
                 nodeFolder = "node16";
