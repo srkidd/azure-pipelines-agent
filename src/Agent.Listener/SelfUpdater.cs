@@ -162,15 +162,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
                     Trace.Verbose($"The system you are running on: \"{systemId}\" ({systemVersion})");
 
-                    if (!supportedSystems.Any((system) => system.Equals(systemId, systemVersion)))
+                    // Check if the system persists in the whitelist
+                    if (supportedSystems.Any((system) => system.Equals(systemId)))
                     {
-                        Trace.Warning($"The operating system the agent is running on is \"{systemId}\" ({systemVersion}), which will not be supported by the .NET 6 based v3 agent. Please upgrade the Operating System of this host to ensure compatibility with the v3 agent. See https://devblogs.microsoft.com/devops/upgrade-of-net-agent-for-azure-pipelines/");
+                        // Check version of the system
+                        if (!supportedSystems.Any((system) => system.Equals(systemId, systemVersion)))
+                        {
+                            Trace.Warning($"The operating system the agent is running on is \"{systemId}\" ({systemVersion}), which will not be supported by the .NET 6 based v3 agent. Please upgrade the operating system of this host to ensure compatibility with the v3 agent. See https://aka.ms/azdo-pipeline-agent-version");
+                            return false;
+                        }
+                    } else
+                    {
+                        Trace.Warning($"The operating system the agent is running on is \"{systemId}\" ({systemVersion}), which has not been tested with the .NET 6 based v3 agent. The v2 agent wil not automatically upgrade to the v3 agent. You can manually download the .NET 6 based v3 agent from https://github.com/microsoft/azure-pipelines-agent/releases. See https://aka.ms/azdo-pipeline-agent-version");
                         return false;
                     }
-                    else
-                    {
-                        Trace.Verbose("The system persists in the list of systems supporting .NET 6");
-                    }
+
+                    Trace.Verbose("The system persists in the list of systems supporting .NET 6");
                 }
                 catch (Exception ex)
                 {
@@ -712,9 +719,14 @@ You can skip checksum validation for the agent package by setting the environmen
 
         public OS() { }
 
+        public bool Equals(string systemId)
+        {
+            return this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase);
+        }
+
         public bool Equals(string systemId, OSVersion systemVersion)
         {
-            if (!this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase))
+            if (!this.Equals(systemId))
             {
                 return false;
             }
