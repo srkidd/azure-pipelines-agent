@@ -14,6 +14,8 @@ using Microsoft.VisualStudio.Services.Content.Common;
 using Microsoft.VisualStudio.Services.BlobStore.Common;
 using Microsoft.VisualStudio.Services.Content.Common.Telemetry;
 using Microsoft.VisualStudio.Services.BlobStore.Common.Telemetry;
+using Agent.Sdk;
+using Microsoft.VisualStudio.Services.Content.Common.Tracing;
 
 namespace Microsoft.VisualStudio.Services.Agent.Blob
 {
@@ -23,17 +25,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
     public static class BlobStoreUtils
     {
         public static async Task<(List<BlobFileInfo> fileDedupIds, ulong length)> UploadBatchToBlobstore(
-            bool verbose,
+            AgentTaskPluginExecutionContext context,
             IReadOnlyList<string> itemPaths,
             Func<TelemetryInformationLevel, Uri, string, BlobStoreTelemetryRecord> telemetryRecordFactory,
-            Action<string> traceOutput,
             DedupStoreClient dedupClient,
             BlobStoreClientTelemetry clientTelemetry,
             CancellationToken cancellationToken,
             bool enableReporting = false)
         {
             // Create chunks and identifier
-            traceOutput(StringUtil.Loc("BuildingFileTree"));
+            context.Info(StringUtil.Loc("BuildingFileTree"));
             var fileNodes = await GenerateHashes(itemPaths, cancellationToken);
             var rootNode = CreateNodeToUpload(fileNodes.Where(x => x.Success).Select(y => y.Node));
            
@@ -50,7 +51,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             // Setup upload session to keep file for at mimimum one day
             // Blobs will need to be associated with the server with an ID ref otherwise they will be
             // garbage collected after one day
-            var tracer = DedupManifestArtifactClientFactory.CreateArtifactsTracer(verbose, traceOutput);
+            var tracer = context.CreateArtifactsTracer();
             var keepUntilRef = new KeepUntilBlobReference(DateTime.UtcNow.AddDays(1));
             var uploadSession = dedupClient.CreateUploadSession(keepUntilRef, tracer, FileSystem.Instance);
 
@@ -60,7 +61,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                 Task reportingTask = null;
                 if (enableReporting)
                 {
-                    reportingTask = StartReportingTask(traceOutput, (long)rootNode.TransitiveContentBytes, uploadSession, reportingCancelSrc);
+                    reportingTask = StartReportingTask(context, (long)rootNode.TransitiveContentBytes, uploadSession, reportingCancelSrc);
                 }
 
                 // Upload the chunks
@@ -90,7 +91,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             return (fileNodes, rootNode.TransitiveContentBytes);
         }
 
-        private static Task StartReportingTask(Action<string> traceOutput, long totalBytes, IDedupUploadSession uploadSession, CancellationTokenSource reportingCancel)
+        private static Task StartReportingTask(AgentTaskPluginExecutionContext context, long totalBytes, IDedupUploadSession uploadSession, CancellationTokenSource reportingCancel)
         {
             return Task.Run(async () =>
             {
@@ -98,7 +99,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                 {
                     while (!reportingCancel.IsCancellationRequested)
                     {
-                        traceOutput($"Uploaded {uploadSession.UploadStatistics.TotalContentBytes:N0} out of {totalBytes:N0} bytes.");
+                        context.Info($"Uploaded {uploadSession.UploadStatistics.TotalContentBytes:N0} out of {totalBytes:N0} bytes.");
                         await Task.Delay(10000, reportingCancel.Token);
                     }
                 }
@@ -107,7 +108,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                     // Expected
                 }
                 // Print final result
-                traceOutput($"Uploaded {uploadSession.UploadStatistics.TotalContentBytes:N0} out of {totalBytes:N0} bytes.");
+                context.Info($"Uploaded {uploadSession.UploadStatistics.TotalContentBytes:N0} out of {totalBytes:N0} bytes.");
             });
         }
 
@@ -168,10 +169,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
         }
 
         public static async Task<(DedupIdentifier dedupId, ulong length)> UploadToBlobStore(
-            bool verbose,
+            AgentTaskPluginExecutionContext context,
             string itemPath,
             Func<TelemetryInformationLevel, Uri, string, BlobStoreTelemetryRecord> telemetryRecordFactory,
-            Action<string> traceOutput,
             DedupStoreClient dedupClient,
             BlobStoreClientTelemetry clientTelemetry,
             CancellationToken cancellationToken)
@@ -185,7 +185,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             // Setup upload session to keep file for at mimimum one day
             // Blobs will need to be associated with the server with an ID ref otherwise they will be
             // garbage collected after one day
-            var tracer = DedupManifestArtifactClientFactory.CreateArtifactsTracer(verbose, traceOutput);
+            var tracer = context.CreateArtifactsTracer();
             var keepUntilRef = new KeepUntilBlobReference(DateTime.UtcNow.AddDays(1));
             var uploadSession = dedupClient.CreateUploadSession(keepUntilRef, tracer, FileSystem.Instance);
 
@@ -206,6 +206,53 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                         continueOnCapturedContext: false)
             );
             return (dedupId, rootNode.TransitiveContentBytes);
+        }
+
+        public static IAppTraceSource CreateArtifactsTracer(this AgentTaskPluginExecutionContext context)
+        {
+            ArgUtil.NotNull(context, nameof(context));
+            bool verbose = context.IsSystemDebugTrue();
+            return new CallbackAppTraceSource(
+                (str, level) => 
+                {
+                    if (level == System.Diagnostics.SourceLevels.Warning)
+                    {
+                        context.Warning(str);
+                    }
+                    else
+                    {
+                        context.Output(str);
+                    }
+                },
+                verbose
+                    ? System.Diagnostics.SourceLevels.Verbose
+                    : System.Diagnostics.SourceLevels.Information);
+        }
+
+//                 var verbose = String.Equals(context.GetVariableValueOrDefault("system.debug"), "true", StringComparison.InvariantCultureIgnoreCase);
+// int maxParallelism = context.GetHostContext().GetService<IConfigurationStore>().GetSettings().MaxDedupParallelism;
+// (dedupClient, clientTelemetry) = await DedupManifestArtifactClientFactory.Instance
+//     .CreateDedupClientAsync(context, this._connection, maxParallelism, token);
+
+        public static IAppTraceSource CreateArtifactsTracer(this IAsyncCommandContext context)
+        {
+            ArgUtil.NotNull(context, nameof(context));
+            bool verbose = context.IsSystemDebugTrue();
+            return new CallbackAppTraceSource(
+                (str, level) => 
+                {
+                    if (level == System.Diagnostics.SourceLevels.Warning)
+                    {
+                        context.Warning(str);
+                    }
+                    else
+                    {
+                        context.Output(str);
+                    }
+                },
+                verbose
+                    ? System.Diagnostics.SourceLevels.Verbose
+                    : System.Diagnostics.SourceLevels.Information);
         }
     }
 }

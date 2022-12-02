@@ -57,10 +57,8 @@ namespace Agent.Plugins
         {
             context.Warning(StringUtil.Loc("DownloadArtifactWarning", "UNC"));
             var (dedupManifestClient, clientTelemetry) = await this.factory.CreateDedupManifestClientAsync(
-                context.IsSystemDebugTrue(),
-                (str) => context.Output(str),
+                context,
                 connection,
-                this.factory.GetDedupStoreClientMaxParallelism(context),
                 WellKnownDomainIds.DefaultDomainId,
                 cancellationToken);
 
@@ -108,10 +106,8 @@ namespace Agent.Plugins
             CancellationToken cancellationToken) 
         {
             var (dedupManifestClient, clientTelemetry) = await this.factory.CreateDedupManifestClientAsync(
-                context.IsSystemDebugTrue(),
-                (str) => context.Output(str),
+                context,
                 connection,
-                this.factory.GetDedupStoreClientMaxParallelism(context),
                 WellKnownDomainIds.DefaultDomainId,
                 cancellationToken);
 

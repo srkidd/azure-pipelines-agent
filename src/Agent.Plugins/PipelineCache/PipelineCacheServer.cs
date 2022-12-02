@@ -42,10 +42,8 @@ namespace Agent.Plugins.PipelineCache
             VssConnection connection = context.VssConnection;
             var (dedupManifestClient, clientTelemetry) = await DedupManifestArtifactClientFactory.Instance
                 .CreateDedupManifestClientAsync(
-                    context.IsSystemDebugTrue(),
-                    (str) => context.Output(str),
+                    context,
                     connection,
-                    DedupManifestArtifactClientFactory.Instance.GetDedupStoreClientMaxParallelism(context),
                     WellKnownDomainIds.DefaultDomainId,
                     cancellationToken);
 
@@ -154,10 +152,8 @@ namespace Agent.Plugins.PipelineCache
             VssConnection connection = context.VssConnection;
             var (dedupManifestClient, clientTelemetry) = await DedupManifestArtifactClientFactory.Instance
                 .CreateDedupManifestClientAsync(
-                    context.IsSystemDebugTrue(),
-                    (str) => context.Output(str),
+                    context,
                     connection,
-                    DedupManifestArtifactClientFactory.Instance.GetDedupStoreClientMaxParallelism(context),
                     WellKnownDomainIds.DefaultDomainId,
                     cancellationToken);
 

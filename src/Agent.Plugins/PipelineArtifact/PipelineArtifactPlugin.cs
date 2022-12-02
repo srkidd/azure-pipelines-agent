@@ -14,6 +14,7 @@ using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.Services.Content.Common.Tracing;
 using System.Linq;
 using System.Text.Json;
+using Microsoft.VisualStudio.Services.Agent.Blob;
 
 namespace Agent.Plugins.PipelineArtifact
 {

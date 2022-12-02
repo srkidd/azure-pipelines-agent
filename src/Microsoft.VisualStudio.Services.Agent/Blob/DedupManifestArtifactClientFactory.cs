@@ -12,6 +12,7 @@ using Microsoft.VisualStudio.Services.BlobStore.Common.Telemetry;
 using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.BlobStore.Common;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Microsoft.VisualStudio.Services.Agent.Blob
 {
@@ -29,8 +30,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
         /// <param name="cancellationToken">Cancellation token used for both creating clients and verifying client conneciton.</param>
         /// <returns>Tuple of the client and the telemtery client</returns>
         Task<(DedupManifestArtifactClient client, BlobStoreClientTelemetry telemetry)> CreateDedupManifestClientAsync(
-            bool verbose,
-            Action<string> traceOutput,
+            IAppTraceSource tracer,
             VssConnection connection,
             int maxParallelism,
             IDomainId domainId,
@@ -47,8 +47,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
         /// <param name="cancellationToken">Cancellation token used for both creating clients and verifying client conneciton.</param>
         /// <returns>Tuple of the client and the telemtery client</returns>
         Task<(DedupStoreClient client, BlobStoreClientTelemetryTfs telemetry)> CreateDedupClientAsync(
-            bool verbose,
-            Action<string> traceOutput,
+            IAppTraceSource tracer,
             VssConnection connection,
             int maxParallelism,
             CancellationToken cancellationToken);
@@ -74,23 +73,35 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
         {
         }
 
+        public Task<(DedupManifestArtifactClient client, BlobStoreClientTelemetry telemetry)> CreateDedupManifestClientAsync(
+            AgentTaskPluginExecutionContext context,
+            VssConnection connection,
+            IDomainId domainId,
+            CancellationToken cancellationToken)
+        {
+            ConfigureEnvironmentVariables(context);
+            return CreateDedupManifestClientAsync(
+                context.CreateArtifactsTracer(),
+                connection,
+                GetDedupStoreClientMaxParallelism(context),
+                domainId,
+                cancellationToken);
+        }
 
         public async Task<(DedupManifestArtifactClient client, BlobStoreClientTelemetry telemetry)> CreateDedupManifestClientAsync(
-            bool verbose,
-            Action<string> traceOutput,
+            IAppTraceSource tracer,
             VssConnection connection,
             int maxParallelism,
             IDomainId domainId,
             CancellationToken cancellationToken)
         {
             const int maxRetries = 5;
-            var tracer = CreateArtifactsTracer(verbose, traceOutput);
             if (maxParallelism == 0)
             {
                 maxParallelism = DefaultDedupStoreClientMaxParallelism;
             }
-            traceOutput($"Max dedup parallelism: {maxParallelism}");
-
+            tracer.Info($"Max dedup parallelism: {maxParallelism}");
+            
             IDedupStoreHttpClient dedupStoreHttpClient = await AsyncHttpRetryHelper.InvokeAsync(
                 () =>
                 {
@@ -126,20 +137,32 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             return (new DedupManifestArtifactClient(telemetry, client, tracer), telemetry);
         }
 
+        public Task<(DedupStoreClient client, BlobStoreClientTelemetryTfs telemetry)> CreateDedupClientAsync(
+            AgentTaskPluginExecutionContext context,
+            VssConnection connection,
+            CancellationToken cancellationToken)
+        {
+            ConfigureEnvironmentVariables(context);
+            return CreateDedupClientAsync(
+                context.CreateArtifactsTracer(),
+                connection,
+                GetDedupStoreClientMaxParallelism(context),
+                cancellationToken);
+        }
+
         public async Task<(DedupStoreClient client, BlobStoreClientTelemetryTfs telemetry)> CreateDedupClientAsync(
-            bool verbose,
-            Action<string> traceOutput,
+            IAppTraceSource tracer,
             VssConnection connection,
             int maxParallelism,
             CancellationToken cancellationToken)
         {
             const int maxRetries = 5;
-            var tracer = CreateArtifactsTracer(verbose, traceOutput);
             if (maxParallelism == 0)
             {
                 maxParallelism = DefaultDedupStoreClientMaxParallelism;
             }
-            traceOutput($"Max dedup parallelism: {maxParallelism}");
+            tracer.Info($"Max dedup parallelism: {maxParallelism}");
+
             var dedupStoreHttpClient = await AsyncHttpRetryHelper.InvokeAsync(
                 () =>
                 {
@@ -188,16 +211,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             return parallelism;
         }
 
+        private static readonly string[] EnvironmentVariables = new [] { "VSO_DEDUP_REDIRECT_TIMEOUT_IN_SEC" };
 
-
-        public static IAppTraceSource CreateArtifactsTracer(bool verbose, Action<string> traceOutput)
+        private static void ConfigureEnvironmentVariables(AgentTaskPluginExecutionContext context)
         {
-            return new CallbackAppTraceSource(
-                str => traceOutput(str),
-                verbose
-                    ? System.Diagnostics.SourceLevels.Verbose
-                    : System.Diagnostics.SourceLevels.Information,
-                includeSeverityLevel: verbose);
+            foreach(string varName in EnvironmentVariables)
+            {
+                if (context.Variables.TryGetValue(varName, out VariableValue v))
+                {
+                    if (v.Value.Equals(Environment.GetEnvironmentVariable(varName), StringComparison.Ordinal))
+                    {
+                        context.Output($"{varName} is already set to `{v.Value}`.");
+                    }
+                    else
+                    {
+                        Environment.SetEnvironmentVariable(varName, v.Value);
+                        context.Output($"Set {varName} to `{v.Value}`.");
+                    }
+                }
+            }
         }
     }
 }

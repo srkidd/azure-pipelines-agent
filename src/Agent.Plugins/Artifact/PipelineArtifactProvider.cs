@@ -34,10 +34,8 @@ namespace Agent.Plugins
         public async Task DownloadSingleArtifactAsync(ArtifactDownloadParameters downloadParameters, BuildArtifact buildArtifact, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context)
         {
             var (dedupManifestClient, clientTelemetry) = await DedupManifestArtifactClientFactory.Instance.CreateDedupManifestClientAsync(
-                this.context.IsSystemDebugTrue(),
-                (str) => this.context.Output(str),
+                context,
                 this.connection,
-                DedupManifestArtifactClientFactory.Instance.GetDedupStoreClientMaxParallelism(context),
                 WellKnownDomainIds.DefaultDomainId,
                 cancellationToken);
 
@@ -75,10 +73,8 @@ namespace Agent.Plugins
         public async Task DownloadMultipleArtifactsAsync(ArtifactDownloadParameters downloadParameters, IEnumerable<BuildArtifact> buildArtifacts, CancellationToken cancellationToken, AgentTaskPluginExecutionContext context)
         {
             var (dedupManifestClient, clientTelemetry) = await DedupManifestArtifactClientFactory.Instance.CreateDedupManifestClientAsync(
-                this.context.IsSystemDebugTrue(),
-                (str) => this.context.Output(str),
+                context,
                 this.connection,
-                DedupManifestArtifactClientFactory.Instance.GetDedupStoreClientMaxParallelism(context),
                 WellKnownDomainIds.DefaultDomainId,
                 cancellationToken);
 
