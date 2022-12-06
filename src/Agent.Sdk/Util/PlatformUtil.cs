@@ -332,9 +332,12 @@ namespace Agent.Sdk
                     supportOSfileContent = await response.Content.ReadAsStringAsync();
                     await File.WriteAllTextAsync(supportOSfilePath, supportOSfileContent);
                 }
+            } 
+            else
+            {
+                supportOSfileContent = await File.ReadAllTextAsync(supportOSfilePath);
             }
 
-            supportOSfileContent = await File.ReadAllTextAsync(supportOSfilePath);
             return JsonConvert.DeserializeObject<OperatingSystem[]>(supportOSfileContent);
         }
 
