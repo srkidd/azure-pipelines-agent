@@ -357,11 +357,7 @@ namespace Agent.Sdk
 
         public async static Task<bool> DoesSystemPersistsInNet6Whitelist()
         {
-            if (net6SupportedSystems == null)
-            {
-                net6SupportedSystems = await GetNet6SupportedSystems();
-            }
-
+            net6SupportedSystems ??= await GetNet6SupportedSystems();
             string systemId = PlatformUtil.GetSystemId();
 
             return net6SupportedSystems.Any((s) => s.Equals(systemId));
@@ -499,7 +495,7 @@ namespace Agent.Sdk
             this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase);
 
         public bool Equals(string systemId, SystemVersion systemVersion) => 
-            this.Equals(systemId) || this.Versions.Length > 0 
+            this.Equals(systemId) && this.Versions.Length > 0 
                 ? this.Versions.Any(version => version.Equals(systemVersion))
                 : false;
     }
