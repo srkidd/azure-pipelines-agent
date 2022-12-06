@@ -319,31 +319,23 @@ namespace Agent.Sdk
         {
             string serverFileUrl = "https://raw.githubusercontent.com/microsoft/azure-pipelines-agent/master/src/Agent.Listener/net6.json";
             string supportOSfilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "net6.json");
+            string supportOSfileContent;
 
-            if (File.Exists(supportOSfilePath))
-            {
-                string supportOSfileContent = File.ReadAllText(supportOSfilePath);
-
-                if (File.GetLastWriteTimeUtc(supportOSfilePath) < DateTime.UtcNow.AddHours(-1)) {
-                    using (var request = new HttpRequestMessage(HttpMethod.Get, serverFileUrl))
-                    {
-                        HttpResponseMessage response = await httpClient.SendAsync(request);
-                        if (!response.IsSuccessStatusCode)
-                        {
-                            throw new Exception($"Getting file \"net6.json\" from server failed. Status code: {response.StatusCode}");
-                        }
-                        supportOSfileContent = await response.Content.ReadAsStringAsync();
-                        await File.WriteAllTextAsync(supportOSfilePath, supportOSfileContent);
-                    }
-                } else
+            if (!File.Exists(supportOSfilePath) || (File.Exists(supportOSfilePath) && File.GetLastWriteTimeUtc(supportOSfilePath) < DateTime.UtcNow.AddHours(-1))) {
+                using (var request = new HttpRequestMessage(HttpMethod.Get, serverFileUrl))
                 {
-                    supportOSfileContent = File.ReadAllText(supportOSfilePath);
+                    HttpResponseMessage response = await httpClient.SendAsync(request);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new Exception($"Getting file \"net6.json\" from server failed. Status code: {response.StatusCode}");
+                    }
+                    supportOSfileContent = await response.Content.ReadAsStringAsync();
+                    await File.WriteAllTextAsync(supportOSfilePath, supportOSfileContent);
                 }
-
-                return JsonConvert.DeserializeObject<OperatingSystem[]>(supportOSfileContent);
             }
 
-            return Array.Empty<OperatingSystem>();
+            supportOSfileContent = await File.ReadAllTextAsync(supportOSfilePath);
+            return JsonConvert.DeserializeObject<OperatingSystem[]>(supportOSfileContent);
         }
 
         public async static Task<bool> IsNet6Supported()
