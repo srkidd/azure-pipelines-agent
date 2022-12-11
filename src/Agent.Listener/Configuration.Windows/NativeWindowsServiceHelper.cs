@@ -540,9 +540,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 failureActions.Add(new FailureAction(RecoverAction.Restart, 60000));
 
                 // Lock the Service Database
-                svcLock = LockServiceDatabase(scmHndl);
-                if (svcLock.ToInt64() <= 0)
+                int lockRetries = 10;
+
+                while (true)
                 {
+                    svcLock = LockServiceDatabase(scmHndl);
+                    if (svcLock.ToInt64() > 0)
+                    {
+                        break;
+                    }
+
+                    lockRetries--;
+                    if (lockRetries > 0)
+                    {
+                        Thread.Sleep(10000);
+                        continue;
+                    }
+
                     throw new InvalidOperationException(StringUtil.Loc("FailedToLockServiceDB"));
                 }
 
