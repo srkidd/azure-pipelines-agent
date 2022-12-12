@@ -208,7 +208,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
                         if (!string.IsNullOrEmpty(taskName) &&
                             Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
-                            shellName == WellKnownScriptShell.Cmd)
+                            shellName == WellKnownScriptShell.Cmd &&
+                            Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase))
                         {
                             trace.Verbose("CMD shell found. Custom macro processing.");
 
