@@ -261,6 +261,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public void ExpandValues(IDictionary<string, string> target, string taskName = null)
         {
+            ExpandValues(target, out _, taskName);
+        }
+
+        public void ExpandValues(IDictionary<string, string> target, out List<string> warnings, string taskName = null)
+        {
             ArgUtil.NotNull(target, nameof(target));
             _trace.Entering();
             var source = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
@@ -270,7 +275,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 source[variable.Name] = value;
             }
 
-            VarUtil.ExpandValues(_hostContext, source, target, taskName);
+            VarUtil.ExpandValues(_hostContext, source, target, out warnings, taskName);
         }
 
         public string ExpandValue(string name, string value)

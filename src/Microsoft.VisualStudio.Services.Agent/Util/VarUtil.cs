@@ -147,13 +147,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             IDictionary<string, string> source,
             IDictionary<string, string> target,
             string taskName = null
-            )
+        )
+        {
+            ExpandValues(context, source, target, out _, taskName);
+        }
+
+        public static void ExpandValues(
+            IHostContext context,
+            IDictionary<string, string> source,
+            IDictionary<string, string> target,
+            out List<string> warnings,
+            string taskName = null
+        )
         {
             ArgUtil.NotNull(context, nameof(context));
             ArgUtil.NotNull(source, nameof(source));
             Tracing trace = context.GetTrace(nameof(VarUtil));
             trace.Entering();
             target ??= new Dictionary<string, string>();
+            warnings = new List<string>();
 
             // This algorithm does not perform recursive replacement.
 
@@ -184,22 +196,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         !string.IsNullOrEmpty(taskName) &&
                         Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
                         shellName != WellKnownScriptShell.Cmd &&
-                        Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase))
+                        Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
+                    )
                     {
-                        trace.Verbose($"Found a macro with vulnerable variables. Replacing with env variables for the {shellName} shell.");
-
-                        var envVariableParts = Constants.ScriptShells.EnvVariablePartsPerShell[shellName];
                         var envVariableName = ConvertToEnvVariableFormat(variableKey);
-                        var envVariable = envVariableParts.Prefix + envVariableName + envVariableParts.Suffix;
 
-                        targetValue =
-                            targetValue[..prefixIndex]
-                            + envVariable
-                            + targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..];
-
-                        startIndex = prefixIndex + envVariable.Length;
+                        var warningMessage = StringUtil.Loc("VariableVulnerableToExecWarn", variableKey, envVariableName);
+                        warnings.Add(warningMessage);
                     }
-                    else if (isVariableKeyPresent &&
+                    if (isVariableKeyPresent &&
                         TryGetValue(trace, source, variableKey, out string variableValue))
                     {
                         // A matching variable was found.
@@ -209,7 +214,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         if (!string.IsNullOrEmpty(taskName) &&
                             Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
                             shellName == WellKnownScriptShell.Cmd &&
-                            Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase))
+                            Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
+                        )
                         {
                             trace.Verbose("CMD shell found. Custom macro processing.");
 

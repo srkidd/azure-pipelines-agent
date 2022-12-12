@@ -219,7 +219,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 // Expand the inputs.
                 Trace.Verbose("Expanding inputs.");
-                runtimeVariables.ExpandValues(target: inputs, Task.Reference.Name);
+                runtimeVariables.ExpandValues(target: inputs, out var runtimeVarExpWarnings, Task.Reference.Name);
+
+                runtimeVarExpWarnings?.ForEach(warning => ExecutionContext.Warning(warning));
 
                 // We need to verify inputs of the tasks that were injected by decorators, to check if they contain secrets,
                 // for security reasons execution of tasks in this case should be skipped.
