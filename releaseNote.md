@@ -1,7 +1,6 @@
 ## Features
  - MSI connection set up for Azure Container Registry for Container Jobs (#3944)
  - Not mask tasks banner (#4013)
- - Fix execution of scripts in variables (#4016)
  - Run task on next available Node version, if targeted version is not available (#4041)
  - Add release variables for vso commands deactivating dictionary (#4048)
  - Added tool converting str to env variable format (#4052)
