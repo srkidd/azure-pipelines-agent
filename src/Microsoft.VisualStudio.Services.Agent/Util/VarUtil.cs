@@ -146,10 +146,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             IHostContext context,
             IDictionary<string, string> source,
             IDictionary<string, string> target,
-            string taskName = null
+            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown
         )
         {
-            ExpandValues(context, source, target, out _, taskName);
+            ExpandValues(context, source, target, out _, shellName);
         }
 
         public static void ExpandValues(
@@ -157,7 +157,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             IDictionary<string, string> source,
             IDictionary<string, string> target,
             out List<string> warnings,
-            string taskName = null
+            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown
         )
         {
             ArgUtil.NotNull(context, nameof(context));
@@ -190,11 +190,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     trace.Verbose($"Found macro candidate: '{variableKey}'");
 
                     var isVariableKeyPresent = !string.IsNullOrEmpty(variableKey);
-                    WellKnownScriptShell shellName;
 
                     if (isVariableKeyPresent &&
-                        !string.IsNullOrEmpty(taskName) &&
-                        Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
+                        shellName != WellKnownScriptShell.Unknown &&
                         shellName != WellKnownScriptShell.Cmd &&
                         Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
                     )
@@ -211,8 +209,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         // Update the target value.
                         trace.Verbose("Macro found.");
 
-                        if (!string.IsNullOrEmpty(taskName) &&
-                            Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out shellName) &&
+                        if (shellName == WellKnownScriptShell.Unknown &&
                             shellName == WellKnownScriptShell.Cmd &&
                             Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
                         )

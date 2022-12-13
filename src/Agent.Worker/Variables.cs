@@ -259,12 +259,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             "RequestedFor"
         };
 
-        public void ExpandValues(IDictionary<string, string> target, string taskName = null)
+        public void ExpandValues(IDictionary<string, string> target, WellKnownScriptShell shellName = WellKnownScriptShell.Unknown)
         {
-            ExpandValues(target, out _, taskName);
+            ExpandValues(target, out _, shellName);
         }
 
-        public void ExpandValues(IDictionary<string, string> target, out List<string> warnings, string taskName = null)
+        public void ExpandValues(
+            IDictionary<string, string> target,
+            out List<string> warnings,
+            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown
+        )
         {
             ArgUtil.NotNull(target, nameof(target));
             _trace.Entering();
@@ -275,7 +279,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 source[variable.Name] = value;
             }
 
-            VarUtil.ExpandValues(_hostContext, source, target, out warnings, taskName);
+            VarUtil.ExpandValues(_hostContext, source, target, out warnings, shellName);
         }
 
         public string ExpandValue(string name, string value)

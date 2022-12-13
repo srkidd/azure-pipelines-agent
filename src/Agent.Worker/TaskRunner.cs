@@ -219,7 +219,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 // Expand the inputs.
                 Trace.Verbose("Expanding inputs.");
-                runtimeVariables.ExpandValues(target: inputs, out var runtimeVarExpWarnings, Task.Reference.Name);
+
+                var taskShellName = PipelineTasksUtil.GetShellByTaskName(Task.Reference.Name);
+                runtimeVariables.ExpandValues(target: inputs, out var runtimeVarExpWarnings, taskShellName);
 
                 runtimeVarExpWarnings?.ForEach(warning => ExecutionContext.Warning(warning));
 
@@ -579,7 +581,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
             var expectedExecutionHandler = (taskDefinition.Data.Execution?.All != null) ? string.Join(", ", taskDefinition.Data.Execution.All) : "";
-            
+
             Dictionary<string, string> telemetryData = new Dictionary<string, string>
             {
                 { "TaskName", Task.Reference.Name },

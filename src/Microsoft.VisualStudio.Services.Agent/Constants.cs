@@ -43,6 +43,7 @@ namespace Microsoft.VisualStudio.Services.Agent
 
     public enum WellKnownScriptShell
     {
+        Unknown,
         Bash,
         Cmd,
         PowerShell
