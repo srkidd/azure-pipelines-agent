@@ -488,13 +488,6 @@ namespace Microsoft.VisualStudio.Services.Agent
                 public static readonly string SkipTranslatorForCheckout = "task.skipTranslatorForCheckout";
             }
 
-            public static readonly Dictionary<string, WellKnownScriptShell> ScriptShellsPerTasks = new Dictionary<string, WellKnownScriptShell>(StringComparer.OrdinalIgnoreCase)
-            {
-                ["PowerShell"] = WellKnownScriptShell.PowerShell,
-                ["Bash"] = WellKnownScriptShell.Bash,
-                ["CmdLine"] = WellKnownScriptShell.Cmd
-            };
-
             public static List<string> ReadOnlyVariables = new List<string>(){
                 // Agent variables
                 Agent.AcceptTeeEula,

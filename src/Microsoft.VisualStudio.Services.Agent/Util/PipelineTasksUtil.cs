@@ -2,11 +2,19 @@
 // Licensed under the MIT License.
 
 using Agent.Sdk;
+using System.Collections.Generic;
+using System;
 
 namespace Microsoft.VisualStudio.Services.Agent.Util
 {
     public static class PipelineTasksUtil
     {
+        public static readonly Dictionary<string, WellKnownScriptShell> ScriptShellsPerTasks = new Dictionary<string, WellKnownScriptShell>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["PowerShell"] = WellKnownScriptShell.PowerShell,
+            ["Bash"] = WellKnownScriptShell.Bash
+        };
+
         public static WellKnownScriptShell GetShellByTaskName(string taskName)
         {
             if (taskName == "CmdLine")
@@ -22,7 +30,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
             else
             {
-                var isTaskForShell = Constants.Variables.ScriptShellsPerTasks.TryGetValue(taskName, out var shellName);
+                var isTaskForShell = ScriptShellsPerTasks.TryGetValue(taskName, out var shellName);
                 if (isTaskForShell)
                 {
                     return shellName;
