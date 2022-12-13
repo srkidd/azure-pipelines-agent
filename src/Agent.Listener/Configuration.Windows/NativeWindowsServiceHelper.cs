@@ -452,7 +452,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             ServiceController service = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
             return service != null;
         }
-        
+
         public void InstallService(string serviceName, string serviceDisplayName, string logonAccount, string logonPassword, bool setServiceSidTypeAsUnrestricted)
         {
             Trace.Entering();
@@ -541,19 +541,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
                 // Lock the Service Database
                 int lockRetries = 10;
-
+                int retryTimeout = 5000;
                 while (true)
                 {
                     svcLock = LockServiceDatabase(scmHndl);
-                    if (svcLock.ToInt64() > 0)
+
+                    var svcLockIntCode = svcLock.ToInt64();
+                    if (svcLockIntCode > 0)
                     {
                         break;
                     }
 
+                    _term.WriteLine(StringUtil.Loc("ServiceLockErrorRetry", svcLockIntCode, retryTimeout / 1000));
+
                     lockRetries--;
                     if (lockRetries > 0)
                     {
-                        Thread.Sleep(10000);
+                        Thread.Sleep(retryTimeout);
                         continue;
                     }
 
@@ -925,7 +929,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             AddMemberToLocalGroup(accountName, groupName);
 
             // grant permssion for folders
-            foreach(var folder in folders)
+            foreach (var folder in folders)
             {
                 if (Directory.Exists(folder))
                 {
@@ -943,7 +947,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             Trace.Info(StringUtil.Format("Calculated unique group name {0}", groupName));
 
             // remove the group from folders
-            foreach(var folder in folders)
+            foreach (var folder in folders)
             {
                 if (Directory.Exists(folder))
                 {
@@ -952,7 +956,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     {
                         RemoveGroupFromFolderSecuritySetting(folder, groupName);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         Trace.Error(ex);
                     }
