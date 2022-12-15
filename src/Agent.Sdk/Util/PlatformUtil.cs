@@ -28,6 +28,7 @@ namespace Agent.Sdk
     public static class PlatformUtil
     {
         private static UtilKnobValueContext _knobContext = UtilKnobValueContext.Instance();
+        private static OperatingSystem[] net6SupportedSystems;
         private static HttpClient httpClient = new HttpClient();
 
         // System.Runtime.InteropServices.OSPlatform is a struct, so it is
@@ -332,10 +333,16 @@ namespace Agent.Sdk
             } 
             else
             {
+                if (net6SupportedSystems != null)
+                {
+                    return net6SupportedSystems;
+                }
+
                 supportOSfileContent = await File.ReadAllTextAsync(supportOSfilePath);
             }
 
-            return JsonConvert.DeserializeObject<OperatingSystem[]>(supportOSfileContent);
+            net6SupportedSystems = JsonConvert.DeserializeObject<OperatingSystem[]>(supportOSfileContent);
+            return net6SupportedSystems;
         }
 
         public async static Task<bool> IsNet6Supported()
