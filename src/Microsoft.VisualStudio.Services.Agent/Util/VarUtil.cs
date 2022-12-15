@@ -198,8 +198,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     )
                     {
                         var envVariableName = ConvertToEnvVariableFormat(variableKey);
+                        var shellEnvVariableParts = Constants.ScriptShells.EnvVariablePartsPerShell[shellName];
+                        var shellEnvVariable = shellEnvVariableParts.Prefix + envVariableName + shellEnvVariableParts.Suffix;
 
-                        var warningMessage = StringUtil.Loc("VariableVulnerableToExecWarn", variableKey, envVariableName);
+                        var warningMessage = StringUtil.Loc("VariableVulnerableToExecWarn", variableKey, shellEnvVariable);
                         warnings.Add(warningMessage);
                     }
                     if (isVariableKeyPresent &&
