@@ -18,6 +18,7 @@ using Agent.Sdk.Knob;
 using Agent.Sdk.Util;
 using BuildXL.Cache.MemoizationStore.Interfaces.Caches;
 using BuildXL.Utilities;
+using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.Win32;
 using Newtonsoft.Json;
@@ -27,7 +28,6 @@ namespace Agent.Sdk
     public static class PlatformUtil
     {
         private static UtilKnobValueContext _knobContext = UtilKnobValueContext.Instance();
-        private static OperatingSystem[] net6SupportedSystems;
         private static HttpClient httpClient = new HttpClient();
 
         // System.Runtime.InteropServices.OSPlatform is a struct, so it is
@@ -321,17 +321,14 @@ namespace Agent.Sdk
             string supportOSfilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "net6.json");
             string supportOSfileContent;
 
-            if (!File.Exists(supportOSfilePath) || (File.Exists(supportOSfilePath) && File.GetLastWriteTimeUtc(supportOSfilePath) < DateTime.UtcNow.AddHours(-1))) {
-                using (var request = new HttpRequestMessage(HttpMethod.Get, serverFileUrl))
+            if (!File.Exists(supportOSfilePath) || File.GetLastWriteTimeUtc(supportOSfilePath) < DateTime.UtcNow.AddHours(-1)) {
+                HttpResponseMessage response = await httpClient.GetAsync(serverFileUrl);
+                if (!response.IsSuccessStatusCode)
                 {
-                    HttpResponseMessage response = await httpClient.SendAsync(request);
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        throw new Exception($"Getting file \"net6.json\" from server failed. Status code: {response.StatusCode}");
-                    }
-                    supportOSfileContent = await response.Content.ReadAsStringAsync();
-                    await File.WriteAllTextAsync(supportOSfilePath, supportOSfileContent);
+                    throw new Exception($"Getting file \"net6.json\" from server failed. Status code: {response.StatusCode}");
                 }
+                supportOSfileContent = await response.Content.ReadAsStringAsync();
+                await File.WriteAllTextAsync(supportOSfilePath, supportOSfileContent);
             } 
             else
             {
@@ -343,7 +340,7 @@ namespace Agent.Sdk
 
         public async static Task<bool> IsNet6Supported()
         {
-            net6SupportedSystems ??= await GetNet6SupportedSystems();
+            OperatingSystem[] net6SupportedSystems = await GetNet6SupportedSystems();
 
             string systemId = PlatformUtil.GetSystemId();
             SystemVersion systemVersion = PlatformUtil.GetSystemVersion();
@@ -352,7 +349,7 @@ namespace Agent.Sdk
 
         public async static Task<bool> DoesSystemPersistsInNet6Whitelist()
         {
-            net6SupportedSystems ??= await GetNet6SupportedSystems();
+            OperatingSystem[] net6SupportedSystems = await GetNet6SupportedSystems();
             string systemId = PlatformUtil.GetSystemId();
 
             return net6SupportedSystems.Any((s) => s.Equals(systemId));
