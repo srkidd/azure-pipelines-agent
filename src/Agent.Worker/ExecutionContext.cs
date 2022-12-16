@@ -515,6 +515,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
+            try
+            {
+                HostContext.SecretMasker.MinSecretLength = AgentKnobs.MaskedSecretMinLength.GetValue(this).AsInt();
+            }
+            catch (ArgumentException ex)
+            {
+                warnings.Add(ex.Message);
+            }
+            HostContext.SecretMasker.RemoveShortSecretsFromDictionary();
+
             // Prepend Path
             PrependPath = new List<string>();
 
@@ -524,19 +534,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 imageName = Environment.GetEnvironmentVariable("_PREVIEW_VSTS_DOCKER_IMAGE");
             }
-
-            var minSecretLen = AgentKnobs.MaskedSecretMinLength.GetValue(this).AsInt();
-
-            try
-            {
-                this.HostContext.SecretMasker.MinSecretLength = minSecretLen;
-            }
-            catch (ArgumentException ex)
-            {
-                warnings.Add(ex.Message);
-            }
-
-            this.HostContext.SecretMasker.RemoveShortSecretsFromDictionary();
 
             Containers = new List<ContainerInfo>();
             _defaultStepTarget = null;
