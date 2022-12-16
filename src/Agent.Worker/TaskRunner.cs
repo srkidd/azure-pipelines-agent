@@ -220,7 +220,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Expand the inputs.
                 Trace.Verbose("Expanding inputs.");
 
-                var taskShellName = PipelineTasksUtil.GetShellByTaskName(Task.Reference.Name);
+                var taskShellName = PipelineTasksUtil.GetShellByTaskName(Task.Reference.Name, stepTarget);
                 runtimeVariables.ExpandValues(target: inputs, out var runtimeVarExpWarnings, taskShellName);
 
                 var canIgnoreWarnings = AgentKnobs.IgnoreScriptVariablesWarnings.GetValue(ExecutionContext).AsBoolean();
