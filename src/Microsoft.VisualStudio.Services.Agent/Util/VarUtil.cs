@@ -194,11 +194,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     if (isVariableKeyPresent &&
                         shellName != WellKnownScriptShell.Unknown &&
                         shellName != WellKnownScriptShell.Cmd &&
+                        Constants.ScriptShells.EnvVariablePartsPerShell.TryGetValue(shellName, out var shellEnvVariableParts) &&
                         Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
                     )
                     {
                         var envVariableName = ConvertToEnvVariableFormat(variableKey);
-                        var shellEnvVariableParts = Constants.ScriptShells.EnvVariablePartsPerShell[shellName];
                         var shellEnvVariable = shellEnvVariableParts.Prefix + envVariableName + shellEnvVariableParts.Suffix;
 
                         var warningMessage = StringUtil.Loc("VariableVulnerableToExecWarn", variableKey, shellEnvVariable);
