@@ -211,8 +211,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         // Update the target value.
                         trace.Verbose("Macro found.");
 
-                        if (shellName != WellKnownScriptShell.Unknown &&
-                            shellName == WellKnownScriptShell.Cmd &&
+                        if (shellName == WellKnownScriptShell.Cmd &&
                             Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
                         )
                         {
