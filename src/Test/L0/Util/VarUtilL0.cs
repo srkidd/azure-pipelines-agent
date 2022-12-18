@@ -9,46 +9,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
 {
     public class VarUtilL0
     {
-        public static TheoryData<string, string[]> InputsForVariablesReplacementTest => new TheoryData<string, string[]>
-        {
-            { "Bash", new string[]{ "$SYSTEM_DEFINITIONNAME", "$BUILD_SOURCEVERSIONMESSAGE" } },
-            { "PowerShell", new string[]{ "$env:SYSTEM_DEFINITIONNAME", "$env:BUILD_SOURCEVERSIONMESSAGE" }},
-        };
-
-        [Theory]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
-        [MemberData(nameof(InputsForVariablesReplacementTest))]
-        public void ExpandValues_Replaces_VulnerableVariables_To_EnvVariables_Per_ShellTask(string taskName, string[] expectedVariables)
-        {
-            using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>();
-            var target = GetTargetValuesWithVulnerableVariables();
-
-            VarUtil.ExpandValues(hc, source, target, taskName);
-
-            Assert.Equal($"test {expectedVariables[0]}", target["system.DefinitionName var"]);
-            Assert.Equal($"test {expectedVariables[1]}", target["build.SourceVersionMessage var"]);
-        }
-
-        [Fact]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
-        public void ExpandValues_Replaces_VulnerableVariables_Ignoring_LetterCase()
-        {
-            using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>();
-            var target = new Dictionary<string, string>()
-            {
-                ["system.DefinitionName var"] = $"$(systeM.DeFiNiTioNname)",
-                ["build.SourceVersionMessage var"] = $"$(buiLd.sourCeVersionMeSsagE)",
-            };
-
-            VarUtil.ExpandValues(hc, source, target, "Bash");
-
-            Assert.Equal("$SYSTEM_DEFINITIONNAME", target["system.DefinitionName var"]);
-            Assert.Equal("$BUILD_SOURCEVERSIONMESSAGE", target["build.SourceVersionMessage var"]);
-        }
+        public const string VariableVulnerableToExecWarnLocKey = "VariableVulnerableToExecWarn";
 
         [Theory]
         [Trait("Level", "L0")]
@@ -98,51 +59,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void ExpandValues_Replaces_Multiple_VulnerableVariables_In_Target()
+        public void ExpandValues_RecursiveExpanding_NotHappening()
         {
             using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>();
-            var target = new Dictionary<string, string>()
+            var source = new Dictionary<string, string>
             {
-                ["targetVar"] = "variable1 = $(system.stageDisplayName); variable2 = $(system.phaseDisplayName); variable3 = $(release.environmentName)",
+                ["sourceVar1"] = "sourceValue1",
+                ["sourceVar2"] = "sourceValue1 $(sourceVar1)",
             };
-
-            VarUtil.ExpandValues(hc, source, target, "Bash");
-
-            Assert.Equal($"variable1 = $SYSTEM_STAGEDISPLAYNAME; variable2 = $SYSTEM_PHASEDISPLAYNAME; variable3 = $RELEASE_ENVIRONMENTNAME", target["targetVar"]);
-        }
-
-        [Fact]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
-        public void ExpandValues_Keeping_Same_If_No_Task_Specified()
-        {
-            using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>();
-            var target = GetTargetValuesWithVulnerableVariables();
+            var target = new Dictionary<string, string>
+            {
+                ["targetVar"] = "targetValue $(sourceVar2)",
+            };
 
             VarUtil.ExpandValues(hc, source, target);
 
-            Assert.Equal(target["system.DefinitionName var"], target["system.DefinitionName var"]);
-            Assert.Equal(target["build.DefinitionName var"], target["build.DefinitionName var"]);
-            Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
-        }
-
-        [Fact]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
-        public void ExpandValues_Keeping_Same_If_Wrong_TaskName_Specified()
-        {
-            using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>();
-            var target = new Dictionary<string, string>()
-            {
-                ["targetVar"] = $"test $(system.definitionName)",
-            };
-
-            VarUtil.ExpandValues(hc, source, target, "SomeRandomName");
-
-            Assert.Equal("test $(system.definitionName)", target["targetVar"]);
+            Assert.Equal("targetValue sourceValue1 $(sourceVar1)", target["targetVar"]);
         }
 
         [Fact]
@@ -188,22 +120,105 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void ExpandValues_RecursiveExpanding_NotHappening()
+        public void ExpandValues_Not_Replaces_Variables_On_Expanding()
         {
             using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>
-            {
-                ["sourceVar1"] = "sourceValue1",
-                ["sourceVar2"] = "sourceValue1 $(sourceVar1)",
-            };
+            var source = new Dictionary<string, string>();
             var target = new Dictionary<string, string>
             {
-                ["targetVar"] = "targetValue $(sourceVar2)",
+                ["system.definitionName"] = "hello"
             };
+
+            VarUtil.ExpandValues(hc, source, target, WellKnownScriptShell.Bash);
+
+            Assert.Equal($"hello", target["system.definitionName"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void ExpandValues_Get_Warnings_Per_ShellTask()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+            var source = new Dictionary<string, string>();
+            var target = GetTargetValuesWithVulnerableVariables();
+
+            VarUtil.ExpandValues(hc, source, target, WellKnownScriptShell.Bash);
+
+            Assert.Equal(target["system.DefinitionName var"], target["system.DefinitionName var"]);
+            Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void ExpandValues_Warns_VulnerableVariables_Ignoring_LetterCase()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+            var source = new Dictionary<string, string>();
+            var target = new Dictionary<string, string>()
+            {
+                ["targetVar"] = $"$(systeM.DeFiNiTioNname)",
+            };
+            var expectedWarning = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.definitionName", "$SYSTEM_DEFINITIONNAME");
+
+            VarUtil.ExpandValues(hc, source, target, out var resultWarnings, WellKnownScriptShell.Bash);
+            var resultWarning = resultWarnings[0];
+
+            Assert.Equal(expectedWarning, resultWarning);
+        }
+
+        // Not working because loc strings not present for now.
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void ExpandValues_Warns_About_Multiple_VulnerableVariables_In_Target()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+            var source = new Dictionary<string, string>();
+            var target = new Dictionary<string, string>()
+            {
+                ["targetVar"] = "variable1 = $(system.stageDisplayName); variable2 = $(system.phaseDisplayName); variable3 = $(release.environmentName)",
+            };
+
+            VarUtil.ExpandValues(hc, source, target, out var resultWarnings, WellKnownScriptShell.Bash);
+            var resultWarning1 = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.stageDisplayName", "$SYSTEM_STAGEDISPLAYNAME");
+
+            Assert.Equal($"variable1 = $SYSTEM_STAGEDISPLAYNAME; variable2 = $SYSTEM_PHASEDISPLAYNAME; variable3 = $RELEASE_ENVIRONMENTNAME", target["targetVar"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void ExpandValues_Keeping_Same_If_No_Task_Specified()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+            var source = new Dictionary<string, string>();
+            var target = GetTargetValuesWithVulnerableVariables();
 
             VarUtil.ExpandValues(hc, source, target);
 
-            Assert.Equal("targetValue sourceValue1 $(sourceVar1)", target["targetVar"]);
+            Assert.Equal(target["system.DefinitionName var"], target["system.DefinitionName var"]);
+            Assert.Equal(target["build.DefinitionName var"], target["build.DefinitionName var"]);
+            Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void ExpandValues_No_Warn_If_Wrong_Shell_Specified()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+            var source = new Dictionary<string, string>();
+            var target = new Dictionary<string, string>()
+            {
+                ["targetVar"] = $"test $(system.definitionName)",
+            };
+            var wrongShell = (WellKnownScriptShell)255;
+
+            VarUtil.ExpandValues(hc, source, target, out var outputWarnings, wrongShell);
+
+            Assert.Empty(outputWarnings);
         }
 
         [Fact]
@@ -214,26 +229,36 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             using TestHostContext hc = new TestHostContext(this);
             var source = new Dictionary<string, string>
             {
-                ["sourceVar1"] = "sourceValue1",
-                ["sourceVar2"] = "1 & echo 2",
-                ["sourceVar3"] = "3 | 4",
-                ["sourceVar4"] = "5 < 6 > 1",
-                ["sourceVar5"] = "7 &&>|<echo 34",
+                ["build.sourceVersionMessage"] = "& | > <",
             };
             var target = new Dictionary<string, string>
             {
-                ["targetVar1"] = "echo $(sourceVar1)",
-                ["targetVar2"] = "echo $(sourceVar1) & echo $(sourceVar2)",
-                ["targetVar3"] = "echo $(sourceVar3) | echo $(sourceVar4)",
-                ["targetVar4"] = "echo $(sourceVar5) && 123",
+                ["targetVar"] = "echo $(build.sourceVersionMessage)",
             };
 
-            VarUtil.ExpandValues(hc, source, target, "CmdLine");
+            VarUtil.ExpandValues(hc, source, target, WellKnownScriptShell.Cmd);
 
-            Assert.Equal("echo sourceValue1", target["targetVar1"]);
-            Assert.Equal("echo sourceValue1 & echo 1 ^& echo 2", target["targetVar2"]);
-            Assert.Equal("echo 3 ^| 4 | echo 5 ^< 6 ^> 1", target["targetVar3"]);
-            Assert.Equal("echo 7 ^&^&^>^|^<echo 34 && 123", target["targetVar4"]);
+            Assert.Equal("echo ^& ^| ^> ^<", target["targetVar"]);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        public void ExpandValues_CommandShell_Not_Expands_NonVulnerableVariables()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+            var source = new Dictionary<string, string>
+            {
+                ["sourceVar"] = "1 & echo 2 &&>|<"
+            };
+            var target = new Dictionary<string, string>
+            {
+                ["targetVar"] = "echo $(sourceVar)"
+            };
+
+            VarUtil.ExpandValues(hc, source, target, WellKnownScriptShell.Cmd);
+
+            Assert.Equal("echo 1 & echo 2 &&>|<", target["targetVar"]);
         }
 
         [Theory]
