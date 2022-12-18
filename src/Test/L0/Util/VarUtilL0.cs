@@ -120,23 +120,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void ExpandValues_Not_Replaces_Variables_On_Expanding()
-        {
-            using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>();
-            var target = new Dictionary<string, string>
-            {
-                ["system.definitionName"] = "hello"
-            };
-
-            VarUtil.ExpandValues(hc, source, target, WellKnownScriptShell.Bash);
-
-            Assert.Equal($"hello", target["system.definitionName"]);
-        }
-
-        [Fact]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
         public void ExpandValues_Get_Warnings_Per_ShellTask()
         {
             using TestHostContext hc = new TestHostContext(this);
@@ -149,6 +132,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
         }
 
+        // Not working because loc strings not present for now.
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
@@ -182,9 +166,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             };
 
             VarUtil.ExpandValues(hc, source, target, out var resultWarnings, WellKnownScriptShell.Bash);
-            var resultWarning1 = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.stageDisplayName", "$SYSTEM_STAGEDISPLAYNAME");
+            var expectedWarning1 = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.stageDisplayName", "$SYSTEM_STAGEDISPLAYNAME");
+            var expectedWarning2 = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.phaseDisplayName", "$SYSTEM_PHASEDISPLAYNAME");
+            var expectedWarning3 = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.environmentName", "$SYSTEM_ENVIRONMENTNAME");
 
-            Assert.Equal($"variable1 = $SYSTEM_STAGEDISPLAYNAME; variable2 = $SYSTEM_PHASEDISPLAYNAME; variable3 = $RELEASE_ENVIRONMENTNAME", target["targetVar"]);
+            Assert.Equal(expectedWarning1, resultWarnings[0]);
+            Assert.Equal(expectedWarning2, resultWarnings[1]);
+            Assert.Equal(expectedWarning3, resultWarnings[2]);
         }
 
         [Fact]
