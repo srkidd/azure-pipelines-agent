@@ -78,7 +78,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        public Variables(IHostContext hostContext, IDictionary<string, VariableValue> copy, out List<string> warnings)
+        public Variables(IHostContext hostContext, IDictionary<string, VariableValue> copy, out List<string> warnings, bool canExpandVulnerableVariables = false)
         {
             ArgUtil.NotNull(hostContext, nameof(hostContext));
 
@@ -112,7 +112,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             // Recursively expand the variables.
-            RecalculateExpanded(out warnings);
+            if (canExpandVulnerableVariables)
+            {
+                RecalculateExpanded(out warnings);
+            }
+            else
+            {
+                RecalculateExpanded(out warnings, Constants.Variables.VariablesVulnerableToExecution);
+            }
         }
 
         // DO NOT add file path variable to here.

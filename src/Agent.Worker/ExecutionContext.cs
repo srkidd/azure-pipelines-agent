@@ -496,10 +496,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
+            bool canExpandVulnerableVariables;
+            message.Variables.TryGetValue("AZP_EXPAND_VULNERABLE_VARIABLES", out var expandVulnerableVariablesKnob);
+            if (expandVulnerableVariablesKnob != null)
+            {
+                bool.TryParse(expandVulnerableVariablesKnob.Value, out canExpandVulnerableVariables);
+            }
+            else
+            {
+                bool.TryParse(Environment.GetEnvironmentVariable("AZP_EXPAND_VULNERABLE_VARIABLES"), out canExpandVulnerableVariables);
+            }
+
             // Variables (constructor performs initial recursive expansion)
-            List<string> warnings;
-            Variables = new Variables(HostContext, message.Variables, out warnings);
-            Variables.StringTranslator = TranslatePathForStepTarget;
+            Variables = new Variables(HostContext, message.Variables, out List<string> warnings, canExpandVulnerableVariables)
+            {
+                StringTranslator = TranslatePathForStepTarget
+            };
 
             if (Variables.GetBoolean("agent.useWorkspaceId") == true)
             {
