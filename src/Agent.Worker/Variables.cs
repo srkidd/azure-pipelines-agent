@@ -463,8 +463,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return false;
         }
 
-        public void RecalculateExpanded(out List<string> warnings)
+        public void RecalculateExpanded(out List<string> warnings, List<string> variablesToIgnore = null)
         {
+            variablesToIgnore ??= new List<string>();
             // TODO: A performance improvement could be made by short-circuiting if the non-expanded values are not dirty. It's unclear whether it would make a significant difference.
 
             // Take a lock to prevent the variables from changing while expansion is being processed.
@@ -481,7 +482,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Process each variable in the dictionary.
                 foreach (string name in _nonexpanded.Keys)
                 {
-                    if (Constants.Variables.VariablesVulnerableToExecution.Contains(name, StringComparer.OrdinalIgnoreCase))
+                    if (variablesToIgnore.Contains(name, StringComparer.OrdinalIgnoreCase))
                     {
                         _trace.Verbose($"Skipping expansion for variable: '{name}'");
                         continue;
