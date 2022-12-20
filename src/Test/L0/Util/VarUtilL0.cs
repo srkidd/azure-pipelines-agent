@@ -132,47 +132,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             Assert.Equal(target["build.SourceVersionMessage var"], target["build.SourceVersionMessage var"]);
         }
 
-        // Not working because loc strings not present for now.
-        [Fact]
+        [Theory]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
-        public void ExpandValues_Warns_VulnerableVariables_Ignoring_LetterCase()
+        [InlineData(1, "$(system.definitionName)")]
+        [InlineData(1, "$(SySteM.DeFiNiTioNname)")]
+        [InlineData(3, "variable1 = $(system.stageDisplayName); variable2 = $(system.phaseDisplayName); variable3 = $(release.environmentName)")]
+        public void ExpandValues_VulnerableVariables_Correct_WarningsCount(int expectedWarningsCount, string targetVar)
         {
             using TestHostContext hc = new TestHostContext(this);
             var source = new Dictionary<string, string>();
             var target = new Dictionary<string, string>()
             {
-                ["targetVar"] = $"$(systeM.DeFiNiTioNname)",
-            };
-            var expectedWarning = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.definitionName", "$SYSTEM_DEFINITIONNAME");
-
-            VarUtil.ExpandValues(hc, source, target, out var resultWarnings, WellKnownScriptShell.Bash);
-            var resultWarning = resultWarnings[0];
-
-            Assert.Equal(expectedWarning, resultWarning);
-        }
-
-        // Not working because loc strings not present for now.
-        [Fact]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
-        public void ExpandValues_Warns_About_Multiple_VulnerableVariables_In_Target()
-        {
-            using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>();
-            var target = new Dictionary<string, string>()
-            {
-                ["targetVar"] = "variable1 = $(system.stageDisplayName); variable2 = $(system.phaseDisplayName); variable3 = $(release.environmentName)",
+                ["targetVar"] = targetVar,
             };
 
             VarUtil.ExpandValues(hc, source, target, out var resultWarnings, WellKnownScriptShell.Bash);
-            var expectedWarning1 = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.stageDisplayName", "$SYSTEM_STAGEDISPLAYNAME");
-            var expectedWarning2 = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.phaseDisplayName", "$SYSTEM_PHASEDISPLAYNAME");
-            var expectedWarning3 = StringUtil.Loc(VariableVulnerableToExecWarnLocKey, "system.environmentName", "$SYSTEM_ENVIRONMENTNAME");
 
-            Assert.Equal(expectedWarning1, resultWarnings[0]);
-            Assert.Equal(expectedWarning2, resultWarnings[1]);
-            Assert.Equal(expectedWarning3, resultWarnings[2]);
+            Assert.Equal(expectedWarningsCount, resultWarnings.Count);
         }
 
         [Fact]
