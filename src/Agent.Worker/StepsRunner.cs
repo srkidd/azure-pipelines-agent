@@ -10,7 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
-using Microsoft.VisualStudio.Services.CircuitBreaker;
+using Agent.Sdk.Knob;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -72,8 +72,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 // Variable expansion.
                 step.ExecutionContext.SetStepTarget(step.Target);
+
                 List<string> expansionWarnings;
-                step.ExecutionContext.Variables.RecalculateExpanded(out expansionWarnings);
+                var canExpandVulnerableVariables = AgentKnobs.ExpandVulnerableVariables.GetValue(jobContext).AsBoolean();
+                if (canExpandVulnerableVariables)
+                {
+                    step.ExecutionContext.Variables.RecalculateExpanded(out expansionWarnings);
+                }
+                else
+                {
+                    step.ExecutionContext.Variables.RecalculateExpanded(out expansionWarnings, Constants.Variables.VariablesVulnerableToExecution);
+                }
                 expansionWarnings?.ForEach(x => step.ExecutionContext.Warning(x));
 
                 var expressionManager = HostContext.GetService<IExpressionManager>();
@@ -314,7 +323,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // We need to drain the queues after a task just in case if
                 // there are a lot of items since it can cause some UI hangs.
                 await JobServerQueue.DrainQueues();
-            } catch (Exception ex)
+            }
+            catch (Exception ex)
             {
                 Trace.Error($"Error has occurred while draining queues, it can cause some UI glitches but it doesn't affect a pipeline execution itself: {ex}");
                 step.ExecutionContext.Error(ex);
@@ -344,7 +354,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                                                 killProcessOnCancel: false,
                                                 redirectStandardIn: null,
                                                 inheritConsoleHandler: true,
-                                                continueAfterCancelProcessTreeKillAttempt: ProcessInvoker.ContinueAfterCancelProcessTreeKillAttemptDefault,                                                
+                                                continueAfterCancelProcessTreeKillAttempt: ProcessInvoker.ContinueAfterCancelProcessTreeKillAttemptDefault,
                                                 cancellationToken: step.ExecutionContext.CancellationToken);
                         if (exitCode == 0)
                         {

@@ -401,5 +401,13 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AZP_IGNORE_VULNERABLE_SCRIPT_WARNING_MESSAGES"),
             new BuiltInDefaultKnobSource("false")
         );
+
+        public static readonly Knob ExpandVulnerableVariables = new ExperimentalKnob(
+            nameof(ExpandVulnerableVariables),
+            "Allows to expand vulnerable pipeline variables.",
+            new RuntimeKnobSource("AZP_EXPAND_VULNERABLE_VARIABLES"),
+            new EnvironmentKnobSource("AZP_EXPAND_VULNERABLE_VARIABLES"),
+            new BuiltInDefaultKnobSource("false")
+        );
     }
 }
