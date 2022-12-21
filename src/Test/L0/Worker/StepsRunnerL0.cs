@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Agent.Sdk;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
 {
@@ -22,24 +23,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         private StepsRunner _stepsRunner;
         private Variables _variables;
 
-        private TestHostContext CreateTestContext([CallerMemberName] String testName = "")
+        private TestHostContext CreateTestContext([CallerMemberName] string testName = "")
         {
             var hc = new TestHostContext(this, testName);
+
             var expressionManager = new ExpressionManager();
             expressionManager.Initialize(hc);
             hc.SetSingleton<IExpressionManager>(expressionManager);
-            Dictionary<string, VariableValue> variablesToCopy = new Dictionary<string, VariableValue>();
-            variablesToCopy.Add(Constants.Variables.Agent.RetainDefaultEncoding, new VariableValue("true", false));
-            List<string> warnings;
+
+            Dictionary<string, VariableValue> variablesToCopy = new Dictionary<string, VariableValue>
+            {
+                [Constants.Variables.Agent.RetainDefaultEncoding] = new VariableValue("true", false)
+            };
             _variables = new Variables(
                 hostContext: hc,
                 copy: variablesToCopy,
-                warnings: out warnings);
+                warnings: out List<string> warnings);
+
             _ec = new Mock<IExecutionContext>();
             _ec.SetupAllProperties();
             _ec.Setup(x => x.Variables).Returns(_variables);
+            _ec.Setup(x => x.GetScopedEnvironment()).Returns(new SystemEnvironment());
+
             _stepsRunner = new StepsRunner();
             _stepsRunner.Initialize(hc);
+
             return hc;
         }
 
@@ -407,7 +415,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         {
             using (TestHostContext hc = CreateTestContext())
             {
-                var stepTarget = new Pipelines.StepTarget {
+                var stepTarget = new Pipelines.StepTarget
+                {
                     Target = "container"
                 };
                 var step = CreateStep(TaskResult.Succeeded, ExpressionManager.Succeeded);
