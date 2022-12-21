@@ -686,7 +686,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                         return str.Replace("/path/to", "/another/path");
                     }
                     return str;
-                }; ;
+                };
 
                 Assert.Equal(0, warnings.Count);
 
