@@ -496,16 +496,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            bool canExpandVulnerableVariables;
             message.Variables.TryGetValue("AZP_EXPAND_VULNERABLE_VARIABLES", out var expandVulnerableVariablesKnob);
-            if (expandVulnerableVariablesKnob != null)
-            {
-                bool.TryParse(expandVulnerableVariablesKnob.Value, out canExpandVulnerableVariables);
-            }
-            else
-            {
-                bool.TryParse(Environment.GetEnvironmentVariable("AZP_EXPAND_VULNERABLE_VARIABLES"), out canExpandVulnerableVariables);
-            }
+
+            string expandVulnerableVariablesKnobValue = expandVulnerableVariablesKnob?.Value ?? Environment.GetEnvironmentVariable("AZP_EXPAND_VULNERABLE_VARIABLES");
+            bool.TryParse(expandVulnerableVariablesKnobValue, out var canExpandVulnerableVariables);
 
             // Variables (constructor performs initial recursive expansion)
             Variables = new Variables(HostContext, message.Variables, out List<string> warnings, canExpandVulnerableVariables)

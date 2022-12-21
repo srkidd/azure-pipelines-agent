@@ -472,7 +472,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public void RecalculateExpanded(out List<string> warnings, List<string> variablesToIgnore = null)
         {
-            variablesToIgnore ??= new List<string>();
+            variablesToIgnore ??= new List<string>(0);
             // TODO: A performance improvement could be made by short-circuiting if the non-expanded values are not dirty. It's unclear whether it would make a significant difference.
 
             // Take a lock to prevent the variables from changing while expansion is being processed.
