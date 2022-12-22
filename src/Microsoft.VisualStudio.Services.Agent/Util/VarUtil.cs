@@ -223,9 +223,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         }
 
                         targetValue = string.Concat(
-                            targetValue[..prefixIndex],
-                            variableValue,
-                            targetValue[(suffixIndex + Constants.Variables.MacroSuffix.Length)..]);
+                            targetValue.Substring(0, prefixIndex),
+                            variableValue ?? string.Empty,
+                            targetValue.Substring(suffixIndex + Constants.Variables.MacroSuffix.Length));
 
                         // Bump the start index to prevent recursive replacement.
                         startIndex = prefixIndex + (variableValue ?? string.Empty).Length;
