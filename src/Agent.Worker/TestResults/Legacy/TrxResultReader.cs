@@ -320,7 +320,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
 
                 if (resultNode.Attributes["outcome"] == null || resultNode.Attributes["outcome"].Value == null || string.Equals(resultNode.Attributes["outcome"].Value, "failed", StringComparison.OrdinalIgnoreCase))
                 {
-                    resultCreateModel.Outcome = TestOutcome.Failed.ToString(); ;
+                    resultCreateModel.Outcome = TestOutcome.Failed.ToString();
                 }
                 else if (string.Equals(resultNode.Attributes["outcome"].Value, "passed", StringComparison.OrdinalIgnoreCase))
                 {
@@ -510,7 +510,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults
 
                 if (resultNode.Attributes["outcome"] == null || resultNode.Attributes["outcome"].Value == null || string.Equals(resultNode.Attributes["outcome"].Value, "failed", StringComparison.OrdinalIgnoreCase))
                 {
-                    resultCreateModel.Outcome = TestOutcome.Failed.ToString(); ;
+                    resultCreateModel.Outcome = TestOutcome.Failed.ToString();
                 }
                 else if (string.Equals(resultNode.Attributes["outcome"].Value, "passed", StringComparison.OrdinalIgnoreCase))
                 {

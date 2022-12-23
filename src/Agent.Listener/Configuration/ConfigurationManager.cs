@@ -520,7 +520,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     IConfigurationProvider agentProvider = (extensionManager.GetExtensions<IConfigurationProvider>()).FirstOrDefault(x => x.ConfigurationProviderType == agentType);
                     ArgUtil.NotNull(agentProvider, agentType);
 
-                    bool isHostedServer = await checkIsHostedServer(agentProvider, settings, credProvider); ;
+                    bool isHostedServer = await checkIsHostedServer(agentProvider, settings, credProvider);
                     VssCredentials creds = credProvider.GetVssCredentials(HostContext);
 
                     await agentProvider.TestConnectionAsync(settings, creds, isHostedServer);
