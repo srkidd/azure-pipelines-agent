@@ -11,6 +11,9 @@ parameters:
 - name: test
   type: boolean
   default: true
+- name: buildStageOnly
+  type: boolean
+  default: false
 - name: sign
   type: boolean
   default: false
@@ -77,6 +80,7 @@ stages:
         componentDetection: ${{ parameters.componentDetection }}
         unitTests: ${{ parameters.test }}
         functionalTests: ${{ parameters.test }}
+        buildStageOnly: ${{ parameters.buildStageOnly }}
         sign: ${{ parameters.sign }}
         verifySigning: ${{ parameters.sign }}
         publishArtifacts: ${{ parameters.publishArtifacts }}
@@ -96,6 +100,7 @@ stages:
         componentDetection: false
         unitTests: ${{ parameters.test }}
         functionalTests: ${{ parameters.test }}
+        buildStageOnly: ${{ parameters.buildStageOnly }}
         sign: ${{ parameters.sign }}
         publishArtifacts: ${{ parameters.publishArtifacts }}
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
@@ -114,6 +119,7 @@ stages:
         componentDetection: ${{ parameters.componentDetection }}
         unitTests: ${{ parameters.test }}
         functionalTests: ${{ parameters.test }}
+        buildStageOnly: ${{ parameters.buildStageOnly }}
         sign: ${{ parameters.sign }}
         publishArtifacts: ${{ parameters.publishArtifacts }}
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
@@ -133,6 +139,7 @@ stages:
         componentDetection: false
         unitTests: false
         functionalTests: false
+        buildStageOnly: ${{ parameters.buildStageOnly }}
         sign: false
         publishArtifacts: ${{ parameters.publishArtifacts }}
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
@@ -153,6 +160,7 @@ stages:
         componentDetection: false
         unitTests: ${{ parameters.test }}
         functionalTests: ${{ parameters.test }}
+        buildStageOnly: ${{ parameters.buildStageOnly }}
         sign: false
         publishArtifacts: ${{ parameters.publishArtifacts }}
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
@@ -172,6 +180,7 @@ stages:
         componentDetection: false
         unitTests: ${{ parameters.test }}
         functionalTests: ${{ parameters.test }}
+        buildStageOnly: ${{ parameters.buildStageOnly }}
         sign: false
         publishArtifacts: ${{ parameters.publishArtifacts }}
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
@@ -190,6 +199,7 @@ stages:
         componentDetection: ${{ parameters.componentDetection }}
         unitTests: ${{ parameters.test }}
         functionalTests: ${{ parameters.test }}
+        buildStageOnly: ${{ parameters.buildStageOnly }}
         sign: ${{ parameters.sign }}
         publishArtifacts: ${{ parameters.publishArtifacts }}
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}

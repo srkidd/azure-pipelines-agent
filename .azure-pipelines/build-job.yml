@@ -40,6 +40,9 @@ parameters:
 - name: functionalTests
   type: boolean
 
+- name: buildStageOnly
+  type: boolean
+
 - name: codeCoverage
   type: boolean
 
@@ -98,7 +101,7 @@ jobs:
     clean: true
 
   # Switch to branch if set
-  - ${{ if ne(parameters.branch, '') }}:
+  - ${{ if and(ne(parameters.branch, ''), not(parameters.buildStageOnly)) }}:
     - template: switch-branch.yml
       parameters:
         branch: ${{ parameters.branch }}

@@ -35,6 +35,10 @@ parameters:
   type: boolean
   default: true
 
+- name: buildStageOnly
+  type: boolean
+  default: false
+
 - name: codeCoverage
   type: boolean
   default: false
@@ -75,6 +79,7 @@ jobs:
       componentDetection: ${{ parameters.componentDetection }}
       unitTests: ${{ parameters.unitTests }}
       functionalTests: ${{ parameters.functionalTests }}
+      buildStageOnly: ${{ parameters.buildStageOnly }}
       sign: ${{ parameters.sign }}
       verifySigning: ${{ parameters.verifySigning }}
       publishArtifact: ${{ parameters.publishArtifacts }}
@@ -95,6 +100,7 @@ jobs:
         componentDetection: ${{ parameters.componentDetection }}
         unitTests: false
         functionalTests: false
+        buildStageOnly: ${{ parameters.buildStageOnly }}
         sign: ${{ parameters.sign }}
         verifySigning: ${{ parameters.verifySigning }}
         publishArtifact: ${{ parameters.publishArtifacts }}

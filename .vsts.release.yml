@@ -31,6 +31,7 @@ extends:
     branch:  ${{ variables.releaseBranch }}
     componentDetection: false
     test: ${{ not(parameters.skipTests) }}
+    buildStageOnly: ${{ parameters.buildStageOnly }}
     sign: true
     publishArtifacts: true
 
