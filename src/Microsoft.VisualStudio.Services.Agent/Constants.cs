@@ -621,9 +621,9 @@ namespace Microsoft.VisualStudio.Services.Agent
         {
             public static Dictionary<WellKnownScriptShell, EnvVariableParts> EnvVariablePartsPerShell = new Dictionary<WellKnownScriptShell, EnvVariableParts>
             {
-                [WellKnownScriptShell.PowerShell] = new EnvVariableParts { Prefix = "$env:", Suffix = "" },
-                [WellKnownScriptShell.Bash] = new EnvVariableParts { Prefix = "$", Suffix = "" },
-                [WellKnownScriptShell.Cmd] = new EnvVariableParts { Prefix = "%", Suffix = "" }
+                [WellKnownScriptShell.PowerShell] = new EnvVariableParts("$env:", ""),
+                [WellKnownScriptShell.Bash] = new EnvVariableParts("$", ""),
+                [WellKnownScriptShell.Cmd] = new EnvVariableParts("%", "%")
             };
         }
     }

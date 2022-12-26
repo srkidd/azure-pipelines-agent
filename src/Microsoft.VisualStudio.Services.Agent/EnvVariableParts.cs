@@ -5,7 +5,13 @@ namespace Microsoft.VisualStudio.Services.Agent
 {
     public class EnvVariableParts
     {
-        public string Prefix { get; set; }
-        public string Suffix { get; set; }
+        public EnvVariableParts(string prefix, string suffix)
+        {
+            Prefix = prefix;
+            Suffix = suffix;
+        }
+
+        public string Prefix { get; }
+        public string Suffix { get; }
     }
 }
