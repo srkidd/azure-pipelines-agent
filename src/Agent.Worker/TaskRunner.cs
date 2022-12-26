@@ -240,7 +240,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     { "RealExecutionHandler", handlerData.ToString() },
                     { "UseNode10", useNode10 },
                     { "JobId", ExecutionContext.Variables.System_JobId.ToString()},
-                    { "PlanId", ExecutionContext.Variables.Get("system.planId")}
+                    { "PlanId", ExecutionContext.Variables.Get("system.planId")},
+                    { "RuntimeVariableExpandingWarnings", string.Join(", ", runtimeVarExpWarnings) }
                 };
 
                 PublishTelemetry(telemetryData);
