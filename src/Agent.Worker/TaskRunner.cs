@@ -118,8 +118,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
                 Trace.Info($"Handler data is of type {handlerData}");
 
-                PublishTelemetry(definition, handlerData);
-
                 Variables runtimeVariables = ExecutionContext.Variables;
                 IStepHost stepHost = HostContext.CreateService<IDefaultStepHost>();
                 var stepTarget = ExecutionContext.StepTarget();
@@ -228,6 +226,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     runtimeVarExpWarnings?.ForEach(warning => ExecutionContext.Warning(warning));
                 }
+
+                var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
+                var expectedExecutionHandler = (definition.Data.Execution?.All != null) ? string.Join(", ", definition.Data.Execution.All) : "";
+
+                Dictionary<string, string> telemetryData = new Dictionary<string, string>
+                {
+                    { "TaskName", Task.Reference.Name },
+                    { "TaskId", Task.Reference.Id.ToString() },
+                    { "Version", Task.Reference.Version },
+                    { "OS", PlatformUtil.HostOS.ToString() },
+                    { "ExpectedExecutionHandler", expectedExecutionHandler },
+                    { "RealExecutionHandler", handlerData.ToString() },
+                    { "UseNode10", useNode10 },
+                    { "JobId", ExecutionContext.Variables.System_JobId.ToString()},
+                    { "PlanId", ExecutionContext.Variables.Get("system.planId")}
+                };
+
+                PublishTelemetry(telemetryData);
 
                 // We need to verify inputs of the tasks that were injected by decorators, to check if they contain secrets,
                 // for security reasons execution of tasks in this case should be skipped.
@@ -577,27 +593,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ExecutionContext.Output("==============================================================================", false);
         }
 
-        private void PublishTelemetry(Definition taskDefinition, HandlerData handlerData)
+        private void PublishTelemetry(Dictionary<string, string> telemetryData)
         {
             ArgUtil.NotNull(Task, nameof(Task));
             ArgUtil.NotNull(Task.Reference, nameof(Task.Reference));
-            ArgUtil.NotNull(taskDefinition.Data, nameof(taskDefinition.Data));
-
-            var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
-            var expectedExecutionHandler = (taskDefinition.Data.Execution?.All != null) ? string.Join(", ", taskDefinition.Data.Execution.All) : "";
-
-            Dictionary<string, string> telemetryData = new Dictionary<string, string>
-            {
-                { "TaskName", Task.Reference.Name },
-                { "TaskId", Task.Reference.Id.ToString() },
-                { "Version", Task.Reference.Version },
-                { "OS", PlatformUtil.HostOS.ToString() },
-                { "ExpectedExecutionHandler", expectedExecutionHandler },
-                { "RealExecutionHandler", handlerData.ToString() },
-                { "UseNode10", useNode10 },
-                { "JobId", ExecutionContext.Variables.System_JobId.ToString()},
-                { "PlanId", ExecutionContext.Variables.Get("system.planId")}
-            };
+            ArgUtil.NotNull(telemetryData, nameof(telemetryData));
 
             var cmd = new Command("telemetry", "publish");
             cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
