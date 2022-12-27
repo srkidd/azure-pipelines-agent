@@ -274,7 +274,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         public void ExpandValues(
             IDictionary<string, string> target,
             out List<string> warnings,
-            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown
+            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown,
+            bool canEscapeSpecialCmdCharacters = true
         )
         {
             ArgUtil.NotNull(target, nameof(target));
@@ -286,7 +287,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 source[variable.Name] = value;
             }
 
-            VarUtil.ExpandValues(_hostContext, source, target, out warnings, shellName);
+            VarUtil.ExpandValues(_hostContext, source, target, out warnings, shellName, canEscapeSpecialCmdCharacters);
         }
 
         public string ExpandValue(string name, string value)

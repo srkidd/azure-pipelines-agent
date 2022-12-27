@@ -219,7 +219,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Trace.Verbose("Expanding inputs.");
 
                 var taskShellName = PipelineTasksUtil.GetShellByTaskName(Task.Reference.Name, stepTarget);
-                runtimeVariables.ExpandValues(target: inputs, out var runtimeVarExpWarnings, taskShellName);
+                var canEscapeSpecialCmdCharacters = AgentKnobs.EspaceSpecialCmdCharacters.GetValue(ExecutionContext).AsBoolean();
+
+                runtimeVariables.ExpandValues(
+                    target: inputs,
+                    out var runtimeVarExpWarnings,
+                    taskShellName,
+                    canEscapeSpecialCmdCharacters);
 
                 var canIgnoreWarnings = AgentKnobs.IgnoreScriptVariablesWarnings.GetValue(ExecutionContext).AsBoolean();
                 if (!canIgnoreWarnings)

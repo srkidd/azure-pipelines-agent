@@ -157,7 +157,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             IDictionary<string, string> source,
             IDictionary<string, string> target,
             out List<string> warnings,
-            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown
+            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown,
+            bool canEscapeSpecialCmdCharacters = true
         )
         {
             ArgUtil.NotNull(context, nameof(context));
@@ -211,7 +212,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         // Update the target value.
                         trace.Verbose("Macro found.");
 
-                        if (shellName == WellKnownScriptShell.Cmd &&
+                        if (canEscapeSpecialCmdCharacters &&
+                            shellName == WellKnownScriptShell.Cmd &&
                             Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
                         )
                         {
