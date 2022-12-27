@@ -393,10 +393,9 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AGENT_USE_NODE"),
             new BuiltInDefaultKnobSource(string.Empty));
 
-        public static readonly Knob IgnoreScriptVariablesWarnings = new DeprecatedKnob(
+        public static readonly Knob IgnoreScriptVariablesWarnings = new ExperimentalKnob(
             nameof(IgnoreScriptVariablesWarnings),
             "Allows to ignore warnings about variables vulnerable to execution in script tasks.",
-            "AZP_IGNORE_VULNERABLE_SCRIPT_WARNING_MESSAGES will not be available after 03/15/2023. Please use predefined environment variables in the scripts.",
             new RuntimeKnobSource("AZP_IGNORE_VULNERABLE_SCRIPT_WARNING_MESSAGES"),
             new EnvironmentKnobSource("AZP_IGNORE_VULNERABLE_SCRIPT_WARNING_MESSAGES"),
             new BuiltInDefaultKnobSource("false")
