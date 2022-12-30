@@ -106,7 +106,7 @@ jobs:
   # TODO: After updating to .net 6 the installing of separate tool not needed, enough just to call 'dotnet format --verify-no-changes -v diagnostic'
   - script: |
       dotnet tool install -g dotnet-format
-      dotnet-format --check -v diagnostic'
+      dotnet-format --check -v diagnostic
     displayName: 'Lint source code'
 
   # 1ES images used on the ARM pool doesn't contain unzip tool, so we need to install it before starting the build
