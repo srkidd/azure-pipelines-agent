@@ -27,7 +27,7 @@ AGENT_VERSION=$(cat "$SCRIPT_DIR/agentversion" | head -n 1 | tr -d "\n\r")
 DOTNET_ERROR_PREFIX="##vso[task.logissue type=error]"
 DOTNET_WARNING_PREFIX="##vso[task.logissue type=warning]"
 
-PACKAGE_TYPE=${PACKAGE_TYPE:-agent} # agent or pipelines-agent
+PACKAGE_TYPE=${PACKAGE_TYPE:-agent} # agent or pipelines-agent 
 if [[ "$PACKAGE_TYPE" == "pipelines-agent" ]]; then
     export INCLUDE_NODE6="false"
 fi
