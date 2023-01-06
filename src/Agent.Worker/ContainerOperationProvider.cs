@@ -42,7 +42,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             base.Initialize(hostContext);
             _dockerManger = HostContext.GetService<IDockerCommandManager>();
-            _containerNetwork = $"vsts_network_{Guid.NewGuid().ToString("N")}";
+            _containerNetwork = $"vsts_network_{Guid.NewGuid():N}";
+        }
+
+        private string GetContainerNetwork(IExecutionContext executionContext)
+        {
+            var useHostNetwork = AgentKnobs.DockerNetworkCreateDriver.GetValue(executionContext).AsString() == "host";
+            return useHostNetwork ? "host" : _containerNetwork;
         }
 
         public async Task StartContainersAsync(IExecutionContext executionContext, object data)
@@ -110,8 +116,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             // Create local docker network for this job to avoid port conflict when multiple agents run on same machine.
             // All containers within a job join the same network
-            await CreateContainerNetworkAsync(executionContext, _containerNetwork);
-            containers.ForEach(container => container.ContainerNetwork = _containerNetwork);
+            var containerNetwork = GetContainerNetwork(executionContext);
+            await CreateContainerNetworkAsync(executionContext, containerNetwork);
+            containers.ForEach(container => container.ContainerNetwork = containerNetwork);
 
             foreach (var container in containers)
             {
@@ -120,7 +127,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             // Build JSON to expose docker container name mapping to env
             var containerMapping = new JObject();
-            foreach (var container in containers) {
+            foreach (var container in containers)
+            {
                 var containerInfo = new JObject();
                 containerInfo["id"] = container.ContainerId;
                 containerMapping[container.ContainerName] = containerInfo;
@@ -146,7 +154,85 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 await StopContainerAsync(executionContext, container);
             }
             // Remove the container network
-            await RemoveContainerNetworkAsync(executionContext, _containerNetwork);
+            var containerNetwork = GetContainerNetwork(executionContext);
+            await RemoveContainerNetworkAsync(executionContext, containerNetwork);
+        }
+
+        private async Task<string> GetMSIAccessToken(IExecutionContext executionContext)
+        {
+            CancellationToken cancellationToken = executionContext.CancellationToken;
+            Trace.Entering();
+            // Check environment variable for debugging
+            var envVar = System.Environment.GetEnvironmentVariable("DEBUG_MSI_LOGIN_INFO");
+            // Future: Set this client id. This is the MSI client ID.
+            ChainedTokenCredential credential = envVar == "1"
+                ? new ChainedTokenCredential(new ManagedIdentityCredential(clientId: null), new VisualStudioCredential(), new AzureCliCredential())
+                : new ChainedTokenCredential(new ManagedIdentityCredential(clientId: null));
+            executionContext.Debug("Retrieving AAD token using MSI authentication...");
+            AccessToken accessToken = await credential.GetTokenAsync(new TokenRequestContext(new[] {
+                "https://management.core.windows.net/"
+            }), cancellationToken);
+
+            return accessToken.Token.ToString();
+        }
+
+        private async Task<string> GetAcrPasswordFromAADToken(IExecutionContext executionContext, string AADToken, string tenantId, string registryServer, string loginServer)
+        {
+            Trace.Entering();
+            CancellationToken cancellationToken = executionContext.CancellationToken;
+            Uri url = new Uri(registryServer + "/oauth2/exchange");
+            const int retryLimit = 5;
+            using HttpClientHandler httpClientHandler = HostContext.CreateHttpClientHandler();
+            using HttpClient httpClient = new HttpClient(httpClientHandler);
+            httpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/x-www-form-urlencoded");
+
+            List<KeyValuePair<string, string>> keyValuePairs = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("grant_type", "access_token"),
+                new KeyValuePair<string, string>("service", loginServer),
+                new KeyValuePair<string, string>("tenant", tenantId),
+                new KeyValuePair<string, string>("access_token", AADToken)
+            };
+            using FormUrlEncodedContent formUrlEncodedContent = new FormUrlEncodedContent(keyValuePairs);
+            string AcrPassword = string.Empty;
+            int retryCount = 0;
+            int timeElapsed = 0;
+            int timeToWait = 0;
+            do
+            {
+                executionContext.Debug("Attempting to convert AAD token to an ACR token");
+
+                var response = await httpClient.PostAsync(url, formUrlEncodedContent, cancellationToken).ConfigureAwait(false);
+                executionContext.Debug($"Status Code: {response.StatusCode}");
+
+                if (response.StatusCode == HttpStatusCode.OK)
+                {
+                    executionContext.Debug("Successfully converted AAD token to an ACR token");
+                    string result = await response.Content.ReadAsStringAsync();
+                    Dictionary<string, string> list = JsonConvert.DeserializeObject<Dictionary<string, string>>(result);
+                    AcrPassword = list["refresh_token"];
+                }
+                else if (response.StatusCode == HttpStatusCode.TooManyRequests)
+                {
+                    executionContext.Debug("Too many requests were made to get an ACR token. Retrying...");
+
+                    timeElapsed = 2000 + timeToWait * 2;
+                    retryCount++;
+                    await Task.Delay(timeToWait);
+                    timeToWait = timeElapsed;
+                }
+                else
+                {
+                    throw new NotSupportedException("Could not fetch access token for ACR. Please configure Managed Service Identity (MSI) for Azure Container Registry with the appropriate permissions - https://docs.microsoft.com/en-us/azure/app-service/tutorial-custom-container?pivots=container-linux#configure-app-service-to-deploy-the-image-from-the-registry.");
+                }
+
+            } while (retryCount < retryLimit && string.IsNullOrEmpty(AcrPassword));
+
+            if (string.IsNullOrEmpty(AcrPassword))
+            {
+                throw new NotSupportedException("Could not acquire ACR token from given AAD token. Please check that the necessary access is provided and try again.");
+            }
+            return AcrPassword;
         }
 
         private async Task<string> GetMSIAccessToken(IExecutionContext executionContext)
@@ -447,7 +533,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 readOnly: container.isReadOnlyVolume(Constants.DefaultContainerMounts.Tools)));
 
             bool externalReadOnly = container.ImageOS != PlatformUtil.OS.Windows || container.isReadOnlyVolume(Constants.DefaultContainerMounts.Externals); // This code was refactored to use PlatformUtils. The previous implementation did not have the externals directory mounted read-only for Windows.
-                                                                    // That seems wrong, but to prevent any potential backwards compatibility issues, we are keeping the same logic
+                                                                                                                                                            // That seems wrong, but to prevent any potential backwards compatibility issues, we are keeping the same logic
             container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Externals), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Externals)), externalReadOnly));
 
             if (container.ImageOS != PlatformUtil.OS.Windows)
@@ -669,10 +755,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             // check all potential groups that might match the GID.
                             foreach (string groupOutput in groupsOutput)
                             {
-                                if(!string.IsNullOrEmpty(groupOutput))
+                                if (!string.IsNullOrEmpty(groupOutput))
                                 {
                                     var groupSegments = groupOutput.Split(':');
-                                    if( groupSegments.Length != 4 )
+                                    if (groupSegments.Length != 4)
                                     {
                                         Trace.Warning($"Unexpected output from /etc/group: '{groupOutput}'");
                                     }
@@ -682,7 +768,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                                         var groupName = groupSegments[0];
                                         var groupId = groupSegments[2];
 
-                                        if(string.Equals(dockerSockGroupId, groupId))
+                                        if (string.Equals(dockerSockGroupId, groupId))
                                         {
                                             existingGroupName = groupName;
                                             break;
@@ -692,7 +778,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             }
                         }
 
-                        if(string.IsNullOrEmpty(existingGroupName))
+                        if (string.IsNullOrEmpty(existingGroupName))
                         {
                             // create a new group with same gid
                             existingGroupName = "azure_pipelines_docker";
@@ -793,11 +879,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             Trace.Entering();
             ArgUtil.NotNull(executionContext, nameof(executionContext));
-            int networkExitCode = await _dockerManger.DockerNetworkCreate(executionContext, network);
-            if (networkExitCode != 0)
+
+            if (network != "host")
             {
-                throw new InvalidOperationException($"Docker network create failed with exit code {networkExitCode}");
+                int networkExitCode = await _dockerManger.DockerNetworkCreate(executionContext, network);
+                if (networkExitCode != 0)
+                {
+                    throw new InvalidOperationException($"Docker network create failed with exit code {networkExitCode}");
+                }
             }
+            else
+            {
+                Trace.Info("Skipping creation of a new docker network. Reusing the host network.");
+            }
+
             // Expose docker network to env
             executionContext.Variables.Set(Constants.Variables.Agent.ContainerNetwork, network);
         }
@@ -808,13 +903,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ArgUtil.NotNull(executionContext, nameof(executionContext));
             ArgUtil.NotNull(network, nameof(network));
 
-            executionContext.Output($"Remove container network: {network}");
-
-            int removeExitCode = await _dockerManger.DockerNetworkRemove(executionContext, network);
-            if (removeExitCode != 0)
+            if (network != "host")
             {
-                executionContext.Warning($"Docker network rm failed with exit code {removeExitCode}");
+                executionContext.Output($"Remove container network: {network}");
+
+                int removeExitCode = await _dockerManger.DockerNetworkRemove(executionContext, network);
+                if (removeExitCode != 0)
+                {
+                    executionContext.Warning($"Docker network rm failed with exit code {removeExitCode}");
+                }
             }
+
             // Remove docker network from env
             executionContext.Variables.Set(Constants.Variables.Agent.ContainerNetwork, null);
         }
