@@ -103,7 +103,8 @@ jobs:
       parameters:
         branch: ${{ parameters.branch }}
 
-  - script: dotnet format --verify-no-changes -v diagnostic
+  - script: ${{ variables.devCommand }} lint
+    workingDirectory: src
     displayName: 'Lint source code'
 
   # 1ES images used on the ARM pool doesn't contain unzip tool, so we need to install it before starting the build
