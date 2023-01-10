@@ -19,6 +19,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 source "$SCRIPT_DIR/.helpers.sh"
 
+PROJECT_ROOT_DIR=$(normalize_dir_path "$SCRIPT_DIR/..")
 DOTNETSDK_ROOT="$SCRIPT_DIR/../_dotnetsdk"
 DOTNETSDK_VERSION="3.1.100"
 DOTNETSDK_INSTALLDIR="$DOTNETSDK_ROOT/$DOTNETSDK_VERSION"
@@ -163,6 +164,14 @@ function cmd_test ()
     cmd_test_l0
 
     cmd_test_l1
+}
+
+function cmd_lint(){
+
+    # TODO: Fix installation
+    "${DOTNETSDK_INSTALLDIR}/dotnet" tool install --global dotnet-format --version 5.1.250801 || true
+
+    dotnet-format --check -v diagnostic -f "$PROJECT_ROOT_DIR" || exit 1
 }
 
 function cmd_package ()
@@ -367,6 +376,7 @@ case $DEV_CMD in
    "p") cmd_package;;
    "hash") cmd_hash;;
    "report") cmd_report;;
+   "lint") cmd_lint;;
    *) echo "Invalid command. Use (l)ayout, (b)uild, (t)est, test(l0), test(l1), or (p)ackage.";;
 esac
 
