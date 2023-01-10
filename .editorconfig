@@ -3,9 +3,30 @@
 # All Rules Enabled with default severity
 # Description: All Rules are enabled with default severity. Rules with IsEnabledByDefault = false are force enabled with default severity.
 
+[*]
+indent_style = space
+
+# XML project files
+[*.{csproj,proj,j}]
+indent_size = 2
+
+[*.json]
+indent_size = 2
+
+# Powershell files
+[*.ps1]
+indent_size = 2
+
+# Shell script files
+[*.sh]
+end_of_line = lf
+indent_size = 4
+
 # Code files
 [*.{cs,vb}]
 
+indent_size = 4
+insert_final_newline = true
 
 # Do not declare static members on generic types
 dotnet_diagnostic.CA1000.severity = error
