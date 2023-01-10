@@ -168,6 +168,8 @@ function cmd_test ()
 
 function cmd_lint(){
 
+    heading "Linting source code"
+
     # TODO: Fix installation
     "${DOTNETSDK_INSTALLDIR}/dotnet" tool install --global dotnet-format --version 5.1.250801 || true
 
