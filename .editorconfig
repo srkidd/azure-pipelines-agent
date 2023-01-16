@@ -28,6 +28,8 @@ indent_size = 4
 indent_size = 4
 # insert_final_newline = true
 
+dotnet_code_quality.ca1711.allowed_suffixes = Flag|Flags
+
 # Do not declare static members on generic types
 dotnet_diagnostic.CA1000.severity = error
 
