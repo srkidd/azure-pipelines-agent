@@ -12,6 +12,7 @@
     <DebugConstant></DebugConstant>
     <VssApiVersion>0.5.181-private</VssApiVersion>
     <CodeAnalysis>$(CodeAnalysis)</CodeAnalysis>
+    <InvariantGlobalization>false</InvariantGlobalization>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
