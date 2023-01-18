@@ -23,6 +23,9 @@ parameters:
 - name: branch
   type: string
   default: ''
+- name: skipRhelRelease
+  type: boolean
+  default: true
 
 # Targets
 - name: win_x64
@@ -158,7 +161,7 @@ stages:
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
 
   # RHEL6 (x64)
-  - ${{ if parameters.rhel6_x64 }}:
+  - ${{ if and(parameters.rhel6_x64, not(skipRhelRelease)) }}:
     - template: build-jobs.yml
       parameters:
         jobName: build_rhel6_x64
