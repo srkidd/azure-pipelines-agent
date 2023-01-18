@@ -161,7 +161,7 @@ stages:
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
 
   # RHEL6 (x64)
-  - ${{ if and(parameters.rhel6_x64, not(skipRhelRelease)) }}:
+  - ${{ if and(parameters.rhel6_x64, not(parameters.skipRhelRelease)) }}:
     - template: build-jobs.yml
       parameters:
         jobName: build_rhel6_x64
