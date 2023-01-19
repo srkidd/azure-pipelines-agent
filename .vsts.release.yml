@@ -95,7 +95,7 @@ extends:
         - task: PublishBuildArtifacts@1.200.0
           displayName: Publish release notes
           inputs:
-            pathToPublish: releaseNote.md
+            TargetPath: releaseNote.md
             artifactName: releaseNotes
             artifactType: FilePath
 
