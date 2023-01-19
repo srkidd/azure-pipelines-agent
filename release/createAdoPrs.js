@@ -193,14 +193,14 @@ async function main()
         util.verifyMinimumNodeVersion();
         util.verifyMinimumGitVersion();
         createIntegrationFiles(newRelease);
-        util.execInForeground(`${GIT} config --global user.email "${process.env.USEREMAIL}"`, null, opt.dryrun);
+/*        util.execInForeground(`${GIT} config --global user.email "${process.env.USEREMAIL}"`, null, opt.dryrun);
         util.execInForeground(`${GIT} config --global user.name "${process.env.USERNAME}"`, null, opt.dryrun);
 
         var pathToAdo = path.join(INTEGRATION_DIR, 'AzureDevOps');
         await createAdoPR(pathToAdo, newRelease);
 
         const pathToAdoConfigChange = path.join(INTEGRATION_DIR, 'AzureDevOps.ConfigChange');
-        await createConfigChangePR(pathToAdoConfigChange, newRelease);
+        await createConfigChangePR(pathToAdoConfigChange, newRelease);*/
 
         console.log('done.');
     }

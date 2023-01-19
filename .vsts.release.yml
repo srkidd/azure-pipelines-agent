@@ -98,18 +98,24 @@ extends:
             artifactName: hash
             downloadPath: $(Build.SourcesDirectory)/_hashes
 
-        # Fill release notes with agent version and package hashes
-        - script: |
+        - bash: |
+            set -x
             cd release
-            node fillReleaseNotesTemplate.js ${{ parameters.version }}
-          displayName: Fill release notes
+            npm install
+            ls
+            node createAdoPrs.js ${{ parameters.version }}
+          displayName: Create PRs in AzureDevOps and ConfigChange
+          env:
+            USERNAME: $(User)
+            PAT: $(AdoPAT)
+            USEREMAIL: $(Email)
 
         # Publish agent package hash too
         - task: PublishBuildArtifacts@1.200.0
-          displayName: Publish release notes
+          displayName: Publish PublishScripts
           inputs:
-            PathtoPublish: releaseNote.md
-            artifactName: releaseNotes
+            PathtoPublish: $(Build.SourcesDirectory)/_layout/integrations
+            artifactName: PublishScripts
             artifactType: Container
 
     - ${{ if not(parameters.buildStageOnly) }}:
