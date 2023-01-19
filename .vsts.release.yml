@@ -77,6 +77,8 @@ extends:
     - stage: release_notes
       jobs:
       - job: release_notes
+        pool:
+          vmImage: 'windows-latest'
         steps:
         # Download all agent hashes created in previous phases
         - task: DownloadBuildArtifacts@0
