@@ -99,7 +99,7 @@ extends:
           inputs:
             PathtoPublish: releaseNote.md
             artifactName: releaseNotes
-            artifactType: FilePath
+            artifactType: Container
 
     - ${{ if not(parameters.buildStageOnly) }}:
       - stage: Release
