@@ -200,27 +200,4 @@ stages:
         publishArtifacts: ${{ parameters.publishArtifacts }}
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
 
-  - job: release_notes
-    steps:
-    # Download all agent hashes created in previous phases
-    - task: DownloadBuildArtifacts@0
-      displayName: Download Agent Hashes
-      inputs:
-        artifactName: hash
-        downloadPath: $(Build.SourcesDirectory)/_hashes
-
-    # Fill release notes with agent version and package hashes
-    - script: |
-        cd release
-        node fillReleaseNotesTemplate.js 2.999.999
-      displayName: Fill release notes
-
-    # Publish agent package hash too
-    - task: PublishBuildArtifacts@1.200.0
-      displayName: Publish release notes
-      inputs:
-        pathToPublish: releaseNote.md
-        artifactName: releaseNotes
-        artifactType: FilePath
-
 - ${{ parameters.postBuildStages }}
