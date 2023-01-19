@@ -30,7 +30,7 @@ const connection = new azdev.WebApi('https://dev.azure.com/mseng', authHandler);
  */
 function createIntegrationFiles(newRelease)
 {
-    var xmlFilePath = path.join(INTEGRATION_DIR, 'InstallAgentPackage.xml')
+    const xmlFilePath = path.join(INTEGRATION_DIR, 'InstallAgentPackage.xml')
     fs.mkdirSync(INTEGRATION_DIR, { recursive: true });
     util.fillAgentParameters(
         path.join(__dirname, '..', 'src', 'Misc', 'InstallAgentPackage.template.xml'),
@@ -40,7 +40,7 @@ function createIntegrationFiles(newRelease)
     clearEmptyHashValueLine(xmlFilePath);
     clearEmptyXmlNodes(xmlFilePath);
 
-    var publishScriptFilePath = path.join(INTEGRATION_DIR, 'Publish.ps1')
+    const publishScriptFilePath = path.join(INTEGRATION_DIR, 'Publish.ps1')
     util.fillAgentParameters(
         path.join(__dirname, '..', 'src', 'Misc', 'Publish.template.ps1'),
         publishScriptFilePath,
@@ -193,14 +193,14 @@ async function main()
         util.verifyMinimumNodeVersion();
         util.verifyMinimumGitVersion();
         createIntegrationFiles(newRelease);
-/*        util.execInForeground(`${GIT} config --global user.email "${process.env.USEREMAIL}"`, null, opt.dryrun);
+        util.execInForeground(`${GIT} config --global user.email "${process.env.USEREMAIL}"`, null, opt.dryrun);
         util.execInForeground(`${GIT} config --global user.name "${process.env.USERNAME}"`, null, opt.dryrun);
 
         var pathToAdo = path.join(INTEGRATION_DIR, 'AzureDevOps');
         await createAdoPR(pathToAdo, newRelease);
 
         const pathToAdoConfigChange = path.join(INTEGRATION_DIR, 'AzureDevOps.ConfigChange');
-        await createConfigChangePR(pathToAdoConfigChange, newRelease);*/
+        await createConfigChangePR(pathToAdoConfigChange, newRelease);
 
         console.log('done.');
     }
