@@ -212,7 +212,7 @@ stages:
     # Fill release notes with agent version and package hashes
     - script: |
         cd release
-        node fillReleaseNotesTemplate.js ${{ parameters.version }}
+        node fillReleaseNotesTemplate.js 2.999.999
       displayName: Fill release notes
 
     # Publish agent package hash too
