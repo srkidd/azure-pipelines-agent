@@ -80,6 +80,17 @@ extends:
         pool:
           vmImage: 'windows-latest'
         steps:
+
+        # Clean
+        - checkout: self
+          clean: true
+
+        # Download all agent packages from all previous phases
+        - task: DownloadBuildArtifacts@0
+          displayName: Download Agent Packages
+          inputs:
+            artifactName: agent
+
         # Download all agent hashes created in previous phases
         - task: DownloadBuildArtifacts@0
           displayName: Download Agent Hashes

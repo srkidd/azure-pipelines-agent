@@ -9,6 +9,8 @@ const util = require('./util');
 function addHashesToReleaseNotes(releaseNotes) {
     const hashes = util.getHashes();
 
+    console.log(hashes);
+
     const lines = releaseNotes.split('\n');
     const modifiedLines = lines.map((line) => {
         if (!line.includes('<HASH>')) {
