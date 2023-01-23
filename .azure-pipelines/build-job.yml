@@ -131,12 +131,6 @@ jobs:
           version: '3.1.x'
           packageType: 'sdk'
           performMultiLevelLookup: true
-      - task: UseDotNet@2
-        displayName: Install .NET Core 3.1 SDK
-        inputs:
-          version: '3.1.x'
-          packageType: 'sdk'
-          performMultiLevelLookup: true
         env:
           PROCESSOR_ARCHITECTURE: x86
     - script: ${{ variables.devCommand }} testl0 Debug ${{ parameters.os }}-${{ parameters.arch }}
