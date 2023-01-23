@@ -131,6 +131,7 @@ jobs:
           version: '3.1.x'
           packageType: 'runtime'
           performMultiLevelLookup: true
+          installationPath: 'C:\Program Files (x86)\dotnet'
         env:
           PROCESSOR_ARCHITECTURE: x86
     - script: ${{ variables.devCommand }} testl0 Debug ${{ parameters.os }}-${{ parameters.arch }}
