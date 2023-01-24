@@ -8,9 +8,23 @@ if [ $user_id -eq 0 -a -z "$AGENT_ALLOW_RUNASROOT" ]; then
     exit 1
 fi
 
+function detect_rhel6()
+{
+    if [ -e /etc/redhat-release ]
+    then
+        redhatRelease=$(</etc/redhat-release)
+        if [[ $redhatRelease == "CentOS release 6."* || $redhatRelease == "Red Hat Enterprise Linux Server release 6."* ]]
+        then
+            echo "NOT SUPPORTED BY .NET 6. The current OS is Red Hat Enterprise Linux 6 or Centos 6"
+            exit 1
+        fi
+    fi
+}
+
 # Check dotnet core 6.0 dependencies for Linux
 if [[ (`uname` == "Linux") ]]
 then
+    detect_rhel6
     command -v ldd > /dev/null
     if [ $? -ne 0 ]
     then
