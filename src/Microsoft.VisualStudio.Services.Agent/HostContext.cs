@@ -93,7 +93,8 @@ namespace Microsoft.VisualStudio.Services.Agent
             _secretMasker = new LoggedSecretMasker(_basicSecretMasker);
 
             // Validate args.
-            if (hostType == HostType.Undefined) {
+            if (hostType == HostType.Undefined)
+            {
                 throw new ArgumentException(message: $"HostType cannot be {HostType.Undefined}");
             }
             _hostType = hostType;
@@ -287,10 +288,10 @@ namespace Microsoft.VisualStudio.Services.Agent
             {
                 return diagFolder;
             }
-           
+
             return Path.Combine(
                 new DirectoryInfo(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location)).Parent.FullName,
-                Constants.Path.DiagDirectory);          
+                Constants.Path.DiagDirectory);
         }
 
         public string GetConfigFile(WellKnownConfigFile configFile)

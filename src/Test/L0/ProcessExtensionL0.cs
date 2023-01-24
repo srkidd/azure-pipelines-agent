@@ -90,7 +90,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                     {
                         sleep?.Kill();
                     }
-                    catch {  }
+                    catch { }
                 }
             }
         }

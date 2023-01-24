@@ -48,7 +48,7 @@ namespace Agent.Sdk.Knob
             new BuiltInDefaultKnobSource(string.Empty));
 
         public static readonly Knob DockerAdditionalNetworkOptions = new Knob(
-            nameof(DockerNetworkCreateDriver),
+            nameof(DockerAdditionalNetworkOptions),
             "Allow to specify additional command line options to 'docker network' command when creating network for new containers",
             new RuntimeKnobSource("agent.DockerAdditionalNetworkOptions"),
             new EnvironmentKnobSource("AZP_AGENT_DOCKER_ADDITIONAL_NETWORK_OPTIONS"),
@@ -60,6 +60,15 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("agent.UseHostGroupId"),
             new EnvironmentKnobSource("AZP_AGENT_USE_HOST_GROUP_ID"),
             new BuiltInDefaultKnobSource("true"));
+
+        public const string DockerActionRetriesVariableName = "VSTSAGENT_DOCKER_ACTION_RETRIES";
+
+        public static readonly Knob DockerActionRetries = new Knob(
+            nameof(DockerActionRetries),
+            "When enabled, the agent retries docker steps if failed",
+            new RuntimeKnobSource(DockerActionRetriesVariableName),
+            new EnvironmentKnobSource(DockerActionRetriesVariableName),
+            new BuiltInDefaultKnobSource("false"));
 
         // Directory structure
         public static readonly Knob AgentToolsDirectory = new Knob(

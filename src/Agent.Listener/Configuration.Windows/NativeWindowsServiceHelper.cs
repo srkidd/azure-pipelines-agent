@@ -452,7 +452,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             ServiceController service = ServiceController.GetServices().FirstOrDefault(x => x.ServiceName.Equals(serviceName, StringComparison.OrdinalIgnoreCase));
             return service != null;
         }
-        
+
         public void InstallService(string serviceName, string serviceDisplayName, string logonAccount, string logonPassword, bool setServiceSidTypeAsUnrestricted)
         {
             Trace.Entering();
@@ -540,9 +540,27 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 failureActions.Add(new FailureAction(RecoverAction.Restart, 60000));
 
                 // Lock the Service Database
-                svcLock = LockServiceDatabase(scmHndl);
-                if (svcLock.ToInt64() <= 0)
+                int lockRetries = 10;
+                int retryTimeout = 5000;
+                while (true)
                 {
+                    svcLock = LockServiceDatabase(scmHndl);
+
+                    var svcLockIntCode = svcLock.ToInt64();
+                    if (svcLockIntCode > 0)
+                    {
+                        break;
+                    }
+
+                    _term.WriteLine(StringUtil.Loc("ServiceLockErrorRetry", svcLockIntCode, retryTimeout / 1000));
+
+                    lockRetries--;
+                    if (lockRetries > 0)
+                    {
+                        Thread.Sleep(retryTimeout);
+                        continue;
+                    }
+
                     throw new InvalidOperationException(StringUtil.Loc("FailedToLockServiceDB"));
                 }
 
