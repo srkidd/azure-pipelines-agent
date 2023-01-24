@@ -293,31 +293,12 @@ then
     fi
 elif [ -e /etc/redhat-release ]
 # RHEL6 doesn't have an os-release file defined, read redhat-release instead
+# We no longer support RHEL6
 then
     redhatRelease=$(</etc/redhat-release)
     if [[ $redhatRelease == "CentOS release 6."* || $redhatRelease == "Red Hat Enterprise Linux Server release 6."* ]]
-    then
-        echo "The current OS is Red Hat Enterprise Linux 6 or Centos 6"
-
-        # Install known dependencies, as a best effort.
-        # The remaining dependencies are covered by the GitHub doc that will be shown by `print_rhel6message`
-        command -v yum
-        if [ $? -eq 0 ]
-        then
-            yum install -y openssl krb5-libs zlib
-            if [ $? -ne 0 ]
-            then                    
-                echo "'yum' failed with exit code '$?'"
-                print_rhel6errormessage
-                exit 1
-            fi
-        else
-            echo "Can not find 'yum'"
-            print_rhel6errormessage
-            exit 1
-        fi
-
-        print_rhel6message
+    then        
+        echo "NOT SUPPORTED BY DOTNET6. The current OS is Red Hat Enterprise Linux 6 or Centos 6"
         exit 1
     else
         echo "Unknown RHEL OS version"

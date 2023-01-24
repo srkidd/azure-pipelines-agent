@@ -515,7 +515,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                                         serviceDisplayName,
                                         ServiceRights.AllAccess,
                                         SERVICE_WIN32_OWN_PROCESS,
-                                        ServiceBootTag.AutoStart,
+                                        ServiceStartType.AutoStart,
                                         ServiceError.Normal,
                                         agentServiceExecutable,
                                         null,
@@ -911,7 +911,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             AddMemberToLocalGroup(accountName, groupName);
 
             // grant permssion for folders
-            foreach(var folder in folders)
+            foreach (var folder in folders)
             {
                 if (Directory.Exists(folder))
                 {
@@ -929,7 +929,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             Trace.Info(StringUtil.Format("Calculated unique group name {0}", groupName));
 
             // remove the group from folders
-            foreach(var folder in folders)
+            foreach (var folder in folders)
             {
                 if (Directory.Exists(folder))
                 {
@@ -938,7 +938,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     {
                         RemoveGroupFromFolderSecuritySetting(folder, groupName);
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         Trace.Error(ex);
                     }
@@ -1314,9 +1314,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             Critical = 0x00000003
         }
 
-        public enum ServiceBootTag
+        public enum ServiceStartType
         {
-            Start = 0x00000000,
+            BootStart = 0x00000000,
             SystemStart = 0x00000001,
             AutoStart = 0x00000002,
             DemandStart = 0x00000003,
@@ -1407,7 +1407,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             string lpDisplayName,
             ServiceRights dwDesiredAccess,
             int dwServiceType,
-            ServiceBootTag dwStartType,
+            ServiceStartType dwStartType,
             ServiceError dwErrorControl,
             string lpBinaryPathName,
             string lpLoadOrderGroup,

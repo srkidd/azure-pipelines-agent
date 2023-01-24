@@ -94,7 +94,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             IExecutionContext jobContext = null;
             CancellationTokenRegistration? agentShutdownRegistration = null;
-            VssConnection connection = null;
+            VssConnection taskConnection = null;
+            VssConnection legacyTaskConnection = null;
+
             try
             {
                 // Create the job execution context.
@@ -190,8 +192,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 if (taskServerUri != null)
                 {
                     Trace.Info($"Creating task server with {taskServerUri}");
-                    connection = VssUtil.CreateConnection(taskServerUri, taskServerCredential, Trace);
-                    await taskServer.ConnectAsync(connection);
+
+                    taskConnection = VssUtil.CreateConnection(taskServerUri, taskServerCredential, Trace);
+                    await taskServer.ConnectAsync(taskConnection);
                 }
 
                 // for back compat TFS 2015 RTM/QU1, we may need to switch the task server url to agent config url
@@ -202,9 +205,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         Trace.Info($"Can't determine task download url from JobMessage or the endpoint doesn't exist.");
                         var configStore = HostContext.GetService<IConfigurationStore>();
                         taskServerUri = new Uri(configStore.GetSettings().ServerUrl);
+
                         Trace.Info($"Recreate task server with configuration server url: {taskServerUri}");
-                        connection = VssUtil.CreateConnection(taskServerUri, taskServerCredential, Trace);
-                        await taskServer.ConnectAsync(connection);
+                        legacyTaskConnection = VssUtil.CreateConnection(taskServerUri, taskServerCredential, trace: Trace);
+                        await taskServer.ConnectAsync(legacyTaskConnection);
                     }
                 }
 
@@ -224,7 +228,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         checkoutOptions = jobContext.Variables.ExpandValues(target: checkoutOptions);
                         checkoutOptions = VarUtil.ExpandEnvironmentVariables(HostContext, target: checkoutOptions);
-                        repository.Properties.Set<JToken>(Pipelines.RepositoryPropertyNames.CheckoutOptions, checkoutOptions); ;
+                        repository.Properties.Set<JToken>(Pipelines.RepositoryPropertyNames.CheckoutOptions, checkoutOptions);
                     }
 
                     // expand workspace mapping
@@ -346,8 +350,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     agentShutdownRegistration.Value.Dispose();
                     agentShutdownRegistration = null;
                 }
-                connection.Dispose();
-                jobConnection.Dispose();
+
+                legacyTaskConnection?.Dispose();
+                taskConnection?.Dispose();
+                jobConnection?.Dispose();
+
                 await ShutdownQueue(throwOnFailure: false);
             }
         }

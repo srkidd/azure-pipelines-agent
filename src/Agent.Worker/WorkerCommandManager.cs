@@ -167,7 +167,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void Execute(IExecutionContext context, Command command);
     }
 
-    public abstract class BaseWorkerCommandExtension: AgentService, IWorkerCommandExtension
+    public abstract class BaseWorkerCommandExtension : AgentService, IWorkerCommandExtension
     {
 
         public string CommandArea { get; protected set; }
