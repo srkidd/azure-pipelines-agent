@@ -131,7 +131,7 @@ jobs:
   - ${{ if parameters.unitTests }}:
     - ${{ if and(eq(parameters.os, 'win'), eq(parameters.arch, 'x86')) }}:
       - task: UseDotNet@2
-        displayName: Install .NET Core 6 SDK
+        displayName: Install .NET Core 6 Runtime
         inputs:
           version: '6.0.x'
           packageType: 'runtime'
