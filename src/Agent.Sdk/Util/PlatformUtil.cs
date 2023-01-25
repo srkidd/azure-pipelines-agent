@@ -352,7 +352,7 @@ namespace Agent.Sdk
         public ParsedVersion Version { get; }
 
         [JsonConstructor]
-        public SystemVersion(string name, string version)
+        public SystemVersion(string name, string version = null)
         {
             if (name == null && version == null)
             {
