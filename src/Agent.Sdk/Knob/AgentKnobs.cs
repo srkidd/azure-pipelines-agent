@@ -401,5 +401,12 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AGENT_USE_NODE"),
             new EnvironmentKnobSource("AGENT_USE_NODE"),
             new BuiltInDefaultKnobSource(string.Empty));
+
+        public static readonly Knob AcknowledgeNoUpdates = new Knob(
+            nameof(AcknowledgeNoUpdates),
+            "Allows to run pipelines on agent which doesn't get updates",
+            new RuntimeKnobSource("AGENT_ACKNOWLEDGE_NO_UPDATES"),
+            new EnvironmentKnobSource("AGENT_ACKNOWLEDGE_NO_UPDATES"),
+            new BuiltInDefaultKnobSource("false"));
     }
 }
