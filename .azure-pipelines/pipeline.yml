@@ -23,6 +23,12 @@ parameters:
 - name: branch
   type: string
   default: ''
+- name: skipRhelRelease
+  type: boolean
+  default: true
+- name: releaseRhelOnly
+  type: boolean
+  default: false
 
 # Targets
 - name: win_x64
@@ -68,7 +74,7 @@ stages:
   jobs:
 
   # Windows (x64)
-  - ${{ if parameters.win_x64 }}:
+  - ${{ if and(parameters.win_x64, not(parameters.releaseRhelOnly)) }}:
     - template: build-jobs.yml
       parameters:
         jobName: build_windows_x64
@@ -88,7 +94,7 @@ stages:
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
 
   # Windows (x86)
-  - ${{ if parameters.win_x86 }}:
+  - ${{ if and(parameters.win_x86, not(parameters.releaseRhelOnly)) }}:
     - template: build-jobs.yml
       parameters:
         jobName: build_windows_x86
@@ -106,7 +112,7 @@ stages:
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
 
   # Linux (x64)
-  - ${{ if parameters.linux_x64 }}:
+  - ${{ if and(parameters.linux_x64, not(parameters.releaseRhelOnly)) }}:
     - template: build-jobs.yml
       parameters:
         jobName: build_linux_x64
@@ -124,7 +130,7 @@ stages:
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
 
   # Linux (ARM)
-  - ${{ if parameters.linux_arm }}:
+  - ${{ if and(parameters.linux_arm, not(parameters.releaseRhelOnly)) }}:
     - template: build-jobs.yml
       parameters:
         jobName: build_linux_arm
@@ -143,7 +149,7 @@ stages:
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
 
   # Linux (ARM64)
-  - ${{ if parameters.linux_arm64 }}:
+  - ${{ if and(parameters.linux_arm64, not(parameters.releaseRhelOnly)) }}:
     - template: build-jobs.yml
       parameters:
         jobName: build_linux_arm64
@@ -182,7 +188,7 @@ stages:
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
 
   # macOS x64
-  - ${{ if parameters.macOS_x64 }}:
+  - ${{ if and(parameters.macOS_x64, not(parameters.releaseRhelOnly)) }}:
     - template: build-jobs.yml
       parameters:
         jobName: build_osx

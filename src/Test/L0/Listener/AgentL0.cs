@@ -582,7 +582,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener
         [InlineData("--version")]
         [InlineData("--commit")]
         [InlineData("--bad-argument", Constants.Agent.ReturnCode.TerminatedError)]
-        public async void TestInfoArgumentsCLI(string arg, int expected=Constants.Agent.ReturnCode.Success)
+        public async void TestInfoArgumentsCLI(string arg, int expected = Constants.Agent.ReturnCode.Success)
         {
             using (var hc = new TestHostContext(this))
             {
@@ -652,7 +652,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener
         [InlineData("configure", true)] //TODO: this passes. If already configured, probably should error out asked to configure again
         [InlineData("remove", false)] //TODO: this passes. If already not configured, probably should error out
         [InlineData("remove", true)]
-        public async void TestConfigureCLI(string arg, bool IsConfigured, int expected=Constants.Agent.ReturnCode.Success)
+        public async void TestConfigureCLI(string arg, bool IsConfigured, int expected = Constants.Agent.ReturnCode.Success)
         {
             using (var hc = new TestHostContext(this))
             {
@@ -735,9 +735,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener
                 var metadataMessage = new TaskAgentMessage()
                 {
                     Body = JsonUtility.ToString(new JobMetadataMessage()
-                        {
-                            PostLinesFrequencyMillis = 500
-                        }),
+                    {
+                        PostLinesFrequencyMillis = 500
+                    }),
                     MessageId = 4235,
                     MessageType = JobEventTypes.JobMetadataUpdate
                 };
