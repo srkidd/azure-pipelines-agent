@@ -127,7 +127,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             // Build JSON to expose docker container name mapping to env
             var containerMapping = new JObject();
-            foreach (var container in containers) {
+            foreach (var container in containers)
+            {
                 var containerInfo = new JObject();
                 containerInfo["id"] = container.ContainerId;
                 containerMapping[container.ContainerName] = containerInfo;
@@ -316,7 +317,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 ArgUtil.NotNullOrEmpty(username, nameof(username));
                 ArgUtil.NotNullOrEmpty(password, nameof(password));
 
-                int loginExitCode = await _dockerManger.DockerLogin(executionContext, registryServer, username, password);
+                int loginExitCode = await _dockerManger.DockerLogin(
+                    executionContext,
+                    registryServer,
+                    username,
+                    password);
+
                 if (loginExitCode != 0)
                 {
                     throw new InvalidOperationException($"Docker login fail with exit code {loginExitCode}");
@@ -337,29 +343,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         }
                     }
 
-                    // Pull down docker image with retry up to 3 times
-                    int retryCount = 0;
-                    int pullExitCode = 0;
-                    while (retryCount < 3)
-                    {
-                        pullExitCode = await _dockerManger.DockerPull(executionContext, container.ContainerImage);
-                        if (pullExitCode == 0)
-                        {
-                            break;
-                        }
-                        else
-                        {
-                            retryCount++;
-                            if (retryCount < 3)
-                            {
-                                var backOff = BackoffTimerHelper.GetRandomBackoff(TimeSpan.FromSeconds(1), TimeSpan.FromSeconds(10));
-                                executionContext.Warning($"Docker pull failed with exit code {pullExitCode}, back off {backOff.TotalSeconds} seconds before retry.");
-                                await Task.Delay(backOff);
-                            }
-                        }
-                    }
+                    int pullExitCode = await _dockerManger.DockerPull(
+                        executionContext,
+                        container.ContainerImage);
 
-                    if (retryCount == 3 && pullExitCode != 0)
+                    if (pullExitCode != 0)
                     {
                         throw new InvalidOperationException($"Docker pull failed with exit code {pullExitCode}");
                     }
@@ -455,7 +443,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 readOnly: container.isReadOnlyVolume(Constants.DefaultContainerMounts.Tools)));
 
             bool externalReadOnly = container.ImageOS != PlatformUtil.OS.Windows || container.isReadOnlyVolume(Constants.DefaultContainerMounts.Externals); // This code was refactored to use PlatformUtils. The previous implementation did not have the externals directory mounted read-only for Windows.
-                                                                    // That seems wrong, but to prevent any potential backwards compatibility issues, we are keeping the same logic
+                                                                                                                                                            // That seems wrong, but to prevent any potential backwards compatibility issues, we are keeping the same logic
             container.MountVolumes.Add(new MountVolume(HostContext.GetDirectory(WellKnownDirectory.Externals), container.TranslateToContainerPath(HostContext.GetDirectory(WellKnownDirectory.Externals)), externalReadOnly));
 
             if (container.ImageOS != PlatformUtil.OS.Windows)
@@ -677,10 +665,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             // check all potential groups that might match the GID.
                             foreach (string groupOutput in groupsOutput)
                             {
-                                if(!string.IsNullOrEmpty(groupOutput))
+                                if (!string.IsNullOrEmpty(groupOutput))
                                 {
                                     var groupSegments = groupOutput.Split(':');
-                                    if( groupSegments.Length != 4 )
+                                    if (groupSegments.Length != 4)
                                     {
                                         Trace.Warning($"Unexpected output from /etc/group: '{groupOutput}'");
                                     }
@@ -690,7 +678,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                                         var groupName = groupSegments[0];
                                         var groupId = groupSegments[2];
 
-                                        if(string.Equals(dockerSockGroupId, groupId))
+                                        if (string.Equals(dockerSockGroupId, groupId))
                                         {
                                             existingGroupName = groupName;
                                             break;
@@ -700,7 +688,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             }
                         }
 
-                        if(string.IsNullOrEmpty(existingGroupName))
+                        if (string.IsNullOrEmpty(existingGroupName))
                         {
                             // create a new group with same gid
                             existingGroupName = "azure_pipelines_docker";
@@ -801,7 +789,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             Trace.Entering();
             ArgUtil.NotNull(executionContext, nameof(executionContext));
-            
+
             if (network != "host")
             {
                 int networkExitCode = await _dockerManger.DockerNetworkCreate(executionContext, network);
