@@ -117,7 +117,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 bool acknowledgeNoUpdatesKnob = AgentKnobs.AcknowledgeNoUpdates.GetValue(jobContext).AsBoolean();
                 if (!acknowledgeNoUpdatesKnob && systemId == "rhel" && systemVersion.Equals(new SystemVersion("6")))
                 {
-                    string errorMessage = "Red Hat 6 is deprecated for Pipelines Agent. To be able to continue run pipelines on it please upgrade the operating system of this host or set environment variable \"AGENT_ACKNOWLEDGE_NO_UPDATES\" to \"true\"";
+                    string errorMessage = "Red Hat 6 will no longer receive updates of the Pipelines Agent. To be able to continue run pipelines please upgrade the operating system or set an environment variable or agent kbob \"AGENT_ACKNOWLEDGE_NO_UPDATES\" to \"true\". See https://aka.ms/azdo-pipeline-agent-rhel6 for more information.";
                     Trace.Error(errorMessage);
                     jobContext.Error(errorMessage);
                     return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
