@@ -98,6 +98,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Create the job execution context.
                 jobContext = HostContext.CreateService<IExecutionContext>();
                 jobContext.InitializeJob(message, jobRequestCancellationToken);
+
+                // Check if system is RHEL 6 and throw exception then
+                bool acknowledgeNoUpdatesKnob = AgentKnobs.AcknowledgeNoUpdates.GetValue(jobContext).AsBoolean();
+                if (!acknowledgeNoUpdatesKnob && PlatformUtil.RunningOnRHEL6)
+                {
+                    string errorMessage = "Red Hat 6 will no longer receive updates of the Pipelines Agent. To be able to continue run pipelines please upgrade the operating system or set an environment variable or agent kbob \"AGENT_ACKNOWLEDGE_NO_UPDATES\" to \"true\". See https://aka.ms/azdo-pipeline-agent-rhel6 for more information.";
+                    Trace.Error(errorMessage);
+                    jobContext.Error(errorMessage);
+                    return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
+                }
+
                 Trace.Info("Starting the job execution context.");
                 jobContext.Start();
                 jobContext.Section(StringUtil.Loc("StepStarting", message.JobDisplayName));
