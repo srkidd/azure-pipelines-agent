@@ -98,67 +98,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Create the job execution context.
                 jobContext = HostContext.CreateService<IExecutionContext>();
                 jobContext.InitializeJob(message, jobRequestCancellationToken);
-
-                // Get version of system where agent is running
-                string systemId = null;
-                SystemVersion systemVersion = null;
-
-                try
-                {
-                    systemId = PlatformUtil.GetSystemId();
-                    systemVersion = PlatformUtil.GetSystemVersion();
-                }
-                catch (Exception ex)
-                {
-                    Trace.Error($"Error has occurred while checking if system supports .NET 6: {ex}");
-                }
-
-                // Check if system is RHEL 6 and throw exception then
-                bool acknowledgeNoUpdatesKnob = AgentKnobs.AcknowledgeNoUpdates.GetValue(jobContext).AsBoolean();
-                if (!acknowledgeNoUpdatesKnob && systemId == "rhel" && systemVersion.Equals(new SystemVersion("6")))
-                {
-                    string errorMessage = "Red Hat 6 will no longer receive updates of the Pipelines Agent. To be able to continue run pipelines please upgrade the operating system or set an environment variable or agent kbob \"AGENT_ACKNOWLEDGE_NO_UPDATES\" to \"true\". See https://aka.ms/azdo-pipeline-agent-rhel6 for more information.";
-                    Trace.Error(errorMessage);
-                    jobContext.Error(errorMessage);
-                    return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
-                }
-
-                // Check if a system supports .NET 6
-                PackageVersion agentVersion = new PackageVersion(BuildConstants.AgentPackage.Version);
-
-                if (agentVersion.Major < 3 && systemId != null && systemVersion != null)
-                {
-                    try
-                    {
-                        Trace.Verbose("Checking if your system supports .NET 6");
-
-
-                        string notSupportNet6Message = null;
-
-                        if (PlatformUtil.DoesSystemPersistsInNet6Whitelist())
-                        {
-                            // Check version of the system
-                            if (!PlatformUtil.IsNet6Supported())
-                            {
-                                notSupportNet6Message = $"The operating system the agent is running on is \"{systemId}\" ({systemVersion}), which will not be supported by the .NET 6 based v3 agent. Please upgrade the operating system of this host to ensure compatibility with the v3 agent. See https://aka.ms/azdo-pipeline-agent-version";
-                            }
-                        }
-                        else
-                        {
-                            notSupportNet6Message = $"The operating system the agent is running on is \"{systemId}\" ({systemVersion}), which has not been tested with the .NET 6 based v3 agent. The v2 agent wil not automatically upgrade to the v3 agent. You can manually download the .NET 6 based v3 agent from https://github.com/microsoft/azure-pipelines-agent/releases. See https://aka.ms/azdo-pipeline-agent-version";
-                        }
-
-                        if (!string.IsNullOrWhiteSpace(notSupportNet6Message))
-                        {
-                            jobContext.AddIssue(new Issue() { Type = IssueType.Warning, Message = notSupportNet6Message });
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        Trace.Error($"Error has occurred while checking if system supports .NET 6: {ex}");
-                    }
-                }
-
                 Trace.Info("Starting the job execution context.");
                 jobContext.Start();
                 jobContext.Section(StringUtil.Loc("StepStarting", message.JobDisplayName));
