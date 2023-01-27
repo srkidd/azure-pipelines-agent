@@ -14,9 +14,6 @@ namespace Agent.Sdk.Util
         private ISecretMasker _secretMasker;
         private ITraceWriter _trace;
 
-        // We don't allow to skip secrets longer than 4 characters.
-        private readonly short _maxMinSecretLength = 4;
-
         private void Trace(string msg)
         {
             this._trace?.Info(msg);
@@ -76,6 +73,9 @@ namespace Agent.Sdk.Util
             AddRegex(pattern);
         }
 
+        // We don't allow to skip secrets longer than 4 characters.
+        public int MinSecretLengthLimit => 4;
+
         public int MinSecretLength
         {
             get
@@ -84,14 +84,14 @@ namespace Agent.Sdk.Util
             }
             set
             {
-                if (value > _maxMinSecretLength)
+                if (value > MinSecretLengthLimit)
                 {
-                    _secretMasker.MinSecretLength = _maxMinSecretLength;
-
-                    throw new ArgumentException($"Not allowed minimum secret length. Set max value: {_maxMinSecretLength}");
+                    _secretMasker.MinSecretLength = MinSecretLengthLimit;
                 }
-
-                _secretMasker.MinSecretLength = value;
+                else
+                {
+                    _secretMasker.MinSecretLength = value;
+                }
             }
         }
 
