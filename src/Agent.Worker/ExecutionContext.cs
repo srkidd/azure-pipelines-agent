@@ -667,17 +667,40 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             // Hook up JobServerQueueThrottling event, we will log warning on server tarpit.
             _jobServerQueue.JobServerQueueThrottling += JobServerQueueThrottling_EventReceived;
 
+            // Get version of system where agent is running
+            string systemId = null;
+            SystemVersion systemVersion = null;
+
+            try
+            {
+                systemId = PlatformUtil.GetSystemId();
+                systemVersion = PlatformUtil.GetSystemVersion();
+            }
+            catch (Exception ex)
+            {
+                Trace.Error($"Error has occurred while checking if system supports .NET 6: {ex}");
+            }
+
+            // Check if system is RHEL 6 and throw exception then
+            bool acknowledgeNoUpdatesKnob = AgentKnobs.AcknowledgeNoUpdates.GetValue(this).AsBoolean();
+            if (!acknowledgeNoUpdatesKnob && systemId == "rhel" && systemVersion.Equals(new SystemVersion("6")))
+            {
+                string errorMessage = "Red Hat 6 will no longer receive updates of the Pipelines Agent. To be able to continue run pipelines please upgrade the operating system or set an environment variable or agent kbob \"AGENT_ACKNOWLEDGE_NO_UPDATES\" to \"true\". See https://aka.ms/azdo-pipeline-agent-rhel6 for more information.";
+                Trace.Error(errorMessage);
+                AddIssue(new Issue() { Type = IssueType.Error, Message = errorMessage });
+                throw new Exception(errorMessage);
+            }
+
             // Check if a system supports .NET 6
             PackageVersion agentVersion = new PackageVersion(BuildConstants.AgentPackage.Version);
 
-            if (agentVersion.Major < 3)
+            if (agentVersion.Major < 3 && systemId != null && systemVersion != null)
             {
                 try
                 {
                     Trace.Verbose("Checking if your system supports .NET 6");
 
-                    string systemId = PlatformUtil.GetSystemId();
-                    SystemVersion systemVersion = PlatformUtil.GetSystemVersion();
+                    
                     string notSupportNet6Message = null;
 
                     if (PlatformUtil.DoesSystemPersistsInNet6Whitelist())
