@@ -675,6 +675,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 try
                 {
                     Trace.Verbose("Checking if your system supports .NET 6");
+
                     string systemId = PlatformUtil.GetSystemId();
                     SystemVersion systemVersion = PlatformUtil.GetSystemVersion();
                     string notSupportNet6Message = null;
