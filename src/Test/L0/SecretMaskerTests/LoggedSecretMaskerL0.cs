@@ -83,10 +83,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         public void LoggedSecretMasker_Sets_MinSecretLength_To_MaxValue()
         {
             var lsm = new LoggedSecretMasker(new SecretMasker());
+            var expectedMinSecretsLengthValue = 4;
 
             lsm.MinSecretLength = 5;
 
-            Assert.Equal(lsm.MinSecretLengthLimit, lsm.MinSecretLength);
+            Assert.Equal(expectedMinSecretsLengthValue, lsm.MinSecretLength);
         }
 
         [Fact]
