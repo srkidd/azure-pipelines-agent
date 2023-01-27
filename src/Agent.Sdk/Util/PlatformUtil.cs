@@ -474,7 +474,7 @@ namespace Agent.Sdk
             this.Id.Equals(systemId, StringComparison.OrdinalIgnoreCase);
 
         public bool Equals(string systemId, SystemVersion systemVersion) => 
-            this.Equals(systemId) || this.Versions.Length > 0 
+            this.Equals(systemId) && this.Versions.Length > 0 
                 ? this.Versions.Any(version => version.Equals(systemVersion))
                 : false;
     }
