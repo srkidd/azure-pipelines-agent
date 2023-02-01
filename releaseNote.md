@@ -1,3 +1,24 @@
+## Features
+ - Allow env.sh to accept additional env var names (#3339)
+ - Fix SonarQube's "'Any()' should be used to test for emptiness" / Code… (#3404)
+ - Make agent update list of systems supporting .NET 6 periodically (#4081)
+ - Add script to predict v2->v3 upgrade compatibility (#4092)
+ - DockerLogin retries (#4100)
+ - Added strict boolean knob values (#4103)
+ - Add the exact operation system version and environment to the telemetry (#4104)
+ - Add option to skip rhel6 in pipeline and ci (#4121)
+
+## Bugs
+ - Fixed name of DockerAdditionalNetworkOptions Knob (#3888)
+ - Revert "Fix execution of scripts in variables (#4016)" (#4088)
+ - fix dotnet host search (#4124)
+
+## Misc
+ - Retries to lock Services database (#4085)
+ - Format agent source code (#4101)
+ - Fix agent lint errors (#4117)
+ - Mingit version upgraded to 2.39.1 (#4126)
+
 
 ## Agent Downloads
 
