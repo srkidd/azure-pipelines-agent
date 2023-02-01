@@ -36,7 +36,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         private Mock<ITempDirectoryManager> _temp;
         private Mock<IDiagnosticLogManager> _diagnosticLogManager;
 
-        private TestHostContext CreateTestContext([CallerMemberName] String testName = "")
+        private TestHostContext CreateTestContext([CallerMemberName] String testName = "", IJobRunnerHelper jobRunnerHelper = null)
         {
             var hc = new TestHostContext(this, testName);
 
@@ -58,7 +58,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             expressionManager.Initialize(hc);
             hc.SetSingleton<IExpressionManager>(expressionManager);
 
-            _jobRunner = new JobRunner();
+            _jobRunner = new JobRunner(jobRunnerHelper ?? GetMockedJobRunnerHelper().Object);
             _jobRunner.Initialize(hc);
 
             TaskOrchestrationPlanReference plan = new TaskOrchestrationPlanReference();
@@ -121,7 +121,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             return hc;
         }
 
-        private TestHostContext CreateMSITestContext([CallerMemberName] String testName = "")
+        private TestHostContext CreateMSITestContext([CallerMemberName] String testName = "", IJobRunnerHelper jobRunnerHelper = null)
         {
             var hc = new TestHostContext(this, testName);
             _jobEc = new Agent.Worker.ExecutionContext();
@@ -142,7 +142,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             expressionManager.Initialize(hc);
             hc.SetSingleton<IExpressionManager>(expressionManager);
 
-            _jobRunner = new JobRunner();
+            _jobRunner = new JobRunner(jobRunnerHelper ?? GetMockedJobRunnerHelper().Object);
             _jobRunner.Initialize(hc);
 
             TaskOrchestrationPlanReference plan = new TaskOrchestrationPlanReference();
@@ -203,6 +203,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             hc.EnqueueInstance<IExecutionContext>(_jobEc);
             hc.EnqueueInstance<IPagingLogger>(_logger.Object);
             return hc;
+        }
+
+        private Mock<IJobRunnerHelper> GetMockedJobRunnerHelper()
+        {
+            var mockedJobRUnnerHelper = new Mock<IJobRunnerHelper>();
+
+            mockedJobRUnnerHelper
+                .Setup(x => x.RunningOnRHEL6)
+                .Returns(false);
+
+            return mockedJobRUnnerHelper;
         }
 
         [Fact]
