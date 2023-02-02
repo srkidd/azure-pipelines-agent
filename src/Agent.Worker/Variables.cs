@@ -78,7 +78,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        public Variables(IHostContext hostContext, IDictionary<string, VariableValue> copy, out List<string> warnings, bool canExpandVulnerableVariables = false)
+        public Variables(
+            IHostContext hostContext,
+            IDictionary<string,
+            VariableValue> copy,
+            out List<string> warnings,
+            // TODO: Remove this logic when we will decide to keep it for everyone.
+            bool canExpandVulnerableVariables = false)
         {
             ArgUtil.NotNull(hostContext, nameof(hostContext));
 

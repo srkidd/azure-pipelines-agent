@@ -496,6 +496,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
+            // TODO: Remove this logic when we will decide to keep it for everyone.
             bool canExpandVulnerableVariables;
             message.Variables.TryGetValue("AZP_EXPAND_VULNERABLE_VARIABLES", out var expandVulnerableVariablesRuntimeVariable);
             if (expandVulnerableVariablesRuntimeVariable == null)
@@ -503,7 +504,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 var knobValue = AgentKnobs.ExpandVulnerableVariables.GetValue<EnvironmentKnobSource>(this) ??
                     AgentKnobs.ExpandVulnerableVariables.GetValue<BuiltInDefaultKnobSource>(this);
 
-                canExpandVulnerableVariables = knobValue.AsBoolean();
+                canExpandVulnerableVariables = knobValue.AsBooleanStrict();
             }
             else
             {

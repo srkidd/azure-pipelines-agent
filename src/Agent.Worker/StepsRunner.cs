@@ -74,7 +74,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 step.ExecutionContext.SetStepTarget(step.Target);
 
                 List<string> expansionWarnings;
-                var canExpandVulnerableVariables = AgentKnobs.ExpandVulnerableVariables.GetValue(jobContext).AsBoolean();
+                var canExpandVulnerableVariables = AgentKnobs.ExpandVulnerableVariables.GetValue(jobContext).AsBooleanStrict();
                 if (canExpandVulnerableVariables)
                 {
                     step.ExecutionContext.Variables.RecalculateExpanded(out expansionWarnings);
