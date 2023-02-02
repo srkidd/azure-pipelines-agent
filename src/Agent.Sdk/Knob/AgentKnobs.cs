@@ -420,7 +420,7 @@ namespace Agent.Sdk.Knob
 
         public static readonly Knob EspaceSpecialCmdCharacters = new ExperimentalKnob(
             nameof(EspaceSpecialCmdCharacters),
-            "Allows to expand vulnerable pipeline variables.",
+            "Allows to escape special cmd characters in vulnerable variables.",
             new RuntimeKnobSource("AZP_ESCAPE_SPECIAL_CMD_CHARACTERS"),
             new EnvironmentKnobSource("AZP_ESCAPE_SPECIAL_CMD_CHARACTERS"),
             new BuiltInDefaultKnobSource("false")
