@@ -619,8 +619,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         private void PublishTelemetry(Dictionary<string, string> telemetryData)
         {
-            ArgUtil.NotNull(Task, nameof(Task));
-            ArgUtil.NotNull(Task.Reference, nameof(Task.Reference));
             ArgUtil.NotNull(telemetryData, nameof(telemetryData));
 
             var cmd = new Command("telemetry", "publish");
