@@ -233,30 +233,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     runtimeVarExpWarnings?.ForEach(warning => ExecutionContext.Warning(warning));
                 }
 
-                var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
-                var expectedExecutionHandler = (definition.Data.Execution?.All != null) ? string.Join(", ", definition.Data.Execution.All) : "";
+                var telemetryData = InitTelemetryData(definition, handlerData);
 
-                var systemVersion = PlatformUtil.GetSystemVersion();
-
-
-                Dictionary<string, string> telemetryData = new Dictionary<string, string>
-                {
-                    { "TaskName", Task.Reference.Name },
-                    { "TaskId", Task.Reference.Id.ToString() },
-                    { "Version", Task.Reference.Version },
-                    { "OS", PlatformUtil.HostOS.ToString() },
-                    { "OSVersion", systemVersion?.Name?.ToString() ?? "" },
-                    { "OSBuild", systemVersion?.Version?.ToString() ?? "" },
-                    { "ExpectedExecutionHandler", expectedExecutionHandler },
-                    { "RealExecutionHandler", handlerData.ToString() },
-                    { "UseNode10", useNode10 },
-                    { "JobId", ExecutionContext.Variables.System_JobId.ToString()},
-                    { "PlanId", ExecutionContext.Variables.Get("system.planId")},
-                    { "AgentName", ExecutionContext.Variables.Get(Constants.Variables.Agent.Name)},
-                    { "MachineName", ExecutionContext.Variables.Get(Constants.Variables.Agent.MachineName)},
-                    { "IsSelfHosted", ExecutionContext.Variables.Get(Constants.Variables.Agent.IsSelfHosted)},
-                    { "RuntimeVariableExpandingWarnings", runtimeVarExpWarnings.Count.ToString() }
-                };
+                telemetryData.Add("RuntimeVariableExpandingWarnings", runtimeVarExpWarnings.Count.ToString());
 
                 PublishTelemetry(telemetryData);
 
@@ -606,6 +585,36 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ExecutionContext.Output($"Author       : {taskDefinition.Data.Author}", false);
             ExecutionContext.Output($"Help         : {taskDefinition.Data.HelpUrl ?? taskDefinition.Data.HelpMarkDown}", false);
             ExecutionContext.Output("==============================================================================", false);
+        }
+
+        private Dictionary<string, string> InitTelemetryData(Definition taskDefinition, HandlerData handlerData)
+        {
+            ArgUtil.NotNull(Task, nameof(Task));
+            ArgUtil.NotNull(Task.Reference, nameof(Task.Reference));
+
+            var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
+            var expectedExecutionHandler = (taskDefinition.Data.Execution?.All != null) ? string.Join(", ", taskDefinition.Data.Execution.All) : "";
+            var systemVersion = PlatformUtil.GetSystemVersion();
+
+            var telemetryData = new Dictionary<string, string>
+            {
+                { "TaskName", Task.Reference.Name },
+                { "TaskId", Task.Reference.Id.ToString() },
+                { "Version", Task.Reference.Version },
+                { "OS", PlatformUtil.HostOS.ToString() },
+                { "OSVersion", systemVersion?.Name?.ToString() ?? "" },
+                { "OSBuild", systemVersion?.Version?.ToString() ?? "" },
+                { "ExpectedExecutionHandler", expectedExecutionHandler },
+                { "RealExecutionHandler", handlerData.ToString() },
+                { "UseNode10", useNode10 },
+                { "JobId", ExecutionContext.Variables.System_JobId.ToString()},
+                { "PlanId", ExecutionContext.Variables.Get("system.planId")},
+                { "AgentName", ExecutionContext.Variables.Get(Constants.Variables.Agent.Name)},
+                { "MachineName", ExecutionContext.Variables.Get(Constants.Variables.Agent.MachineName)},
+                { "IsSelfHosted", ExecutionContext.Variables.Get(Constants.Variables.Agent.IsSelfHosted)}
+            };
+
+            return telemetryData;
         }
 
         private void PublishTelemetry(Dictionary<string, string> telemetryData)
