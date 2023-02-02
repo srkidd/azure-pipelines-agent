@@ -11,7 +11,6 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Xunit;
 using System.Threading;
-using System.Collections.ObjectModel;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
@@ -436,6 +435,96 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 _jobRunner.JobServerQueue = hc.GetService<IJobServerQueue>();
                 _jobRunner.UpdateMetadata(new JobMetadataMessage(It.IsAny<Guid>(), It.IsAny<Int32>()));
                 _jobServerQueue.Verify(x => x.UpdateWebConsoleLineRate(It.IsAny<Int32>()), Times.Once());
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public async Task FailJobOnRHEL6()
+        {
+            var jobRunnerHelper = GetMockedJobRunnerHelper();
+            jobRunnerHelper
+                .Setup(x => x.RunningOnRHEL6)
+                .Returns(true);
+            using (var _tokenSource = new CancellationTokenSource())
+            using (TestHostContext hc = CreateTestContext(jobRunnerHelper: jobRunnerHelper.Object))
+            {
+                _jobExtension
+                    .Setup(x => x.InitializeJob(It.IsAny<IExecutionContext>(), It.IsAny<Pipelines.AgentJobRequestMessage>()))
+                    .Returns(new Task<List<IStep>>(() => Enumerable.Empty<IStep>().ToList()));
+
+                await _jobRunner.RunAsync(_message, _tokenSource.Token);
+
+                Assert.Equal(TaskResult.Failed, _jobEc.Result);
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public async Task FailJobOnRHEL6MSI()
+        {
+            var jobRunnerHelper = GetMockedJobRunnerHelper();
+            jobRunnerHelper
+                .Setup(x => x.RunningOnRHEL6)
+                .Returns(true);
+            using (var _tokenSource = new CancellationTokenSource())
+            using (TestHostContext hc = CreateMSITestContext(jobRunnerHelper: jobRunnerHelper.Object))
+            {
+                _jobExtension
+                    .Setup(x => x.InitializeJob(It.IsAny<IExecutionContext>(), It.IsAny<Pipelines.AgentJobRequestMessage>()))
+                    .Returns(new Task<List<IStep>>(() => Enumerable.Empty<IStep>().ToList()));
+
+                await _jobRunner.RunAsync(_message, _tokenSource.Token);
+
+                Assert.Equal(TaskResult.Failed, _jobEc.Result);
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public async Task SucceededJobOnRHEL6IfKnobSpecified()
+        {
+            var jobRunnerHelper = GetMockedJobRunnerHelper();
+            jobRunnerHelper
+                .Setup(x => x.RunningOnRHEL6)
+                .Returns(true);
+            using (var _tokenSource = new CancellationTokenSource())
+            using (TestHostContext hc = CreateTestContext(jobRunnerHelper: jobRunnerHelper.Object))
+            {
+                _jobExtension
+                    .Setup(x => x.InitializeJob(It.IsAny<IExecutionContext>(), It.IsAny<Pipelines.AgentJobRequestMessage>()))
+                    .Returns(async () => Enumerable.Empty<IStep>().ToList());
+                _message.Variables["AGENT_ACKNOWLEDGE_NO_UPDATES"] = "true";
+
+                await _jobRunner.RunAsync(_message, _tokenSource.Token);
+
+                Assert.Equal(TaskResult.Succeeded, _jobEc.Result);
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public async Task SucceededJobOnRHEL6IfKnobSpecifiedMSI()
+        {
+            var jobRunnerHelper = GetMockedJobRunnerHelper();
+            jobRunnerHelper
+                .Setup(x => x.RunningOnRHEL6)
+                .Returns(true);
+            using (var _tokenSource = new CancellationTokenSource())
+            using (TestHostContext hc = CreateMSITestContext(jobRunnerHelper: jobRunnerHelper.Object))
+            {
+                _jobExtension
+                    .Setup(x => x.InitializeJob(It.IsAny<IExecutionContext>(), It.IsAny<Pipelines.AgentJobRequestMessage>()))
+                    .Returns(async () => Enumerable.Empty<IStep>().ToList());
+                _message.Variables["AGENT_ACKNOWLEDGE_NO_UPDATES"] = "true";
+
+                await _jobRunner.RunAsync(_message, _tokenSource.Token);
+
+                Assert.Equal(TaskResult.Succeeded, _jobEc.Result);
             }
         }
     }
