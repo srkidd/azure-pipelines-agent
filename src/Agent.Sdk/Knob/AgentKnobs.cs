@@ -277,6 +277,16 @@ namespace Agent.Sdk.Knob
             new BuiltInDefaultKnobSource("0"));
 
         // Misc
+        
+        public const string DisableAgentMajorUpdateVariableName = "AZP_AGENT_MAJOR_UPGRADE_DISABLED";
+
+        public static readonly Knob DisableAgentMajorUpdate = new Knob(
+            nameof(DisableAgentMajorUpdate),
+            "Disable agent major update.",
+            new RuntimeKnobSource(DisableAgentMajorUpdateVariableName),
+            new EnvironmentKnobSource(DisableAgentMajorUpdateVariableName),
+            new BuiltInDefaultKnobSource("false"));
+
         public static readonly Knob DisableAgentDowngrade = new Knob(
             nameof(DisableAgentDowngrade),
             "Disable agent downgrades. Upgrades will still be allowed.",

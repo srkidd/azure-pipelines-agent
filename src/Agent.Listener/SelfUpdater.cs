@@ -148,9 +148,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             Trace.Info($"Current running agent version is {BuildConstants.AgentPackage.Version}");
             PackageVersion agentVersion = new PackageVersion(BuildConstants.AgentPackage.Version);
 
-            //Checking if current system support .NET 6 agent
+            // Checking if current system support .NET 6 agent
             if (agentVersion.Major == 2 && serverVersion.Major == 3)
             {
+                if (AgentKnobs.DisableAgentMajorUpdate.GetValue(_knobContext).AsBoolean())
+                {
+                    Trace.Info("Agent major update disabled, skipping update");
+                    return false;
+                }
+
                 Trace.Verbose("Checking if your system supports .NET 6");
 
                 try
