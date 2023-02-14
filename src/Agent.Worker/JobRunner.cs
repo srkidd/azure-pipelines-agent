@@ -18,6 +18,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using Microsoft.VisualStudio.Services.Agent.Worker.Handlers;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -28,10 +29,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void UpdateMetadata(JobMetadataMessage message);
     }
 
+    [ServiceLocator(Default = typeof(JobRunnerHelper))]
+    public interface IJobRunnerHelper
+    {
+        bool RunningOnRHEL6 { get; }
+    }
+
+    public class JobRunnerHelper: IJobRunnerHelper
+    {
+        public bool RunningOnRHEL6 => PlatformUtil.RunningOnRHEL6;
+    }
+
     public sealed class JobRunner : AgentService, IJobRunner
     {
         private IJobServerQueue _jobServerQueue;
         private ITempDirectoryManager _tempDirectoryManager;
+        private IJobRunnerHelper _jobRunnerHelper;
         /// <summary>
         /// Add public accessor for _jobServerQueue to make JobRunner more testable
         /// See /Test/L0/Worker/JobRunnerL0.cs
@@ -40,6 +53,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             set => _jobServerQueue = value;
         }
+
+        public JobRunner()
+        {
+            _jobRunnerHelper = new JobRunnerHelper();
+        }
+
+        public JobRunner(IJobRunnerHelper jobRunnerHelper)
+        {
+            _jobRunnerHelper = jobRunnerHelper;
+        }
+
         public async Task<TaskResult> RunAsync(Pipelines.AgentJobRequestMessage message, CancellationToken jobRequestCancellationToken)
         {
             // Validate parameters.
@@ -98,6 +122,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Create the job execution context.
                 jobContext = HostContext.CreateService<IExecutionContext>();
                 jobContext.InitializeJob(message, jobRequestCancellationToken);
+
+                // Check if system is RHEL 6 and throw exception then
+                bool acknowledgeNoUpdatesKnob = AgentKnobs.AcknowledgeNoUpdates.GetValue(jobContext).AsBoolean();
+                if (!acknowledgeNoUpdatesKnob && _jobRunnerHelper.RunningOnRHEL6)
+                {
+                    string errorMessage = "Red Hat 6 will no longer receive updates of the Pipelines Agent. To be able to continue run pipelines please upgrade the operating system or set an environment variable or agent kbob \"AGENT_ACKNOWLEDGE_NO_UPDATES\" to \"true\". See https://aka.ms/azdo-pipeline-agent-rhel6 for more information.";
+                    Trace.Error(errorMessage);
+                    jobContext.Error(errorMessage);
+                    return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
+                }
+
                 Trace.Info("Starting the job execution context.");
                 jobContext.Start();
                 jobContext.Section(StringUtil.Loc("StepStarting", message.JobDisplayName));

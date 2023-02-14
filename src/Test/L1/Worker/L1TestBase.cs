@@ -645,6 +645,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L1.Worker
     'build.sourceVersionMessage': {
       'value': 'Update azure-pipelines-1.yml for Azure Pipelines',
       'isReadOnly': true
+    },
+    'AGENT_ACKNOWLEDGE_NO_UPDATES': {
+      'value': 'true',
+      'isReadOnly': true
     }
   },
   'messageType': 'PipelineAgentJobRequest',
