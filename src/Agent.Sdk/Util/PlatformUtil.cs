@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Sockets;
 using System.Reflection;
@@ -22,6 +23,7 @@ using Microsoft.TeamFoundation.Build.WebApi;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using System.ServiceProcess;
 
 namespace Agent.Sdk
 {
@@ -361,6 +363,59 @@ namespace Agent.Sdk
             string systemId = PlatformUtil.GetSystemId();
 
             return net6SupportedSystems.Any((s) => s.Equals(systemId));
+        }
+        public async static Task<bool> DetectDockerContainer()
+        {
+            bool isDockerContainer = false;
+            if (PlatformUtil.RunningOnWindows)
+            {
+                // For Windows we check Container Execution Agent Service (cexecsvc) existence
+                var serviceName = "cexecsvc";
+                ServiceController[] scServices = ServiceController.GetServices();
+                if (scServices.Any(x => String.Equals(x.ServiceName, serviceName, StringComparison.OrdinalIgnoreCase) && x.Status == ServiceControllerStatus.Running))
+                {
+                    isDockerContainer = true;
+                }
+            }
+            else
+            {
+                try
+                {
+                    // In Unix in control group v1, we can identify if a process is running in a Docker
+                    var initProcessCgroup = await File.ReadAllLinesAsync("/proc/1/cgroup");
+                    if (initProcessCgroup.Any(x => x.IndexOf(":/docker/", StringComparison.OrdinalIgnoreCase) >= 0))
+                    {
+                        isDockerContainer = true;
+                    }
+                }
+                catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
+                {
+                    // log exception
+                }
+            }
+            return isDockerContainer;
+        }
+
+        public async static Task<bool> DetectAzureVM()
+        {
+            bool isAzureVM = false;
+            var url = "http://169.254.169.254/metadata/instance?api-version=2021-02-01";
+
+            // metadata information endpoint can be used to check whether we're in Azure VM
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Metadata", "true");
+            client.Timeout = TimeSpan.FromSeconds(1);
+            try
+            {
+                var content = await client.GetStringAsync(url);
+                if (content != null)
+                    isAzureVM = true;
+            }
+            catch (Exception ex)
+            {
+                // log exception
+            }
+            return isAzureVM;
         }
     }
 

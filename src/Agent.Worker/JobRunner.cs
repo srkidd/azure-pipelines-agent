@@ -196,6 +196,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 jobContext.SetVariable(Constants.Variables.Agent.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
                 jobContext.SetVariable(Constants.Variables.System.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
 
+                jobContext.SetVariable(Constants.Variables.System.IsAzureVM, (await PlatformUtil.DetectAzureVM()) ? "1" : "0");
+                jobContext.SetVariable(Constants.Variables.System.IsDockerContainer, (await PlatformUtil.DetectDockerContainer()) ? "1" : "0");
+
                 string toolsDirectory = HostContext.GetDirectory(WellKnownDirectory.Tools);
                 Directory.CreateDirectory(toolsDirectory);
                 jobContext.SetVariable(Constants.Variables.Agent.ToolsDirectory, toolsDirectory, isFilePath: true);
