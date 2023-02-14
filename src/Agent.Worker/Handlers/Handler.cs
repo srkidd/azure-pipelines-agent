@@ -298,10 +298,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
         protected void RemovePSModulePathFromEnvironment()
         {
-            if (ProcessUtil.AgentIsRunningInPowerShell())
+            if (PlatformUtil.RunningOnWindows && WindowsProcessUtil.AgentIsRunningInPowerShell())
             {
                 AddEnvironmentVariable("PSModulePath", "");
-                Trace.Info("PSModulePath removed from environment since agent is running in PowerShell");
+                Trace.Info("PSModulePath removed from environment since agent is running on Windows and in PowerShell.");
             }
         }
     }

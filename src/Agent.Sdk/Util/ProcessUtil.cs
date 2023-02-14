@@ -8,7 +8,7 @@ using System.Management;
 
 namespace Microsoft.VisualStudio.Services.Agent.Util
 {
-    public static class ProcessUtil
+    public static class WindowsProcessUtil
     {
         public static Process GetParentProcess(int processId)
         {
@@ -44,9 +44,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             return processList;
         }
 
+        public static bool ProcessIsPowerShell(Process process)
+        {
+            try
+            {
+                // Getting "ProcessName" can throw.
+                string name = process.ProcessName.ToLower();
+                return name == "pwsh" || name == "powershell";
+            }
+            catch
+            {
+                return false;
+            }
+        }
+
         public static bool ProcessIsRunningInPowerShell(Process process)
         {
-            return GetProcessList(process).Exists(process => process.ProcessName.ToLower() == "pwsh" || process.ProcessName.ToLower() == "powershell");
+            return GetProcessList(process).Exists(ProcessIsPowerShell);
         }
 
         public static bool AgentIsRunningInPowerShell()
