@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -13,11 +14,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         public static Process GetParentProcess(int processId)
         {
             using var query = new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ProcessId={processId}");
-            var process = query.Get().OfType<ManagementObject>().First();
+
+            ManagementObject process = query.Get().OfType<ManagementObject>().FirstOrDefault();
+
+            if (process == null)
+            {
+                return null;
+            }
+
             var parentProcessId = (int)(uint)process["ParentProcessId"];
 
-            // Getting process by id can throw.
-            return Process.GetProcessById(parentProcessId);
+            try
+            {
+                return Process.GetProcessById(parentProcessId);
+            }
+            catch (ArgumentException)
+            {
+                return null;
+            }
         }
 
         public static List<Process> GetProcessList(Process process)
@@ -26,19 +40,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
             while (true)
             {
-                try
-                {
-                    int lastProcessId = processList.Last().Id;
+                int lastProcessId = processList.Last().Id;
 
-                    // Getting parent process can throw.
-                    Process parentProcess = GetParentProcess(lastProcessId);
+                Process parentProcess = GetParentProcess(lastProcessId);
 
-                    processList.Add(parentProcess);
-                }
-                catch
+                if (parentProcess == null)
                 {
                     return processList;
                 }
+
+                processList.Add(parentProcess);
             }
         }
 
