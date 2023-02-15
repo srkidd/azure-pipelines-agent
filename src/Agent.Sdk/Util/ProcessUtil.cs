@@ -12,17 +12,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
     {
         public static Process GetParentProcess(int processId)
         {
-            try
-            {
-                using var query = new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ProcessId={processId}");
-                var process = query.Get().OfType<ManagementObject>().First();
-                var parentProcessId = (int)(uint)process["ParentProcessId"];
-                return Process.GetProcessById(parentProcessId);
-            }
-            catch
-            {
-                return null;
-            }
+            using var query = new ManagementObjectSearcher($"SELECT * FROM Win32_Process WHERE ProcessId={processId}");
+            var process = query.Get().OfType<ManagementObject>().First();
+            var parentProcessId = (int)(uint)process["ParentProcessId"];
+
+            // Getting process by id can throw.
+            return Process.GetProcessById(parentProcessId);
         }
 
         public static List<Process> GetProcessList(Process process)
@@ -31,25 +26,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
             while (true)
             {
-                Process parentProcess = GetParentProcess(processList.Last().Id);
-
-                if (parentProcess == null)
+                try
                 {
-                    break;
+                    int lastProcessId = processList.Last().Id;
+
+                    // Getting parent process can throw.
+                    Process parentProcess = GetParentProcess(lastProcessId);
+
+                    processList.Add(parentProcess);
                 }
-
-                processList.Add(parentProcess);
+                catch
+                {
+                    return processList;
+                }
             }
-
-            return processList;
         }
 
         public static bool ProcessIsPowerShell(Process process)
         {
             try
             {
-                // Getting "ProcessName" can throw.
+                // Getting process name can throw.
                 string name = process.ProcessName.ToLower();
+
                 return name == "pwsh" || name == "powershell";
             }
             catch
