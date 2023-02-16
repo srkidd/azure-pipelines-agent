@@ -241,6 +241,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 Trace.Info($"Found UseNode10 knob, use node10 for node tasks: {useNode10}");
                 nodeFolder = NodeHandler.node10Folder;
             }
+            if (nodeFolder == NodeHandler.nodeFolder && 
+                AgentKnobs.AgentDepricatedNodeWarnings.GetValue(ExecutionContext).AsBoolean() == true)
+            {
+                ExecutionContext.Warning(StringUtil.Loc("DepricatedRunner", new[] { Task.Name.ToString() }));
+            }
 
             if (!nodeHandlerHelper.IsNodeFolderExist(nodeFolder, HostContext))
             {
