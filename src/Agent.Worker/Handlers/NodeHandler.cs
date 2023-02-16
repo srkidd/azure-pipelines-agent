@@ -242,9 +242,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 nodeFolder = NodeHandler.node10Folder;
             }
             if (nodeFolder == NodeHandler.nodeFolder && 
-                AgentKnobs.AgentDepricatedNodeWarnings.GetValue(ExecutionContext).AsBoolean() == true)
+                AgentKnobs.AgentDeprecatedNodeWarnings.GetValue(ExecutionContext).AsBoolean() == true)
             {
-                ExecutionContext.Warning(StringUtil.Loc("DepricatedRunner", new[] { Task.Name.ToString() }));
+                ExecutionContext.Warning(StringUtil.Loc("DeprecatedRunner", new[] { Task.Name.ToString() }));
             }
 
             if (!nodeHandlerHelper.IsNodeFolderExist(nodeFolder, HostContext))

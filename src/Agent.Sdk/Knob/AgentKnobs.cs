@@ -397,8 +397,8 @@ namespace Agent.Sdk.Knob
 
         public const string VstsAgentNodeWarningsVariableName = "VSTSAGENT_ENABLE_NODE_WARNINGS";
 
-        public static readonly Knob AgentDepricatedNodeWarnings = new Knob(
-            nameof(AgentDepricatedNodeWarnings),
+        public static readonly Knob AgentDeprecatedNodeWarnings = new Knob(
+            nameof(AgentDeprecatedNodeWarnings),
             "If true shows warning on depricated node (6) tasks",
             new RuntimeKnobSource(VstsAgentNodeWarningsVariableName),
             new EnvironmentKnobSource(VstsAgentNodeWarningsVariableName),
