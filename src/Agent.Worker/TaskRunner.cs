@@ -602,7 +602,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 };
 
                 // Print to Pipeline log
-                //ExecutionContext.Output(string.Join(Environment.NewLine, telemetryData));
+                ExecutionContext.Output(string.Join(Environment.NewLine, telemetryData));
 
                 var cmd = new Command("telemetry", "publish");
                 cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
