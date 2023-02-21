@@ -131,7 +131,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         {                            
                             if(!AgentKnobs.AcknowledgeNoUpdates.GetValue(jobContext).AsBoolean())
                             {
-                                jobContext.AddIssue(new Issue(){Type = IssueType.Error,Message= StringUtil.Loc("FailAgentOnUnsupportedOs")});
+                                jobContext.Error(StringUtil.Loc("FailAgentOnUnsupportedOs"));
                                 return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
                             }
 
