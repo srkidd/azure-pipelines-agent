@@ -601,9 +601,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     { "IsDockerContainer", ExecutionContext.Variables.Get(Constants.Variables.System.IsDockerContainer)}
                 };
 
-                // Print to Pipeline log
-                ExecutionContext.Output(string.Join(Environment.NewLine, telemetryData));
-
                 var cmd = new Command("telemetry", "publish");
                 cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
                 cmd.Properties.Add("area", "PipelinesTasks");
@@ -615,7 +612,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
             catch (NullReferenceException ex)
             {
-                // log info about null ref ex
                 ExecutionContext.Debug($"ExecutionHandler telemetry wasn't published, because one of the variables is null");
                 ExecutionContext.Debug(ex.ToString());
             }
