@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using System.ServiceProcess;
+using Agent.Sdk.Util;
 
 namespace Agent.Sdk
 {
@@ -357,7 +358,7 @@ namespace Agent.Sdk
 
             return net6SupportedSystems.Any((s) => s.Equals(systemId));
         }
-        public async static Task<bool> DetectDockerContainer()
+        public static bool DetectDockerContainer()
         {
             bool isDockerContainer = false;
 
@@ -376,7 +377,7 @@ namespace Agent.Sdk
                 else
                 {
                     // In Unix in control group v1, we can identify if a process is running in a Docker
-                    var initProcessCgroup = await File.ReadAllLinesAsync("/proc/1/cgroup");
+                    var initProcessCgroup = File.ReadLines("/proc/1/cgroup");
                     if (initProcessCgroup.Any(x => x.IndexOf(":/docker/", StringComparison.OrdinalIgnoreCase) >= 0))
                     {
                         isDockerContainer = true;
@@ -385,29 +386,28 @@ namespace Agent.Sdk
             }
             catch (Exception ex)
             {
-                // log exception
+                // Logging exception will be handled by JobRunner
+                throw;
             }
             return isDockerContainer;
         }
 
-        public async static Task<bool> DetectAzureVM()
+        public static bool DetectAzureVM()
         {
             bool isAzureVM = false;
-            var url = "http://169.254.169.254/metadata/instance?api-version=2021-02-01";
 
             try
             {
-                // metadata information endpoint can be used to check whether we're in Azure VM
-                using var client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Metadata", "true");
-                client.Timeout = TimeSpan.FromSeconds(1);
-                var content = await client.GetStringAsync(url);
-                if (content != null)
+                // Metadata information endpoint can be used to check whether we're in Azure VM
+                // Additional info: https://learn.microsoft.com/en-us/azure/virtual-machines/windows/instance-metadata-service?tabs=linux
+                using var metadataProvider = new AzureInstanceMetadataProvider();
+                if (metadataProvider.HasMetadata())
                     isAzureVM = true;
             }
             catch (Exception ex)
             {
-                // log exception
+                // Logging exception will be handled by JobRunner
+                throw;
             }
             return isAzureVM;
         }
