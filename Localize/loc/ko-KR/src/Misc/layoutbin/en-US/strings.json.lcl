@@ -4825,6 +4825,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ServiceLockErrorRetry" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Service DB lock failed with code {0}. Retrying after {1} seconds...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[코드 {0}(으)로 서비스 DB 잠금이 실패했습니다. {1}초 후에 다시 시도합니다.]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ServiceRecoveryOptionSet" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Service {0} successfully set recovery option]]></Val>

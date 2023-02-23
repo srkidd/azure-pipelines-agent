@@ -4825,6 +4825,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";ServiceLockErrorRetry" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[Service DB lock failed with code {0}. Retrying after {1} seconds...]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Сбой блокировки службы базы данных. Код: {0}. Повтор через {1} сек...]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";ServiceRecoveryOptionSet" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Service {0} successfully set recovery option]]></Val>
