@@ -244,7 +244,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             if (nodeFolder == NodeHandler.nodeFolder && 
                 AgentKnobs.AgentDeprecatedNodeWarnings.GetValue(ExecutionContext).AsBoolean() == true)
             {
-                ExecutionContext.Warning(StringUtil.Loc("DeprecatedRunner", new[] { Task.Name.ToString() }));
+                ExecutionContext.Warning(StringUtil.Loc("DeprecatedRunner", Task.Name.ToString()));
             }
 
             if (!nodeHandlerHelper.IsNodeFolderExist(nodeFolder, HostContext))
