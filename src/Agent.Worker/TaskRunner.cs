@@ -600,6 +600,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     { "IsAzureVM", ExecutionContext.Variables.Get(Constants.Variables.System.IsAzureVM)},
                     { "IsDockerContainer", ExecutionContext.Variables.Get(Constants.Variables.System.IsDockerContainer)}
                 };
+                
+                // Print to Pipeline log	
+                ExecutionContext.Output(string.Join(Environment.NewLine, telemetryData));
 
                 var cmd = new Command("telemetry", "publish");
                 cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
