@@ -3,7 +3,9 @@
 
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -23,6 +25,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         private volatile int _errorCount;
         private bool _foundDelimiter;
         private bool _modifyEnvironment;
+        private List<string> _readonlyEnvVariables;
 
         public ProcessHandlerData Data { get; set; }
 
@@ -126,6 +129,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 // Format the command so the environment variables can be captured.
                 cmdExeArgs = $"/c \"{command} {arguments} && echo {OutputDelimiter} && set \"";
+
+                _readonlyEnvVariables = Constants.Variables.ReadOnlyVariables.ConvertAll(var => VarUtil.ConvertToEnvVariableFormat(var));
             }
             else
             {
@@ -218,7 +223,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                         {
                             string key = line.Substring(0, index);
 
-                            if (Constants.Variables.ReadOnlyVariables.Contains(key))
+                            if (_readonlyEnvVariables.Contains(key, StringComparer.OrdinalIgnoreCase))
                             {
                                 return;
                             }
