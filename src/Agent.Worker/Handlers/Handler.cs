@@ -185,7 +185,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             var readonlyEnvVariables = Constants.Variables.ReadOnlyVariables.ConvertAll(v => VarUtil.ConvertToEnvVariableFormat(v));
             AddEnvironmentVariable
             (
-                key: Constants.Variables.ReadOnlyVariablesEnvVar,
+                key: Constants.Variables.ReadOnlyEnvVariablesVar,
                 value: string.Join(";", readonlyEnvVariables)
             );
 
