@@ -898,6 +898,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
+        [Trait("SkipOn", "linux")]
+        [Trait("SkipOn", "darwin")]
+        public void IsReadOnlyVariables_NotLimitsBy_WindowsEnvMaximumSize()
+        {
+            var windowsEnvironmentVariableMaximumSize = 32766;
+
+            var readonlyEnvVariables = Constants.Variables.ReadOnlyVariables.ConvertAll(v => VarUtil.ConvertToEnvVariableFormat(v));
+            var readonlyVarsString = string.Join(";", readonlyEnvVariables);
+
+            Assert.True(windowsEnvironmentVariableMaximumSize > readonlyVarsString.Length);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
         public void Unset()
         {
             using (TestHostContext hc = new TestHostContext(this))
