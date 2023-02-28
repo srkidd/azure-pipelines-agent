@@ -217,7 +217,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                         if (index > 0)
                         {
                             string key = line.Substring(0, index);
-                            string value = line.Substring(index + 1);
+
+                            if (Constants.Variables.ReadOnlyVariables.Contains(key))
+                            {
+                                return;
+                            }
 
                             // Omit special environment variables:
                             //   "TF_BUILD" is set by ProcessInvoker.
@@ -227,6 +231,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                             {
                                 return;
                             }
+
+                            string value = line.Substring(index + 1);
 
                             ExecutionContext.Debug($"Setting env '{key}' = '{value}'");
                             System.Environment.SetEnvironmentVariable(key, value);
