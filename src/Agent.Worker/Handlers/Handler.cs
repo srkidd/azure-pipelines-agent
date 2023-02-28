@@ -181,6 +181,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             ArgUtil.NotNull(Environment, nameof(Environment));
             ArgUtil.NotNull(RuntimeVariables, nameof(RuntimeVariables));
 
+            // Export list of readonly variables.
+            var readonlyEnvVariables = Constants.Variables.ReadOnlyVariables.ConvertAll(v => VarUtil.ConvertToEnvVariableFormat(v));
+            AddEnvironmentVariable
+            (
+                key: Constants.Variables.ReadOnlyVariablesEnvVar,
+                value: string.Join(";", readonlyEnvVariables)
+            );
+
             // Add the public variables.
             var names = new List<string>();
             foreach (KeyValuePair<string, string> pair in RuntimeVariables.Public)

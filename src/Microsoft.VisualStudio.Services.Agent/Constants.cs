@@ -570,7 +570,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 System.EnableAccessToken,
                 System.HostType,
                 System.IsAzureVM,
-                System.IsDockerContainer,                
+                System.IsDockerContainer,
                 System.JobAttempt,
                 System.JobDisplayName,
                 System.JobId,
@@ -595,6 +595,8 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Task.DisplayName,
                 Task.SkipTranslatorForCheckout
             };
+
+            public static string ReadOnlyVariablesEnvVar = "AZP_READONLY_VARIABLES";
         }
     }
 }
