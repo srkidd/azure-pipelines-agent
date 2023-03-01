@@ -181,13 +181,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             ArgUtil.NotNull(Environment, nameof(Environment));
             ArgUtil.NotNull(RuntimeVariables, nameof(RuntimeVariables));
 
-            // Export list of readonly variables.
             var readonlyEnvVariables = Constants.Variables.ReadOnlyVariables.ConvertAll(v => VarUtil.ConvertToEnvVariableFormat(v));
-            AddEnvironmentVariable
-            (
-                key: Constants.Variables.ReadOnlyEnvVariablesVar,
-                value: string.Join(";", readonlyEnvVariables)
-            );
 
             // Add the public variables.
             var names = new List<string>();
@@ -205,6 +199,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
                 // Store the name.
                 names.Add(pair.Key ?? string.Empty);
+
+                if (!excludeNames && RuntimeVariables.IsReadOnly(pair.Key))
+                {
+                    Trace.Info($"Adding {pair.Key} to readonly env variable");
+                    readonlyEnvVariables.Add(VarUtil.ConvertToEnvVariableFormat(pair.Key));
+                }
             }
 
             // Add the public variable names.
@@ -225,6 +225,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
                     // Store the name.
                     secretNames.Add(pair.Key ?? string.Empty);
+
+                    if (RuntimeVariables.IsReadOnly(pair.Key))
+                    {
+                        Trace.Info($"Adding {pair.Key} to readonly env variables");
+                        readonlyEnvVariables.Add(VarUtil.ConvertToEnvVariableFormat(pair.Key));
+                    }
                 }
 
                 // Add the secret variable names.
@@ -233,6 +239,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     AddEnvironmentVariable("VSTS_SECRET_VARIABLES", JsonUtility.ToString(secretNames));
                 }
             }
+
+            AddEnvironmentVariable(
+                key: Constants.Variables.ReadOnlyEnvVariablesVar,
+                value: JsonUtility.ToString(readonlyEnvVariables)
+            );
         }
 
         protected void AddEnvironmentVariable(string key, string value)
