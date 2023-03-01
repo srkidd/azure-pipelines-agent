@@ -202,7 +202,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
                 if (!excludeNames && RuntimeVariables.IsReadOnly(pair.Key))
                 {
-                    Trace.Info($"Adding {pair.Key} to readonly env variable");
+                    Trace.Info($"Adding {pair.Key} public var to readonly env variables list.");
                     readonlyEnvVariables.Add(VarUtil.ConvertToEnvVariableFormat(pair.Key));
                 }
             }
@@ -228,7 +228,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
                     if (RuntimeVariables.IsReadOnly(pair.Key))
                     {
-                        Trace.Info($"Adding {pair.Key} to readonly env variables");
+                        Trace.Info($"Adding {pair.Key} private var to readonly env variables list.");
                         readonlyEnvVariables.Add(VarUtil.ConvertToEnvVariableFormat(pair.Key));
                     }
                 }
