@@ -315,7 +315,7 @@ namespace Agent.Sdk
             string supportOSfilePath = Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "net6.json");
             string supportOSfileContent;
 
-            if (!File.Exists(supportOSfilePath) || File.GetLastWriteTimeUtc(supportOSfilePath) < DateTime.UtcNow.AddDays(3))
+            if (!File.Exists(supportOSfilePath) || File.GetLastWriteTimeUtc(supportOSfilePath) < DateTime.UtcNow.AddDays(-3))
             {
                 httpClient.Timeout = TimeSpan.FromSeconds(10);
                 HttpResponseMessage response = await httpClient.GetAsync(serverFileUrl);
