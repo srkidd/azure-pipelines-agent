@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using Xunit;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Agent.Sdk;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
 {
@@ -460,6 +461,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                     }
                 });
             stepContext.Object.Result = result;
+            stepContext.Setup(x => x.GetScopedEnvironment()).Returns(new SystemEnvironment());
             step.Setup(x => x.ExecutionContext).Returns(stepContext.Object);
 
             return step;
