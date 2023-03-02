@@ -410,5 +410,12 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AGENT_USE_NODE"),
             new EnvironmentKnobSource("AGENT_USE_NODE"),
             new BuiltInDefaultKnobSource(string.Empty));
+
+        public static readonly Knob DrainQueuesAfterTask = new Knob(
+            nameof(DrainQueuesAfterTask),
+            "Forces the agent to drain queues after each task",
+            new RuntimeKnobSource("AGENT_DRAIN_QUEUES_AFTER_TASK"),
+            new EnvironmentKnobSource("AGENT_DRAIN_QUEUES_AFTER_TASK"),
+            new BuiltInDefaultKnobSource("false"));
     }
 }
