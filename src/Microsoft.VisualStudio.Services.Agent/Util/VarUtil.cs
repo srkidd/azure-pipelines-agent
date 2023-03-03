@@ -157,8 +157,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             IDictionary<string, string> source,
             IDictionary<string, string> target,
             out List<string> warnings,
-            WellKnownScriptShell shell = WellKnownScriptShell.Unknown,
-            bool canEscapeSpecialCmdCharacters = true
+            WellKnownScriptShell shell = WellKnownScriptShell.Unknown
         )
         {
             ArgUtil.NotNull(context, nameof(context));
@@ -211,18 +210,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         // A matching variable was found.
                         // Update the target value.
                         trace.Verbose("Macro found.");
-
-                        if (canEscapeSpecialCmdCharacters &&
-                            shell == WellKnownScriptShell.Cmd &&
-                            Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
-                        )
-                        {
-                            trace.Verbose("CMD shell found. Custom macro processing.");
-
-                            // When matching "&", "|", "<" and ">" cmd commands adds "^" before them.
-                            var cmdCommandsRegex = new Regex(@"[&|\||<|>]");
-                            variableValue = cmdCommandsRegex.Replace(variableValue, "^$&");
-                        }
 
                         targetValue = string.Concat(
                             targetValue.Substring(0, prefixIndex),
