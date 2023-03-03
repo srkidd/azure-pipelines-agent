@@ -416,6 +416,6 @@ namespace Agent.Sdk.Knob
             "Forces the agent to drain queues after each task",
             new RuntimeKnobSource("AGENT_DRAIN_QUEUES_AFTER_TASK"),
             new EnvironmentKnobSource("AGENT_DRAIN_QUEUES_AFTER_TASK"),
-            new BuiltInDefaultKnobSource("false"));
+            new BuiltInDefaultKnobSource("true"));
     }
 }
