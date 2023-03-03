@@ -414,9 +414,9 @@ namespace Agent.Sdk.Knob
         public static readonly Knob IgnoreScriptVariablesWarnings = new ExperimentalKnob(
             nameof(IgnoreScriptVariablesWarnings),
             "Allows to ignore warnings about variables vulnerable to execution in script tasks.",
-            new RuntimeKnobSource("AZP_IGNORE_VULNERABLE_SCRIPT_WARNING_MESSAGES"),
-            new EnvironmentKnobSource("AZP_IGNORE_VULNERABLE_SCRIPT_WARNING_MESSAGES"),
-            new BuiltInDefaultKnobSource("false")
+            new RuntimeKnobSource("AZP_IGNORE_VULNERABLE_SCRIPT_VARIABLE_WARNINGS"),
+            new EnvironmentKnobSource("AZP_IGNORE_VULNERABLE_SCRIPT_VARIABLE_WARNINGS"),
+            new BuiltInDefaultKnobSource("true")
         );
 
         public static readonly Knob ExpandVulnerableVariables = new ExperimentalKnob(
@@ -424,7 +424,7 @@ namespace Agent.Sdk.Knob
             "Allows to expand vulnerable pipeline variables.",
             new RuntimeKnobSource("AZP_EXPAND_VULNERABLE_VARIABLES"),
             new EnvironmentKnobSource("AZP_EXPAND_VULNERABLE_VARIABLES"),
-            new BuiltInDefaultKnobSource("false")
+            new BuiltInDefaultKnobSource("true")
         );
 
         public static readonly Knob EspaceSpecialCmdCharacters = new ExperimentalKnob(
