@@ -68,10 +68,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
             else
             {
-                var isTaskForShell = ScriptShellsPerTaskNames.TryGetValue(taskName, out var shellName);
+                var isTaskForShell = ScriptShellsPerTaskNames.TryGetValue(taskName, out var shell);
                 if (isTaskForShell)
                 {
-                    return shellName;
+                    return shell;
                 }
             }
 

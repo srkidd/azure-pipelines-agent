@@ -146,10 +146,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             IHostContext context,
             IDictionary<string, string> source,
             IDictionary<string, string> target,
-            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown
+            WellKnownScriptShell shell = WellKnownScriptShell.Unknown
         )
         {
-            ExpandValues(context, source, target, out _, shellName);
+            ExpandValues(context, source, target, out _, shell);
         }
 
         public static void ExpandValues(
@@ -157,7 +157,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             IDictionary<string, string> source,
             IDictionary<string, string> target,
             out List<string> warnings,
-            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown,
+            WellKnownScriptShell shell = WellKnownScriptShell.Unknown,
             bool canEscapeSpecialCmdCharacters = true
         )
         {
@@ -193,9 +193,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     var isVariableKeyPresent = !string.IsNullOrEmpty(variableKey);
 
                     if (isVariableKeyPresent &&
-                        shellName != WellKnownScriptShell.Unknown &&
-                        shellName != WellKnownScriptShell.Cmd &&
-                        Constants.ScriptShells.EnvVariablePartsPerShell.TryGetValue(shellName, out var shellEnvVariableParts) &&
+                        shell != WellKnownScriptShell.Unknown &&
+                        shell != WellKnownScriptShell.Cmd &&
+                        Constants.ScriptShells.EnvVariablePartsPerShell.TryGetValue(shell, out var shellEnvVariableParts) &&
                         Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
                     )
                     {
@@ -213,7 +213,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         trace.Verbose("Macro found.");
 
                         if (canEscapeSpecialCmdCharacters &&
-                            shellName == WellKnownScriptShell.Cmd &&
+                            shell == WellKnownScriptShell.Cmd &&
                             Constants.Variables.VariablesVulnerableToExecution.Contains(variableKey, StringComparer.OrdinalIgnoreCase)
                         )
                         {

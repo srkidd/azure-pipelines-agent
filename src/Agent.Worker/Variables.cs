@@ -272,15 +272,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             "RequestedFor"
         };
 
-        public void ExpandValues(IDictionary<string, string> target, WellKnownScriptShell shellName = WellKnownScriptShell.Unknown)
+        public void ExpandValues(IDictionary<string, string> target, WellKnownScriptShell shell = WellKnownScriptShell.Unknown)
         {
-            ExpandValues(target, out _, shellName);
+            ExpandValues(target, out _, shell);
         }
 
         public void ExpandValues(
             IDictionary<string, string> target,
             out List<string> warnings,
-            WellKnownScriptShell shellName = WellKnownScriptShell.Unknown,
+            WellKnownScriptShell shell = WellKnownScriptShell.Unknown,
             bool canEscapeSpecialCmdCharacters = true
         )
         {
@@ -293,7 +293,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 source[variable.Name] = value;
             }
 
-            VarUtil.ExpandValues(_hostContext, source, target, out warnings, shellName, canEscapeSpecialCmdCharacters);
+            VarUtil.ExpandValues(_hostContext, source, target, out warnings, shell, canEscapeSpecialCmdCharacters);
         }
 
         public string ExpandValue(string name, string value)
