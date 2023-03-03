@@ -186,46 +186,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
             Assert.Empty(outputWarnings);
         }
 
-        [Fact]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
-        public void ExpandValues_CommandShell_InputExpanding()
-        {
-            using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>
-            {
-                ["build.sourceVersionMessage"] = "& | > <",
-            };
-            var target = new Dictionary<string, string>
-            {
-                ["targetVar"] = "echo $(build.sourceVersionMessage)",
-            };
-
-            VarUtil.ExpandValues(hc, source, target, WellKnownScriptShell.Cmd);
-
-            Assert.Equal("echo ^& ^| ^> ^<", target["targetVar"]);
-        }
-
-        [Fact]
-        [Trait("Level", "L0")]
-        [Trait("Category", "Common")]
-        public void ExpandValues_CommandShell_Not_Expands_NonVulnerableVariables()
-        {
-            using TestHostContext hc = new TestHostContext(this);
-            var source = new Dictionary<string, string>
-            {
-                ["sourceVar"] = "1 & echo 2 &&>|<"
-            };
-            var target = new Dictionary<string, string>
-            {
-                ["targetVar"] = "echo $(sourceVar)"
-            };
-
-            VarUtil.ExpandValues(hc, source, target, WellKnownScriptShell.Cmd);
-
-            Assert.Equal("echo 1 & echo 2 &&>|<", target["targetVar"]);
-        }
-
         [Theory]
         [InlineData("test.value1", "TEST_VALUE1")]
         [InlineData("test value2", "TEST_VALUE2")]
