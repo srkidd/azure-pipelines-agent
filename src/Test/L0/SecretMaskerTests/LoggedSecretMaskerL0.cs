@@ -5,14 +5,22 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests
 {
-    public class LoggedSecretMaskerL0
+    public class LoggedSecretMaskerL0 : IDisposable
     {
+        SecretMasker _secretMasker;
+        private bool disposedValue;
+
+        public LoggedSecretMaskerL0()
+        {
+            _secretMasker = new SecretMasker();
+        }
+
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "SecretMasker")]
         public void LoggedSecretMasker_MaskingSecrets()
         {
-            var lsm = new LoggedSecretMasker(new SecretMasker())
+            var lsm = new LoggedSecretMasker(_secretMasker)
             {
                 MinSecretLength = 0
             };
@@ -29,7 +37,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Category", "SecretMasker")]
         public void LoggedSecretMasker_ShortSecret_Removes_From_Dictionary()
         {
-            var lsm = new LoggedSecretMasker(new SecretMasker())
+            var lsm = new LoggedSecretMasker(_secretMasker)
             {
                 MinSecretLength = 0
             };
@@ -48,7 +56,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Category", "SecretMasker")]
         public void LoggedSecretMasker_ShortSecret_Removes_From_Dictionary_BoundaryValue()
         {
-            var lsm = new LoggedSecretMasker(new SecretMasker())
+            var lsm = new LoggedSecretMasker(_secretMasker)
             {
                 MinSecretLength = 3
             };
@@ -66,7 +74,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Category", "SecretMasker")]
         public void LoggedSecretMasker_Skipping_ShortSecrets()
         {
-            var lsm = new LoggedSecretMasker(new SecretMasker())
+            var lsm = new LoggedSecretMasker(_secretMasker)
             {
                 MinSecretLength = 3
             };
@@ -95,7 +103,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         [Trait("Category", "SecretMasker")]
         public void LoggedSecretMasker_NegativeValue_Passed()
         {
-            var lsm = new LoggedSecretMasker(new SecretMasker())
+            var lsm = new LoggedSecretMasker(_secretMasker)
             {
                 MinSecretLength = -2
             };
@@ -105,6 +113,27 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var resultMessage = lsm.MaskSecrets(inputMessage);
 
             Assert.Equal("***2345", resultMessage);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!disposedValue)
+            {
+                if (disposing)
+                {
+                }
+
+                _secretMasker.Dispose();
+                _secretMasker = null;
+
+                disposedValue = true;
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }
