@@ -426,13 +426,5 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AZP_EXPAND_VULNERABLE_VARIABLES"),
             new BuiltInDefaultKnobSource("true")
         );
-
-        public static readonly Knob EspaceSpecialCmdCharacters = new ExperimentalKnob(
-            nameof(EspaceSpecialCmdCharacters),
-            "Allows to escape special cmd characters in vulnerable variables.",
-            new RuntimeKnobSource("AZP_ESCAPE_SPECIAL_CMD_CHARACTERS"),
-            new EnvironmentKnobSource("AZP_ESCAPE_SPECIAL_CMD_CHARACTERS"),
-            new BuiltInDefaultKnobSource("false")
-        );
     }
 }
