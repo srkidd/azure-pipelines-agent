@@ -83,8 +83,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             IDictionary<string,
             VariableValue> copy,
             out List<string> warnings,
-            // TODO: Remove this logic when we will decide to keep it for everyone.
-            bool canExpandVulnerableVariables = false)
+            // TODO: Remove this logic when we will decide to disable it for everyone.
+            bool canExpandVulnerableVariables = true)
         {
             ArgUtil.NotNull(hostContext, nameof(hostContext));
 
