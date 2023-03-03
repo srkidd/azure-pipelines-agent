@@ -597,29 +597,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             var systemVersion = PlatformUtil.GetSystemVersion();
 
             var telemetryData = new Dictionary<string, string>
-            {
-                { "TaskName", Task.Reference.Name },
-                { "TaskId", Task.Reference.Id.ToString() },
-                { "Version", Task.Reference.Version },
-                { "OS", PlatformUtil.HostOS.ToString() },
-                { "OSVersion", systemVersion?.Name?.ToString() ?? "" },
-                { "OSBuild", systemVersion?.Version?.ToString() ?? "" },
-                { "ExpectedExecutionHandler", expectedExecutionHandler },
-                { "RealExecutionHandler", handlerData.ToString() },
-                { "UseNode10", useNode10 },
-                { "JobId", ExecutionContext.Variables.System_JobId.ToString()},
-                { "PlanId", ExecutionContext.Variables.Get("system.planId")},
-                { "AgentName", ExecutionContext.Variables.Get(Constants.Variables.Agent.Name)},
-                { "MachineName", ExecutionContext.Variables.Get(Constants.Variables.Agent.MachineName)},
-                { "IsSelfHosted", ExecutionContext.Variables.Get(Constants.Variables.Agent.IsSelfHosted)}
-            };
+                {
+                    { "TaskName", Task.Reference.Name },
+                    { "TaskId", Task.Reference.Id.ToString() },
+                    { "Version", Task.Reference.Version },
+                    { "OS", PlatformUtil.GetSystemId() ?? "" },
+                    { "OSVersion", systemVersion?.Name?.ToString() ?? "" },
+                    { "OSBuild", systemVersion?.Version?.ToString() ?? "" },
+                    { "ExpectedExecutionHandler", expectedExecutionHandler },
+                    { "RealExecutionHandler", handlerData.ToString() },
+                    { "UseNode10", useNode10 },
+                    { "JobId", ExecutionContext.Variables.System_JobId?.ToString() ?? ""},
+                    { "PlanId", ExecutionContext.Variables.Get(Constants.Variables.System.JobId)},
+                    { "AgentName", ExecutionContext.Variables.Get(Constants.Variables.Agent.Name)},
+                    { "MachineName", ExecutionContext.Variables.Get(Constants.Variables.Agent.MachineName)},
+                    { "IsSelfHosted", ExecutionContext.Variables.Get(Constants.Variables.Agent.IsSelfHosted)},
+                    { "IsAzureVM", ExecutionContext.Variables.Get(Constants.Variables.System.IsAzureVM)},
+                    { "IsDockerContainer", ExecutionContext.Variables.Get(Constants.Variables.System.IsDockerContainer)}
+                };
 
             return telemetryData;
         }
 
         private void PublishTelemetry(Dictionary<string, string> telemetryData)
         {
-            ArgUtil.NotNull(telemetryData, nameof(telemetryData));
+            ArgUtil.NotNull(Task, nameof(Task));
 
             var cmd = new Command("telemetry", "publish");
             cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
