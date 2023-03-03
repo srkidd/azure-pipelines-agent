@@ -496,24 +496,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            // TODO: Remove this logic when we will decide to keep it for everyone.
-            bool canExpandVulnerableVariables;
-            message.Variables.TryGetValue("AZP_EXPAND_VULNERABLE_VARIABLES", out var expandVulnerableVariablesRuntimeVariable);
-            if (expandVulnerableVariablesRuntimeVariable == null)
-            {
-                var knobValue = AgentKnobs.ExpandVulnerableVariables.GetValue<EnvironmentKnobSource>(this) ??
-                    AgentKnobs.ExpandVulnerableVariables.GetValue<BuiltInDefaultKnobSource>(this);
-
-                canExpandVulnerableVariables = knobValue.AsBooleanStrict();
-            }
-            else
-            {
-                if (!bool.TryParse(expandVulnerableVariablesRuntimeVariable.Value, out canExpandVulnerableVariables))
-                {
-                    Trace.Warning("The AZP_EXPAND_VULNERABLE_VARIABLES runtime variable parsing failed. Set to false as default.");
-                }
-            }
-
+            bool canExpandVulnerableVariables = GetExpandVulnerableVariablesValue(message);
             // Variables (constructor performs initial recursive expansion)
             Variables = new Variables(HostContext, message.Variables, out List<string> warnings, canExpandVulnerableVariables)
             {
@@ -682,6 +665,34 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             // Hook up JobServerQueueThrottling event, we will log warning on server tarpit.
             _jobServerQueue.JobServerQueueThrottling += JobServerQueueThrottling_EventReceived;
+        }
+
+        // TODO: Remove this logic when we will decide to keep it for everyone.
+        private bool GetExpandVulnerableVariablesValue(Pipelines.AgentJobRequestMessage message)
+        {
+            bool canExpandVulnerableVariables;
+
+            message.Variables.TryGetValue("AZP_EXPAND_VULNERABLE_VARIABLES", out var expandVulnerableVariablesRuntimeVariable);
+
+            if (expandVulnerableVariablesRuntimeVariable == null)
+            {
+                var knobValue = AgentKnobs.ExpandVulnerableVariables.GetValue<EnvironmentKnobSource>(this) ??
+                                AgentKnobs.ExpandVulnerableVariables.GetValue<BuiltInDefaultKnobSource>(this);
+
+                canExpandVulnerableVariables = knobValue.AsBooleanStrict();
+            }
+            else
+            {
+                if (!bool.TryParse(expandVulnerableVariablesRuntimeVariable.Value, out canExpandVulnerableVariables))
+                {
+                    var knobValue = AgentKnobs.ExpandVulnerableVariables.GetValue<EnvironmentKnobSource>(this) ??
+                                    AgentKnobs.ExpandVulnerableVariables.GetValue<BuiltInDefaultKnobSource>(this);
+
+                    canExpandVulnerableVariables = knobValue.AsBooleanStrict();
+                }
+            }
+
+            return canExpandVulnerableVariables;
         }
 
         private string GetWorkspaceIdentifier(Pipelines.AgentJobRequestMessage message)
