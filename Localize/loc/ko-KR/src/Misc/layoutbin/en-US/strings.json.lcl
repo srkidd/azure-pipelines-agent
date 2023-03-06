@@ -2002,6 +2002,9 @@
       <Item ItemId=";DeprecatedRunner" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[Task '{0}' is dependent on a task runner that is end-of-life and will be removed in the future. Authors should review Node upgrade guidance: https://aka.ms/node-runner-guidance.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[작업 '{0}'은(는) 수명이 종료된 작업 실행기에 종속되며 나중에 제거될 예정입니다. 작성자는 노드 업그레이드 지침(https://aka.ms/node-runner-guidance)을 검토해야 합니다.]]></Val>
+          </Tgt>
         </Str>
         <Disp Icon="Str" />
       </Item>
