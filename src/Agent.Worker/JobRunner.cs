@@ -334,25 +334,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
                 }
 
-                // check if knob DrainQueuesAfterTask has correct value
-                bool defaultDrainQueuesAfterTask = AgentKnobs.DrainQueuesAfterTask.GetValue<BuiltInDefaultKnobSource>(jobContext).AsBoolean();
-                try
-                {
-                    AgentKnobs.DrainQueuesAfterTask.GetValue(jobContext).AsBooleanStrict();
-                }
-                catch (Exception ex)
-                {
-                    switch (ex)
-                    {
-                        case ArgumentException _:
-                        case FormatException _:
-                            jobContext.Warning($"Knob 'AGENT_DRAIN_QUEUES_AFTER_TASK' has wrong value, default value '{defaultDrainQueuesAfterTask}' will be set");
-                            break;
-                        default:
-                            throw;
-                    }
-                }
-
                 // trace out all steps
                 Trace.Info($"Total job steps: {jobSteps.Count}.");
                 Trace.Verbose($"Job steps: '{string.Join(", ", jobSteps.Select(x => x.DisplayName))}'");

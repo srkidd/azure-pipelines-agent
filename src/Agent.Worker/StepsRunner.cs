@@ -310,14 +310,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             step.ExecutionContext.Section(StringUtil.Loc("StepFinishing", step.DisplayName));
             step.ExecutionContext.Complete();
 
-            bool drainQueuesAfterTask = AgentKnobs.DrainQueuesAfterTask.GetValue<BuiltInDefaultKnobSource>(step.ExecutionContext).AsBoolean();
-            try
-            {
-                drainQueuesAfterTask = AgentKnobs.DrainQueuesAfterTask.GetValue(step.ExecutionContext).AsBooleanStrict();
-            }
-            catch { }
-
-            if (drainQueuesAfterTask == true)
+            if (AgentKnobs.DrainQueuesAfterTask.GetValue(step.ExecutionContext).AsBoolean() == true)
             {
                 try
                 {
