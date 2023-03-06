@@ -23,8 +23,6 @@ namespace Agent.Sdk.Knob
 
         public bool AsBoolean()
         {
-            // TODO: Are we really sure we want to cast something like "treu" to false?
-            // It might make sense to think about FormatException, which already throws AsInt.
             return StringUtil.ConvertToBoolean(_value);
         }
 
