@@ -310,7 +310,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             step.ExecutionContext.Section(StringUtil.Loc("StepFinishing", step.DisplayName));
             step.ExecutionContext.Complete();
 
-            if (AgentKnobs.DrainQueuesAfterTask.GetValue(step.ExecutionContext).AsBoolean() == true)
+            if (!AgentKnobs.DisableDrainQueuesAfterTask.GetValue(step.ExecutionContext).AsBoolean())
             {
                 try
                 {
