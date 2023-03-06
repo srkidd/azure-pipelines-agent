@@ -529,7 +529,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 [Constants.Variables.Build.DefinitionName] = $"... $({Constants.Variables.System.DefinitionName}) ...",
                 [Constants.Variables.Build.SourceVersionMessage] = $"... $({Constants.Variables.Build.SourceVersionMessage}) ...",
             };
-            var variables = new Variables(hc, variableDictionary, out var warnings);
+            var variables = new Variables(hc, variableDictionary, out var warnings, false);
 
             // Arrange: Setup the target dictionary.
             var targetDictionary = new Dictionary<string, string>
