@@ -126,10 +126,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         {
                             notSupportNet6Message = $"The operating system the agent is running on is \"{systemId}\" ({systemVersion}), which has not been tested with the .NET 6 based v3 agent. The v2 agent wil not automatically upgrade to the v3 agent. You can manually download the .NET 6 based v3 agent from https://github.com/microsoft/azure-pipelines-agent/releases. See https://aka.ms/azdo-pipeline-agent-version";
                         }
-
+ 
                         if (!string.IsNullOrWhiteSpace(notSupportNet6Message))
                         {                            
-                            if(!AgentKnobs.AcknowledgeNoUpdates.GetValue(jobContext).AsBoolean())
+                            if(AgentKnobs.AgentFailOnIncompatibleOS.GetValue(jobContext).AsBoolean() && 
+                                !AgentKnobs.AcknowledgeNoUpdates.GetValue(jobContext).AsBoolean())
                             {
                                 jobContext.Error(StringUtil.Loc("FailAgentOnUnsupportedOs"));
                                 return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
