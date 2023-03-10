@@ -121,6 +121,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             {
                                 notSupportNet6Message = $"The operating system the agent is running on is \"{systemId}\" ({systemVersion}), which will not be supported by the .NET 6 based v3 agent. Please upgrade the operating system of this host to ensure compatibility with the v3 agent. See https://aka.ms/azdo-pipeline-agent-version";
                             }
+                            if (AgentKnobs.AgentFailOnIncompatibleOS.GetValue(jobContext).AsBoolean() &&
+                               !AgentKnobs.AcknowledgeNoUpdates.GetValue(jobContext).AsBoolean())
+                            {
+                                jobContext.Error(StringUtil.Loc("FailAgentOnUnsupportedOs"));
+                                return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
+                            }
                         }
                         else
                         {
@@ -129,12 +135,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
  
                         if (!string.IsNullOrWhiteSpace(notSupportNet6Message))
                         {                            
-                            if(AgentKnobs.AgentFailOnIncompatibleOS.GetValue(jobContext).AsBoolean() && 
-                                !AgentKnobs.AcknowledgeNoUpdates.GetValue(jobContext).AsBoolean())
-                            {
-                                jobContext.Error(StringUtil.Loc("FailAgentOnUnsupportedOs"));
-                                return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
-                            }
+                            
 
                             jobContext.AddIssue(new Issue() { Type = IssueType.Warning, Message = notSupportNet6Message });
                         }
