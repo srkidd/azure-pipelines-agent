@@ -139,9 +139,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            // In some cases variables may have a new line at the end.
-            // This can cause secrets to leak when secrets are displayed in logs through the script shell.
-            HostContext.SecretMasker.AddValue(secret.TrimEnd(Environment.NewLine.ToCharArray()), WellKnownSecretAliases.UserSuppliedSecret);
+            // Here we add a trimmed secret value to the dictionary in case of a possible leak through external tools.
+            var trimChars = new char[] { '\r', '\n', ' ' };
+            HostContext.SecretMasker.AddValue(secret.Trim(trimChars), WellKnownSecretAliases.UserSuppliedSecret);
         }
 
         private void InitializeSecretMasker(Pipelines.AgentJobRequestMessage message)
