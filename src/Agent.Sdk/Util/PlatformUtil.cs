@@ -339,7 +339,7 @@ namespace Agent.Sdk
 
                 if (!supportOSfileExists)
                 {
-                    throw new FileNotFoundException("File with list of systems supporing .NET 6 is absent", supportOSfilePath);
+                    throw new FileNotFoundException("File with list of systems supporting .NET 6 is absent", supportOSfilePath);
                 }
 
                 supportOSfileContent = await File.ReadAllTextAsync(supportOSfilePath);
