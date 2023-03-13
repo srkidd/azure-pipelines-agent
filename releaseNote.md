@@ -1,3 +1,19 @@
+## Features
+ - Added knob to break pipeline unless user opt-in (#4165)
+ - FEATURE 2019014 - Gather telemetry on Agent Azure & Docker Container usage (#4166)
+
+## Bugs
+ - Moved logic to drain queues after each task under knob "AGENT_DRAIN_QUEUES_AFTER_TASK" (#4176)
+ - Cover unsupported OS failure with FF (#4196)
+
+## Misc
+ - Add issue templates (#4154)
+ - Added legacy lib sources for support on Ubuntu 22.04 (#4161)
+ - Add warning for deprecated runners (#4162)
+ - Localization update (#4187)
+ - Add "Mariner" to list of .NET 6 supporting systems (#4197)
+ - Add knob to enable fetching net6.json file from GitHub (#4200)
+
 
 ## Agent Downloads
 
