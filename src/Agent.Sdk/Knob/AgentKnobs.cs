@@ -428,7 +428,6 @@ namespace Agent.Sdk.Knob
         public static readonly Knob EnableFetchingNet6List = new Knob(
             nameof(EnableFetchingNet6List),
             "Forces the agent to fetch list of .NET 6 supporting systems from server",
-            new RuntimeKnobSource("AGENT_ENABLE_FETCHING_NET6_LIST"),
             new EnvironmentKnobSource("AGENT_ENABLE_FETCHING_NET6_LIST"),
             new BuiltInDefaultKnobSource("false"));
     }
