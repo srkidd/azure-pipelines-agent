@@ -5,10 +5,10 @@ However, since the customers may rely on the tasks that use Node 6, we provide s
 
 ## Install Node runner manually
 
-To install required Node runner on your agent, please, follow steps:
+To manually install the required Node runner on your agent, please, use the following steps:
 
-1. Download the latest binaries of required Node version from https://releases.nodejs.org/
-1. Extract downloaded binaries into under `node` folder under the `agent/externals` directory:
+1. Download the latest binaries of required Node version from https://releases.nodejs.org/ for your operating system.
+1. Extract downloaded binaries into the `node` folder under the `agent/externals` directory.
 
 Windows:
 ```powershell
@@ -16,7 +16,7 @@ Windows:
     Invoke-WebRequest -Uri "https://nodejs.org/dist/v${version}/win-${osArch}/node.lib" -OutFile "${agent_folder}/externals/node/node.lib"
 ```
 
-Linux:
+Linux/Unix:
 ```bash
     wget -O "/tmp/node-v${version}-${osInfo.osPlatform}-${targetOsArch}.tar.gz" "https://nodejs.org/dist/v${version}/node-v${version}-${osInfo.osPlatform}-${targetOsArch}.tar.gz"
     tar -xvf "/tmp/node-v${version}-${osInfo.osPlatform}-${targetOsArch}.tar.gz" -C "${agent_folder}/externals/node/"
@@ -28,11 +28,12 @@ The list of supported OS:
 - Linux-x64
 - Linux-ARM
 - Linux-ARM64
+- Darwin-x64
 
 ## Install Node runner via NodeTaskRunnerInstaller
 
-You can install the required Node runner version using the Azure DevOps task [NodeTaskRunnerInstaller](https://github.com/microsoft/azure-pipelines-tasks/tree/master/Tasks/NodeTaskRunnerInstallerV0).
-Please, use the following pipeline template to install the latest version of Node 6 runner that is no longer updated:
+You can install the required runner version using the Azure DevOps task [NodeTaskRunnerInstaller](https://github.com/microsoft/azure-pipelines-tasks/tree/master/Tasks/NodeTaskRunnerInstallerV0).
+Please, use the following pipeline template to install the latest version of Node 6 runner:
 
 ```yaml
   steps:
@@ -41,4 +42,4 @@ Please, use the following pipeline template to install the latest version of Nod
       runnerVersion: 6
 ```
 
-Please, check the details in [documentation]()
+Please, check the details in [documentation](TODO)
