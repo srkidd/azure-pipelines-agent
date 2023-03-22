@@ -11,7 +11,7 @@ However, to support backward compatibility with the Node 6 tasks we provide self
 
 To support the execution of Node 6 tasks agent should be provided with the latest Node 6 version - `6.17.1.0`.
 
-Despite that Node 6 is officially reached the End-of-Life, please, notice that it still can have maintenance updates, so it is required for the agent to get the latest binaries. You can check the currently existing Node versions [here](https://nodejs.org/dist/index.tab).
+Despite that Node 6 is officially reached the End-of-Life, please, notice that it still can have maintenance updates, so it is required for the agent to get the latest binaries. You can check the currently existing Node versions [here](https://nodejs.org/dist/).
 
 Please use the following steps to manually install the required runner:
 
@@ -45,4 +45,4 @@ Use the following pipeline task sample to install the latest version of Node 6 r
       runnerVersion: 6
 ```
 
-Please, check more details in [NodeTaskRunnerInstaller task](TODO) documentation.
+Please, check more details in [NodeTaskRunnerInstaller task]() documentation [TODO: FIX LINK].
