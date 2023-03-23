@@ -306,10 +306,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Trace.Info($"Step result: {step.ExecutionContext.Result}");
             }
 
-            // Complete the step context.
-            step.ExecutionContext.Section(StringUtil.Loc("StepFinishing", step.DisplayName));
-            step.ExecutionContext.Complete();
-
             if (!AgentKnobs.DisableDrainQueuesAfterTask.GetValue(step.ExecutionContext).AsBoolean())
             {
                 try
@@ -324,6 +320,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     step.ExecutionContext.Error(ex);
                 }
             }
+
+            // Complete the step context.
+            step.ExecutionContext.Section(StringUtil.Loc("StepFinishing", step.DisplayName));
+            step.ExecutionContext.Complete();
         }
 
         private async Task SwitchToUtf8Codepage(IStep step)
