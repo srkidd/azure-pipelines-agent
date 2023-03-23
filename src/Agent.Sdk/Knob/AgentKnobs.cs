@@ -282,6 +282,20 @@ namespace Agent.Sdk.Knob
             "Disable agent downgrades. Upgrades will still be allowed.",
             new EnvironmentKnobSource("AZP_AGENT_DOWNGRADE_DISABLED"),
             new BuiltInDefaultKnobSource("false"));
+        
+        public static readonly Knob AcknowledgeNoUpdates = new Knob(
+            nameof(AcknowledgeNoUpdates),
+            "Opt-in to continue using agent without updates on unsopperted OS",
+            new EnvironmentKnobSource("AGENT_ACKNOWLEDGE_NO_UPDATES"),
+            new RuntimeKnobSource("AGENT_ACKNOWLEDGE_NO_UPDATES"),
+            new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob AgentFailOnIncompatibleOS = new Knob(
+            nameof(AgentFailOnIncompatibleOS),
+            "Allow agent to fail pipelines on incampatible OS",
+            new EnvironmentKnobSource("AGENT_FAIL_ON_INCOMPATIBLE_OS"),
+            new RuntimeKnobSource("AGENT_FAIL_ON_INCOMPATIBLE_OS"),
+            new BuiltInDefaultKnobSource("false"));
 
         public static readonly Knob PermissionsCheckFailsafe = new Knob(
             nameof(PermissionsCheckFailsafe),
@@ -410,5 +424,18 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AGENT_USE_NODE"),
             new EnvironmentKnobSource("AGENT_USE_NODE"),
             new BuiltInDefaultKnobSource(string.Empty));
+
+        public static readonly Knob DisableDrainQueuesAfterTask = new Knob(
+            nameof(DisableDrainQueuesAfterTask),
+            "Forces the agent to disable draining queues after each task",
+            new RuntimeKnobSource("AGENT_DISABLE_DRAIN_QUEUES_AFTER_TASK"),
+            new EnvironmentKnobSource("AGENT_DISABLE_DRAIN_QUEUES_AFTER_TASK"),
+            new BuiltInDefaultKnobSource("false"));
+            
+        public static readonly Knob EnableFetchingNet6List = new Knob(
+            nameof(EnableFetchingNet6List),
+            "Forces the agent to fetch list of .NET 6 supporting systems from server",
+            new EnvironmentKnobSource("AGENT_ENABLE_FETCHING_NET6_LIST"),
+            new BuiltInDefaultKnobSource("false"));
     }
 }
