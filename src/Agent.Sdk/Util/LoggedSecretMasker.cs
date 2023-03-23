@@ -72,7 +72,7 @@ namespace Agent.Sdk.Util
 
         // We don't allow to skip secrets longer than 4 characters.
         // Note: the secret that will be ignored is of length n-1.
-        public int MinSecretLengthLimit => 7;
+        public static int MinSecretLengthLimit => 7;
 
         public int MinSecretLength
         {
