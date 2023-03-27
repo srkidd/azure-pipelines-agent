@@ -63,7 +63,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var inputMessage = "1234567";
 
             lsm.AddValue("12345");
-            lsm.RemoveShortSecretsFromDictionary();
             var resultMessage = lsm.MaskSecrets(inputMessage);
 
             Assert.Equal("1234567", resultMessage);
@@ -76,12 +75,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         {
             var lsm = new LoggedSecretMasker(_secretMasker)
             {
-                MinSecretLength = LoggedSecretMasker.MinSecretLengthLimit - 1
+                MinSecretLength = LoggedSecretMasker.MinSecretLengthLimit
             };
             var inputMessage = "1234567";
 
             lsm.AddValue("123456");
-            lsm.RemoveShortSecretsFromDictionary();
             var resultMessage = lsm.MaskSecrets(inputMessage);
 
             Assert.Equal("***7", resultMessage);
