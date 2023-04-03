@@ -24,7 +24,7 @@ You can also use the following commands to install the Node 6 runner via the Pow
 Windows:
 ```powershell
     $agentFolder = ""   // Specify the Azure DevOps Agent folder, e.g. C:\agents\my_agent
-    $osArch = ""        // Specify the OS architecture, e.g. x64/x86
+    $osArch = ""        // Specify the OS architecture, e.g. x64 / x86
 
     New-Item -Type Directory -Path "${agentFolder}\externals\node"
 
@@ -35,8 +35,8 @@ Windows:
 Linux / macOS:
 ```bash
     agent_folder=""   // Specify the Azure DevOps Agent folder, e.g. /home/user/agents/my_agent
-    os_platform=""    // Specify the OS platform, e.g. Linux/Darwin
-    os_arch=""        // Specify the OS architecture, e.g. x64/x86
+    os_platform=""    // Specify the OS platform, e.g. linux / darwin
+    os_arch=""        // Specify the OS architecture, e.g. x64 / x86
 
     mkdir "${agent_folder}/externals/node"
 
