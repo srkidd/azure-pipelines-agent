@@ -43,12 +43,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             if (!string.IsNullOrEmpty(value))
             {
                 context.GetHostContext().SecretMasker.AddValue(value, origin);
-            }
 
-            var unescapePercents = AgentKnobs.DecodePercents.GetValue(context).AsBoolean();
-            if (!unescapePercents)
-            {
-                context.GetHostContext().SecretMasker.AddValue(CommandStringConvertor.Unescape(value, true), origin);
+                // if DECODE_PERCENTS = false then we need to add decoded value as a secret as well to prevent its exposion in logs
+                var unescapePercents = AgentKnobs.DecodePercents.GetValue(context).AsBoolean();
+                if (!unescapePercents)
+                {
+                    context.GetHostContext().SecretMasker.AddValue(CommandStringConvertor.Unescape(value, true), origin);
+                }
             }
         }
     }
