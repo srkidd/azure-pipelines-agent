@@ -19,17 +19,29 @@ Please use the following steps to manually install the required runner:
 
 1. Create a folder named `node` under the `agent/externals` directory, and extract downloaded Node binaries into that folder.
 
+You can also use the following commands to install the Node 6 runner via the Powershell or Bash:
+
 Windows:
 ```powershell
+    $agentFolder = ""   // Specify the Azure DevOps Agent folder, e.g. C:\agents\my_agent
+    $osArch = ""        // Specify the OS architecture, e.g. x64/x86
+
     New-Item -Type Directory -Path "${agentFolder}\externals\node"
+
     Invoke-WebRequest -Uri "https://nodejs.org/dist/v6.17.1/win-${osArch}/node.exe" -OutFile "${agentFolder}\externals\node\node.exe"
     Invoke-WebRequest -Uri "https://nodejs.org/dist/v6.17.1/win-${osArch}/node.lib" -OutFile "${agentFolder}\externals\node\node.lib"
 ```
 
 Linux / macOS:
 ```bash
+    agent_folder=""   // Specify the Azure DevOps Agent folder, e.g. /home/user/agents/my_agent
+    os_platform=""    // Specify the OS platform, e.g. Linux/Darwin
+    os_arch=""        // Specify the OS architecture, e.g. x64/x86
+
     mkdir "${agent_folder}/externals/node"
+
     wget -O "/tmp/node-v6.17.1-${os_platform}-${os_arch}.tar.gz" "https://nodejs.org/dist/v6.17.1/node-v6.17.1-${os_platform}-${os_arch}.tar.gz"
+
     tar -xvf "/tmp/node-v6.17.1-${os_platform}-${os_arch}.tar.gz" -C "${agent_folder}/externals/node/"
 ```
 
