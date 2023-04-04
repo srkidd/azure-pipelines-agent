@@ -186,7 +186,7 @@ namespace Microsoft.VisualStudio.Services.Agent
             Trace.Info("File upload queue drained.");
 
             // ProcessTimelinesUpdateQueueAsync() will throw exception during shutdown
-            // if there is any timeline records that failed to update contains output variabls.
+            // if there is any timeline records that failed to update contains output variables.
             Trace.Verbose("Draining timeline update queue.");
             await ProcessTimelinesUpdateQueueAsync(runOnce: true);
             Trace.Info("Timeline update queue drained.");
