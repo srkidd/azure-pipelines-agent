@@ -247,7 +247,7 @@ namespace Microsoft.VisualStudio.Services.Agent
         {
             while (!_jobCompletionSource.Task.IsCompleted || runOnce)
             {
-                bool drain = ForceDrainWebConsoleQueue;
+                bool shouldDrain = ForceDrainWebConsoleQueue;
                 if (ForceDrainWebConsoleQueue)
                 {
                     ForceDrainWebConsoleQueue = false;
@@ -284,7 +284,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                     // process at most about 500 lines of web console line during regular timer dequeue task.
                     // Send the first line of output to the customer right away
                     // It might take a while to reach 500 line outputs, which would cause delays before customers see the first line
-                    if ((!runOnce && !drain && linesCounter > 500) || _firstConsoleOutputs)
+                    if ((!runOnce && !shouldDrain && linesCounter > 500) || _firstConsoleOutputs)
                     {
                         break;
                     }
@@ -319,7 +319,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                         // We batch and produce 500 lines of web console output every 500ms
                         // If customer's task produce massive of outputs, then the last queue drain run might take forever.
                         // So we will only upload the last 200 lines of each step from all buffered web console lines.
-                        if ((runOnce || drain) && batchedLines.Count > 2)
+                        if ((runOnce || shouldDrain) && batchedLines.Count > 2)
                         {
                             Trace.Info($"Skip {batchedLines.Count - 2} batches web console lines for last run");
                             batchedLines = batchedLines.TakeLast(2).ToList();
@@ -435,7 +435,7 @@ namespace Microsoft.VisualStudio.Services.Agent
         {
             while (!_jobCompletionSource.Task.IsCompleted || runOnce)
             {
-                bool drain = ForceDrainTimelineQueue;
+                bool shouldDrain = ForceDrainTimelineQueue;
 
                 List<PendingTimelineRecord> pendingUpdates = new List<PendingTimelineRecord>();
                 foreach (var timeline in _allTimelines)
@@ -449,7 +449,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                         {
                             records.Add(record);
                             // process at most 25 timeline records update for each timeline.
-                            if (!runOnce && !drain && records.Count > 25)
+                            if (!runOnce && !shouldDrain && records.Count > 25)
                             {
                                 break;
                             }
@@ -521,7 +521,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                     }
                 }
 
-                if (runOnce || drain)
+                if (runOnce || shouldDrain)
                 {
                     // continue process timeline records update,
                     // we might have more records need update,
