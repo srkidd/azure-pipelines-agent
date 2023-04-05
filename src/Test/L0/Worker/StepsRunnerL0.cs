@@ -434,6 +434,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                             stepContext.Object.Result = r;
                         }
                     });
+                stepContext.Setup(x => x.GetScopedEnvironment()).Returns(new SystemEnvironment());
                 step.Setup(x => x.ExecutionContext).Returns(stepContext.Object);
 
                 // Act.
@@ -468,6 +469,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                     }
                 });
             stepContext.Object.Result = result;
+            stepContext.Setup(x => x.GetScopedEnvironment()).Returns(new SystemEnvironment());
             step.Setup(x => x.ExecutionContext).Returns(stepContext.Object);
 
             return step;

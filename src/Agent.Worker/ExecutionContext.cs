@@ -295,6 +295,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 this.Warning(StringUtil.Loc("TotalThrottlingDelay", TimeSpan.FromMilliseconds(_totalThrottlingDelayInMilliseconds).TotalSeconds));
             }
 
+            if (!AgentKnobs.DisableDrainQueuesAfterTask.GetValue(this).AsBoolean())
+            {
+                _jobServerQueue.ForceDrainWebConsoleQueue = true;
+                _jobServerQueue.ForceDrainTimelineQueue = true;
+            }
+
             _record.CurrentOperation = currentOperation ?? _record.CurrentOperation;
             _record.ResultCode = resultCode ?? _record.ResultCode;
             _record.FinishTime = DateTime.UtcNow;
@@ -517,18 +523,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            try
-            {
-                HostContext.SecretMasker.MinSecretLength = AgentKnobs.MaskedSecretMinLength.GetValue(this).AsInt();
-            }
-            catch (ArgumentException ex)
-            {
-                warnings.Add(ex.Message);
-            }
-            HostContext.SecretMasker.RemoveShortSecretsFromDictionary();
-
             // Prepend Path
             PrependPath = new List<string>();
+
+            var minSecretLen = AgentKnobs.MaskedSecretMinLength.GetValue(this).AsInt();
+            HostContext.SecretMasker.MinSecretLength = minSecretLen;
+
+            if (HostContext.SecretMasker.MinSecretLength < minSecretLen)
+            {
+                warnings.Add(StringUtil.Loc("MinSecretsLengtLimitWarning", HostContext.SecretMasker.MinSecretLength));
+            }
+
+            HostContext.SecretMasker.RemoveShortSecretsFromDictionary();
 
             // Docker (JobContainer)
             string imageName = Variables.Get("_PREVIEW_VSTS_DOCKER_IMAGE");
