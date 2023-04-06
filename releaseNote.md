@@ -1,3 +1,17 @@
+## Features
+ - Fixed typos in strings.json (#3523)
+ - [Refactor] Update MinSecretLength property. (#4137)
+ - Make warnings/errors during checking if system supports .NET 6 being pushed to Kusto telemetry (#4207)
+
+## Bugs
+ - Added trimmed user secret to masker dictionary (#4195)
+ - Refactor logic to drain queues after each task (#4213)
+
+## Misc
+ - add ability to disable publishing tests metadata (#4209)
+ - Increase limit for AZP_IGNORE_SECRETS_SHORTER_THAN knob to 6 (#4214)
+ - Upgrade git-lfs version (#4218)
+
 
 ## Agent Downloads
 
