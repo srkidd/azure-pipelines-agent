@@ -164,12 +164,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 jobContext.SetVariable(Constants.Variables.Agent.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
                 jobContext.SetVariable(Constants.Variables.System.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
 
-                var azureVmCheckCommand = jobContext.GetHostContext().CreateService<IAsyncCommandContext>();
+                var azureVmCheckCommand = jobContext.GetHostContext().GetService<IAsyncCommandContext>();
                 azureVmCheckCommand.InitializeCommandContext(jobContext,"GetAzureVMMetada");
                 azureVmCheckCommand.Task = Task.Run(() => jobContext.SetVariable(Constants.Variables.System.IsAzureVM, PlatformUtil.DetectAzureVM() ? "1" : "0"));
                 jobContext.AsyncCommands.Add(azureVmCheckCommand);
 
-                var dockerDetectCommand = jobContext.GetHostContext().CreateService<IAsyncCommandContext>();
+                var dockerDetectCommand = jobContext.GetHostContext().GetService<IAsyncCommandContext>();
                 dockerDetectCommand.InitializeCommandContext(jobContext,"DetectDockerContainer");
                 dockerDetectCommand.Task = Task.Run(() => jobContext.SetVariable(Constants.Variables.System.IsDockerContainer, PlatformUtil.DetectDockerContainer() ? "1" : "0"));
                 jobContext.AsyncCommands.Add(dockerDetectCommand);
