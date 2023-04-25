@@ -153,7 +153,6 @@ namespace Agent.Sdk
         {
             get
             {
-                // System.Diagnostics.Debugger.Launch();
                 if (_connection == null)
                 {
                     _connection = InitializeVssConnection();
@@ -244,7 +243,6 @@ namespace Agent.Sdk
         private AgentWebProxySettings GetProxyConfiguration()
         {
             string proxyUrl = this.Variables.GetValueOrDefault("agent.proxyurl")?.Value;
-            System.Diagnostics.Debugger.Launch();
             if (!string.IsNullOrEmpty(proxyUrl))
             {
                 string proxyUsername = this.Variables.GetValueOrDefault("agent.proxyusername")?.Value;
