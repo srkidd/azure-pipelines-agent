@@ -319,11 +319,11 @@ namespace Agent.Sdk
 
         public AgentWebProxySettings GetProxyConfiguration()
         {
-            string proxyUrl = this.Variables.GetValueOrDefault("Agent.ProxyUrl")?.Value;
+            string proxyUrl = this.Variables.GetValueOrDefault("agent.proxyurl")?.Value;
             if (!string.IsNullOrEmpty(proxyUrl))
             {
-                string proxyUsername = this.Variables.GetValueOrDefault("Agent.ProxyUsername")?.Value;
-                string proxyPassword = this.Variables.GetValueOrDefault("Agent.ProxyPassword")?.Value;
+                string proxyUsername = this.Variables.GetValueOrDefault("agent.proxyusername")?.Value;
+                string proxyPassword = this.Variables.GetValueOrDefault("agent.proxypassword")?.Value;
                 List<string> proxyBypassHosts = StringUtil.ConvertFromJson<List<string>>(this.Variables.GetValueOrDefault("Agent.ProxyBypassList")?.Value ?? "[]");
                 return new AgentWebProxySettings()
                 {

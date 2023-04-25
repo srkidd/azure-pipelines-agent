@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using Microsoft.VisualStudio.Services.Agent;
 
 namespace Agent.Sdk
 {
@@ -152,6 +153,7 @@ namespace Agent.Sdk
         {
             get
             {
+                // System.Diagnostics.Debugger.Launch();
                 if (_connection == null)
                 {
                     _connection = InitializeVssConnection();
@@ -241,11 +243,12 @@ namespace Agent.Sdk
 
         private AgentWebProxySettings GetProxyConfiguration()
         {
-            string proxyUrl = this.Variables.GetValueOrDefault("Agent.ProxyUrl")?.Value;
+            string proxyUrl = this.Variables.GetValueOrDefault("agent.proxyurl")?.Value;
+            System.Diagnostics.Debugger.Launch();
             if (!string.IsNullOrEmpty(proxyUrl))
             {
-                string proxyUsername = this.Variables.GetValueOrDefault("Agent.ProxyUsername")?.Value;
-                string proxyPassword = this.Variables.GetValueOrDefault("Agent.ProxyPassword")?.Value;
+                string proxyUsername = this.Variables.GetValueOrDefault("agent.proxyusername")?.Value;
+                string proxyPassword = this.Variables.GetValueOrDefault("Agent.proxypassword")?.Value;
                 List<string> proxyBypassHosts = StringUtil.ConvertFromJson<List<string>>(this.Variables.GetValueOrDefault("Agent.ProxyBypassList")?.Value ?? "[]");
                 return new AgentWebProxySettings()
                 {
