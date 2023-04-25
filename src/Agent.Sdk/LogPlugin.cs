@@ -248,8 +248,8 @@ namespace Agent.Sdk
             if (!string.IsNullOrEmpty(proxyUrl))
             {
                 string proxyUsername = this.Variables.GetValueOrDefault("agent.proxyusername")?.Value;
-                string proxyPassword = this.Variables.GetValueOrDefault("Agent.proxypassword")?.Value;
-                List<string> proxyBypassHosts = StringUtil.ConvertFromJson<List<string>>(this.Variables.GetValueOrDefault("Agent.ProxyBypassList")?.Value ?? "[]");
+                string proxyPassword = this.Variables.GetValueOrDefault("agent.proxypassword")?.Value;
+                List<string> proxyBypassHosts = StringUtil.ConvertFromJson<List<string>>(this.Variables.GetValueOrDefault("agent.proxybypasslist")?.Value ?? "[]");
                 return new AgentWebProxySettings()
                 {
                     ProxyAddress = proxyUrl,
