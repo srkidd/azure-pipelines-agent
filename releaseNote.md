@@ -1,3 +1,14 @@
+## Features
+ - Upgrade vss api netcore version, has BuildXL changes (#4220)
+
+## Bugs
+ - Fix httpclient timeout on AzureMetada retrieving  (#4249)
+ - Fix that plugins ignores proxy configuration (#4260)
+
+## Misc
+ - Add force of _tasks creation by knob (#4236)
+ - update node from `16.17.1` to `16.20.0` (#4238)
+
 
 ## Agent Downloads
 
