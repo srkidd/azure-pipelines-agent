@@ -126,7 +126,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                     if (TestUtil.IsWindows())
                     {
                         execTask = processInvoker.ExecuteAsync(
-                            new ProcessInvokerParams()
+                            new()
                             {
                                 WorkingDirectory = "",
                                 FileName = "cmd",
@@ -138,7 +138,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                     else
                     {
                         execTask = processInvoker.ExecuteAsync(
-                            new ProcessInvokerParams()
+                            new()
                             {
                                 WorkingDirectory = "",
                                 FileName = "bash",

@@ -307,7 +307,7 @@ namespace Microsoft.VisualStudio.Services.Agent
             CancellationToken cancellationToken)
         {
             return await ExecuteAsync(
-                inputParams: new ProcessInvokerParams()
+                inputParams: new()
                 {
                     WorkingDirectory = workingDirectory,
                     FileName = fileName,
