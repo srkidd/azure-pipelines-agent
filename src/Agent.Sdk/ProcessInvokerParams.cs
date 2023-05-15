@@ -7,11 +7,11 @@ namespace Agent.Sdk
 {
     public class ProcessInvokerParams
     {
-        public string WorkingDirectory { get; init; } = null;
+        public string WorkingDirectory { get; init; } = string.Empty;
 
-        public string FileName { get; init; } = null;
+        public string FileName { get; init; } = string.Empty;
 
-        public string Arguments { get; init; } = null;
+        public string Arguments { get; init; } = string.Empty;
 
         public IDictionary<string, string> Environment { get; init; } = null;
 
