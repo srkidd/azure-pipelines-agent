@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
+using System.Collections.Generic;
 using System.Text;
 using Microsoft.TeamFoundation.Framework.Common;
 using Microsoft.VisualStudio.Services.Agent.Util;
