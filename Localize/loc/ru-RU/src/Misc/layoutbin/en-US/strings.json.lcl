@@ -2235,37 +2235,49 @@
       </Item>
       <Item ItemId=";ErrorDuringBuildGC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Не удалось обнаружить мусор на основе "{0}". Повторите попытку позже.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringBuildGCDelete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Не удалось завершить сборку мусора на основе "{0}". Повторите попытку позже.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringReleaseGC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Не удалось обнаружить мусор на основе "{0}". Повторите попытку позже.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringReleaseGCDelete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Не удалось завершить сборку мусора на основе "{0}". Повторите попытку позже.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2355,6 +2367,15 @@
           <Val><![CDATA[Expected mapping[{0}]5D; server path: '{1}'. Actual: '{2}']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Ожидаемое сопоставление[{0}]5D; Путь к серверу: "{1}". Фактическое: "{2}".]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FailAgentOnUnsupportedOs" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This operating system will stop receiving updates of the Pipelines Agent in the future. To be able to continue to run pipelines please upgrade the operating system or set an environment variable or agent knob "AGENT_ACKNOWLEDGE_NO_UPDATES" to "true". See https://aka.ms/azdo-pipeline-agent-v2-eos for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[В будущем эта операционная система перестанет получать обновления агента конвейеров. Чтобы сохранить возможность выполнения конвейеров, обновите операционную систему или настройте для переменной среды либо переключателя агента "AGENT_ACKNOWLEDGE_NO_UPDATES" значение "true". Дополнительные сведения см. на странице https://aka.ms/azdo-pipeline-agent-v2-eos.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3205,6 +3226,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";MinSecretsLengtLimitWarning" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The value of the minimum length of the secrets is too high. Maximum value is set: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Слишком большое значение минимальной длины секретов. Настроенное максимальное значение: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";MinimumNetFramework" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET Framework x64 4.5 or higher is required.]]></Val>
@@ -3252,10 +3282,13 @@
       </Item>
       <Item ItemId=";MissingAttachmentFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file not exist on disk]]></Val>
+          <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file does not exist on disk.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось отправить файл вложения задачи, расположение файла вложения не указано, или файла вложения нет на диске]]></Val>
+            <Val><![CDATA[Не удалось отправить файл вложения задачи, расположение файла вложения не указано или файла вложения нет на диске.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file not exist on disk]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4953,10 +4986,13 @@
       </Item>
       <Item ItemId=";SkipTrackingFileWithoutRepoType" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Skip tracking file '{0}', repository type haven't been updated yet.]]></Val>
+          <Val><![CDATA[Skip tracking file '{0}', repository type hasn't been updated yet.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Пропуск файла отслеживания "{0}", тип репозитория еще не был обновлен.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Skip tracking file '{0}', repository type haven't been updated yet.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
