@@ -2235,37 +2235,49 @@
       </Item>
       <Item ItemId=";ErrorDuringBuildGC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile rilevare gli elementi da sottoporre a Garbage Collection sulla base di '{0}'. Provare la prossima volta.]]></Val>
+            <Val><![CDATA[Non è possibile individuare gli elementi da sottoporre a Garbage Collection sulla base di '{0}'. Provare la prossima volta.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringBuildGCDelete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Non è possibile completare la Garbage Collection sulla base di '{0}'. Provare la prossima volta.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringReleaseGC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile rilevare gli elementi da sottoporre a Garbage Collection sulla base di '{0}'. Provare la prossima volta.]]></Val>
+            <Val><![CDATA[Non è possibile individuare gli elementi da sottoporre a Garbage Collection sulla base di '{0}'. Provare la prossima volta.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringReleaseGCDelete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Non è possibile completare la Garbage Collection sulla base di '{0}'. Provare la prossima volta.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -2355,6 +2367,15 @@
           <Val><![CDATA[Expected mapping[{0}]5D; server path: '{1}'. Actual: '{2}']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[Percorso server di mapping[{2}]5D; previsto: '{0}'. Effettivo: '{1}']]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
+      <Item ItemId=";FailAgentOnUnsupportedOs" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[This operating system will stop receiving updates of the Pipelines Agent in the future. To be able to continue to run pipelines please upgrade the operating system or set an environment variable or agent knob "AGENT_ACKNOWLEDGE_NO_UPDATES" to "true". See https://aka.ms/azdo-pipeline-agent-v2-eos for more information.]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Questo sistema operativo interromperà la ricezione degli aggiornamenti dell'agente pipeline in futuro. Per continuare a eseguire le pipeline, aggiornare il sistema operativo o impostare una variabile di ambiente o la manopola dell'agente "AGENT_ACKNOWLEDGE_NO_UPDATES" su "true". Per altre informazioni, vedere https://aka.ms/azdo-pipeline-agent-v2-eos.]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3205,6 +3226,15 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
+      <Item ItemId=";MinSecretsLengtLimitWarning" ItemType="0" PsrId="306" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[The value of the minimum length of the secrets is too high. Maximum value is set: {0}]]></Val>
+          <Tgt Cat="Text" Stat="Loc" Orig="New">
+            <Val><![CDATA[Il valore della lunghezza minima dei segreti è troppo alto. Valore massimo impostato: {0}]]></Val>
+          </Tgt>
+        </Str>
+        <Disp Icon="Str" />
+      </Item>
       <Item ItemId=";MinimumNetFramework" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET Framework x64 4.5 or higher is required.]]></Val>
@@ -3252,10 +3282,13 @@
       </Item>
       <Item ItemId=";MissingAttachmentFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file not exist on disk]]></Val>
+          <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file does not exist on disk.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Non è possibile caricare il file allegato dell'attività, il percorso del file allegato non è specificato o il file allegato non esiste sul disco]]></Val>
+            <Val><![CDATA[Non è possibile caricare il file allegato dell'attività. Il percorso del file allegato non è specificato o il file allegato non esiste sul disco.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file not exist on disk]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4953,10 +4986,13 @@
       </Item>
       <Item ItemId=";SkipTrackingFileWithoutRepoType" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Skip tracking file '{0}', repository type haven't been updated yet.]]></Val>
+          <Val><![CDATA[Skip tracking file '{0}', repository type hasn't been updated yet.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[La verifica del file '{0}' verrà ignorata. Il tipo di repository non è stato ancora aggiornato.]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Skip tracking file '{0}', repository type haven't been updated yet.]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
