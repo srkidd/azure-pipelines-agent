@@ -1,3 +1,20 @@
+## Features
+ - Upgrade vss api netcore version, has BuildXL changes (#4220)
+ - Pass Process handler args through env variables (#4259)
+
+## Bugs
+ - Fix httpclient timeout on AzureMetada retrieving  (#4249)
+ - Fix that plugins ignores proxy configuration (#4260)
+ - Revert PR 4220 "Upgrade vss api netcore version, has BuildXL changes" (#4278)
+ - Fix PH telemetry debug formatting (#4282)
+
+## Misc
+ - Add force of _tasks creation by knob (#4236)
+ - update node from `16.17.1` to `16.20.0` (#4238)
+ - Update link to new NodeTaskRunnerInstaller@0 article in task reference (#4264)
+ - Update dotnet install scripts (#4265)
+ - Bump default agent version to 3.999.999 (#4269)
+
 
 ## Agent Downloads
 
