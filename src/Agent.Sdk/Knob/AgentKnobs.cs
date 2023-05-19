@@ -444,14 +444,14 @@ namespace Agent.Sdk.Knob
             "Enables passing arguments for process handler secure way",
             new RuntimeKnobSource("AGENT_PH_ENABLE_SECURE_ARGUMENTS"),
             new EnvironmentKnobSource("AGENT_PH_ENABLE_SECURE_ARGUMENTS"),
-            new BuiltInDefaultKnobSource("false"));
+            new BuiltInDefaultKnobSource("true"));
 
         public static readonly Knob ProcessHandlerTelemetry = new Knob(
             nameof(ProcessHandlerTelemetry),
             "Enables publishing telemetry about processing of arguments for Process Handler",
             new RuntimeKnobSource("AGENT_PH_ENABLE_TELEMETRY"),
             new EnvironmentKnobSource("AGENT_PH_ENABLE_TELEMETRY"),
-            new BuiltInDefaultKnobSource("false"));
+            new BuiltInDefaultKnobSource("true"));
 
         public static readonly Knob DisableDrainQueuesAfterTask = new Knob(
             nameof(DisableDrainQueuesAfterTask),
