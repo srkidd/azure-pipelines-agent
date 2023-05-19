@@ -137,8 +137,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 ? $"/c \"{_generatedScriptPath}"
                 : $"/c \"{command} {arguments}";
 
-            ExecutionContext.Debug($"_modifyEnvironment && !enableSecureArguments = {_modifyEnvironment && !enableSecureArguments}");
-
             cmdExeArgs += _modifyEnvironment && !enableSecureArguments
                 ? $" && echo {OutputDelimiter} && set \""
                 : "\"";
