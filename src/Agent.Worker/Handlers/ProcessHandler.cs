@@ -213,7 +213,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             var agentTemp = ExecutionContext.GetVariableValueOrDefault(Constants.Variables.Agent.TempDirectory);
             _generatedScriptPath = Path.Combine(agentTemp, $"processHandlerScript_{scriptId}.cmd");
 
-            var scriptArgs = $"/v:ON / c \"{command} !{inputArgsEnvVarName}!";
+            var scriptArgs = $"/v:ON /c \"{command} !{inputArgsEnvVarName}!";
 
             scriptArgs += _modifyEnvironment
             ? $" && echo {OutputDelimiter} && set \""
@@ -250,7 +250,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
         private void OnOutputDataReceived(object sender, ProcessDataReceivedEventArgs e)
         {
-            System.Diagnostics.Debugger.Launch();
             lock (_outputLock)
             {
                 FlushErrorData();
