@@ -185,7 +185,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 // Fail on non-zero exit code.
                 if (exitCode != 0)
                 {
-                    throw new Exception(StringUtil.Loc("ProcessCompletedWithExitCode0", exitCode));
+                    throw new Exception(StringUtil.Loc("ProcessCompletedWithExitCode0WithTroubleshooting", exitCode));
                 }
             }
         }
