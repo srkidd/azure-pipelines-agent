@@ -117,6 +117,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             _modifyEnvironment = StringUtil.ConvertToBoolean(Data.ModifyEnvironment);
             ExecutionContext.Debug($"Modify environment: '{_modifyEnvironment}'");
 
+            bool availableInlineExecution = StringUtil.ConvertToBoolean(Data.AvailableInlineExecution);
+            ExecutionContext.Debug($"Available inline execution: '{availableInlineExecution}'");
+
             var enableSecureArguments = AgentKnobs.ProcessHandlerSecureArguments.GetValue(ExecutionContext).AsBoolean();
             ExecutionContext.Debug($"Enable secure arguments: '{enableSecureArguments}'");
 
@@ -133,11 +136,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             }
 
             // Format the input to be invoked from cmd.exe to enable built-in shell commands. For example, RMDIR.
-            var cmdExeArgs = enableSecureArguments
+            var cmdExeArgs = availableInlineExecution && enableSecureArguments
                 ? $"/c \"{_generatedScriptPath}"
                 : $"/c \"{command} {arguments}";
 
-            cmdExeArgs += _modifyEnvironment && !enableSecureArguments
+            cmdExeArgs += availableInlineExecution && _modifyEnvironment && !enableSecureArguments
                 ? $" && echo {OutputDelimiter} && set \""
                 : "\"";
 

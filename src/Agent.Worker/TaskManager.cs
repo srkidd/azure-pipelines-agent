@@ -815,6 +815,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 SetInput(nameof(WorkingDirectory), value);
             }
         }
+
+        public string AvailableInlineExecution
+        {
+            get
+            {
+                return GetInput(nameof(AvailableInlineExecution));
+            }
+
+            set
+            {
+                SetInput(nameof(AvailableInlineExecution), value);
+            }
+        }
     }
 
     public sealed class AgentPluginHandlerData : HandlerData
