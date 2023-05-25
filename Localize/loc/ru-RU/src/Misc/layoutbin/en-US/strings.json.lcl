@@ -3284,7 +3284,7 @@
         <Str Cat="Text">
           <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file does not exist on disk.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Не удалось отправить файл вложения задачи, расположение файла вложения не указано или файла вложения нет на диске.]]></Val>
+            <Val><![CDATA[Не удалось отправить файл вложения задачи, расположение файла вложения не указано, или файла вложения нет на диске.]]></Val>
           </Tgt>
           <Prev Cat="Text">
             <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file not exist on disk]]></Val>
