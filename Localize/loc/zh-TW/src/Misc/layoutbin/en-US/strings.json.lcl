@@ -2235,48 +2235,48 @@
       </Item>
       <Item ItemId=";ErrorDuringBuildGC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法根據 '{0}' 探索記憶體回收。請下次再試。]]></Val>
+            <Val><![CDATA[無法根據 '{0}' 探索廢棄項目。請下次再試。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+            <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringBuildGCDelete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法根據 '{0}' 完成記憶體回收。請下次再試。]]></Val>
+            <Val><![CDATA[無法根據 '{0}' 完成 GC。請下次再試。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+            <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringReleaseGC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法根據 '{0}' 探索記憶體回收。請下次再試。]]></Val>
+            <Val><![CDATA[無法根據 '{0}' 探索廢棄項目。請下次再試。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+            <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringReleaseGCDelete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法根據 '{0}' 完成記憶體回收。請下次再試。]]></Val>
+            <Val><![CDATA[無法根據 '{0}' 完成 GC。請下次再試。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+            <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2367,15 +2367,6 @@
           <Val><![CDATA[Expected mapping[{0}]5D; server path: '{1}'. Actual: '{2}']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[必須是對應[{0}]5D; 伺服器路徑: '{1}'。實際是: '{2}']]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";FailAgentOnUnsupportedOs" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[This operating system will stop receiving updates of the Pipelines Agent in the future. To be able to continue to run pipelines please upgrade the operating system or set an environment variable or agent knob "AGENT_ACKNOWLEDGE_NO_UPDATES" to "true". See https://aka.ms/azdo-pipeline-agent-v2-eos for more information.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[此作業系統未來將停止接收 Pipelines 代理程式的更新。若要能夠繼續執行管線，請升級作業系統，或將環境變數或代理程式旋鈕 "AGENT_ACKNOWLEDGE_NO_UPDATES" 設定為 "true"。如需詳細資訊，請參閱 https://aka.ms/azdo-pipeline-agent-v2-eos。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3226,15 +3217,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";MinSecretsLengtLimitWarning" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The value of the minimum length of the secrets is too high. Maximum value is set: {0}]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[祕密的長度下限值太高。設定的最大值: {0}]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";MinimumNetFramework" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET Framework x64 4.5 or higher is required.]]></Val>
@@ -3282,12 +3264,12 @@
       </Item>
       <Item ItemId=";MissingAttachmentFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file does not exist on disk.]]></Val>
+          <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file not exist on disk]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[無法上傳工作附件檔案，附件檔案位置未指定，或是附件檔案不存在於磁碟上。]]></Val>
+            <Val><![CDATA[無法上傳工作附件檔案、未指定附件檔案位置，或是附件檔案不存在於磁碟上]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file not exist on disk]]></Val>
+            <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file does not exist on disk.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -4986,12 +4968,12 @@
       </Item>
       <Item ItemId=";SkipTrackingFileWithoutRepoType" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Skip tracking file '{0}', repository type hasn't been updated yet.]]></Val>
+          <Val><![CDATA[Skip tracking file '{0}', repository type haven't been updated yet.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[略過追蹤檔案 '{0}'，尚未更新存放庫類型。]]></Val>
+            <Val><![CDATA[跳過追蹤檔案 '{0}'，尚未更新存放庫類型。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Skip tracking file '{0}', repository type haven't been updated yet.]]></Val>
+            <Val><![CDATA[Skip tracking file '{0}', repository type hasn't been updated yet.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />

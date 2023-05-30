@@ -2235,48 +2235,48 @@
       </Item>
       <Item ItemId=";ErrorDuringBuildGC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA['{0}' に基づいてガベージを検出できませんでした。次回お試しください。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+            <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringBuildGCDelete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA['{0}' に基づいて GC を終了できませんでした。次回お試しください。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+            <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringReleaseGC" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA['{0}' に基づいてガベージを検出できませんでした。次回お試しください。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unable discover garbage based on '{0}'. Try it next time.]]></Val>
+            <Val><![CDATA[Unable to discover garbage based on '{0}'. Try it next time.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
       <Item ItemId=";ErrorDuringReleaseGCDelete" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
+          <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA['{0}' に基づいて GC を終了できませんでした。次回お試しください。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Unable finish GC based on '{0}'. Try it next time.]]></Val>
+            <Val><![CDATA[Unable to finish GC based on '{0}'. Try it next time.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -2367,15 +2367,6 @@
           <Val><![CDATA[Expected mapping[{0}]5D; server path: '{1}'. Actual: '{2}']]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[予期されたマッピング[{0}]5D; サーバー パス: '{1}'。実際: '{2}']]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
-      <Item ItemId=";FailAgentOnUnsupportedOs" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[This operating system will stop receiving updates of the Pipelines Agent in the future. To be able to continue to run pipelines please upgrade the operating system or set an environment variable or agent knob "AGENT_ACKNOWLEDGE_NO_UPDATES" to "true". See https://aka.ms/azdo-pipeline-agent-v2-eos for more information.]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[このオペレーティング システムは今後、パイプライン エージェントの更新プログラムの受信を停止します。パイプラインの実行を続行するには、オペレーティング システムをアップグレードするか、環境変数またはエージェント ノブ "AGENT_ACKNOWLEDGE_NO_UPDATES" を "true" に設定してください。詳細については、https://aka.ms/azdo-pipeline-agent-v2-eos を参照してください。]]></Val>
           </Tgt>
         </Str>
         <Disp Icon="Str" />
@@ -3226,15 +3217,6 @@
         </Str>
         <Disp Icon="Str" />
       </Item>
-      <Item ItemId=";MinSecretsLengtLimitWarning" ItemType="0" PsrId="306" Leaf="true">
-        <Str Cat="Text">
-          <Val><![CDATA[The value of the minimum length of the secrets is too high. Maximum value is set: {0}]]></Val>
-          <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[シークレットの最小長の値が大きすぎます。最大値が設定されています: {0}]]></Val>
-          </Tgt>
-        </Str>
-        <Disp Icon="Str" />
-      </Item>
       <Item ItemId=";MinimumNetFramework" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
           <Val><![CDATA[.NET Framework x64 4.5 or higher is required.]]></Val>
@@ -3282,12 +3264,12 @@
       </Item>
       <Item ItemId=";MissingAttachmentFile" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file does not exist on disk.]]></Val>
+          <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file not exist on disk]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[タスク添付ファイルをアップロードできません。添付ファイルの場所が指定されていないか、添付ファイルがディスクに存在しません]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file not exist on disk]]></Val>
+            <Val><![CDATA[Cannot upload task attachment file, attachment file location is not specified or attachment file does not exist on disk.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
@@ -4986,12 +4968,12 @@
       </Item>
       <Item ItemId=";SkipTrackingFileWithoutRepoType" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Skip tracking file '{0}', repository type hasn't been updated yet.]]></Val>
+          <Val><![CDATA[Skip tracking file '{0}', repository type haven't been updated yet.]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
             <Val><![CDATA[追跡ファイル '{0}' をスキップします。リポジトリの種類がまだ更新されていません。]]></Val>
           </Tgt>
           <Prev Cat="Text">
-            <Val><![CDATA[Skip tracking file '{0}', repository type haven't been updated yet.]]></Val>
+            <Val><![CDATA[Skip tracking file '{0}', repository type hasn't been updated yet.]]></Val>
           </Prev>
         </Str>
         <Disp Icon="Str" />
