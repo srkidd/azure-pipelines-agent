@@ -63,6 +63,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
             Trace.Info($"Command is rooted: {isCommandRooted}");
 
+            var disableInlineExecution = StringUtil.ConvertToBoolean(Data.DisableInlineExecution);
+            ExecutionContext.Debug($"Disable inline execution: '{disableInlineExecution}'");
+
+            if (disableInlineExecution && !File.Exists(command))
+            {
+                throw new Exception(StringUtil.Loc("FileNotFound", command));
+            }
+
             // Determine the working directory.
             string workingDirectory;
             if (!string.IsNullOrEmpty(Data.WorkingDirectory))
@@ -117,9 +125,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             _modifyEnvironment = StringUtil.ConvertToBoolean(Data.ModifyEnvironment);
             ExecutionContext.Debug($"Modify environment: '{_modifyEnvironment}'");
 
-            var enableSecureArguments = AgentKnobs.ProcessHandlerSecureArguments.GetValue(ExecutionContext).AsBoolean();
-            ExecutionContext.Debug($"Enable secure arguments: '{enableSecureArguments}'");
-
             // Resolve cmd.exe.
             string cmdExe = System.Environment.GetEnvironmentVariable("ComSpec");
             if (string.IsNullOrEmpty(cmdExe))
@@ -127,23 +132,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 cmdExe = "cmd.exe";
             }
 
-            if (enableSecureArguments)
+            string cmdExeArgs;
+            // In this case we don't allow execution of built-in commands.
+            if (disableInlineExecution)
             {
                 GenerateScriptFile(cmdExe, command, arguments);
+                cmdExeArgs = $"/c \"{_generatedScriptPath}\"";
             }
-
-            // Format the input to be invoked from cmd.exe to enable built-in shell commands. For example, RMDIR.
-            var cmdExeArgs = enableSecureArguments
-                ? $"/c \"{_generatedScriptPath}"
-                : $"/c \"{command} {arguments}";
-
-            cmdExeArgs += _modifyEnvironment && !enableSecureArguments
+            else
+            {
+                // Format the input to be invoked from cmd.exe to enable built-in shell commands. For example, RMDIR.
+                cmdExeArgs = $"/c \"{command} {arguments}";
+                cmdExeArgs += _modifyEnvironment
                 ? $" && echo {OutputDelimiter} && set \""
                 : "\"";
+            }
 
             // Invoke the process.
             ExecutionContext.Debug($"{cmdExe} {cmdExeArgs}");
-            ExecutionContext.Command($"{command} {arguments}");
+            ExecutionContext.Command($"{cmdExeArgs}");
             using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
             {
                 processInvoker.OutputDataReceived += OnOutputDataReceived;
