@@ -26,6 +26,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             { Constants.Configuration.Integrated, typeof(IntegratedCredential)},
             { Constants.Configuration.OAuth, typeof(OAuthCredential)},
             { Constants.Configuration.ServiceIdentity, typeof(ServiceIdentityCredential)},
+            { Constants.Configuration.DeviceCode, typeof(DeviceCodeCredential)},
+
         };
 
         public ICredentialProvider GetCredentialProvider(string credType)

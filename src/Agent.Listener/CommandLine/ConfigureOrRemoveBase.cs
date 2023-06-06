@@ -22,5 +22,11 @@ namespace Agent.Listener.CommandLine
 
         [Option(Constants.Agent.CommandLine.Args.UserName)]
         public string UserName { get; set; }
+
+        [Option(Constants.Agent.CommandLine.Args.ClientId)]
+        public string ClientId { get; set; }
+
+        [Option(Constants.Agent.CommandLine.Args.TenantId)]
+        public string TenantId { get; set; }
     }
 }

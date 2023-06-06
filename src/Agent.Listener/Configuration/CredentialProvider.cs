@@ -1,14 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Agent.Sdk;
-using Agent.Sdk.Util;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Net.Sockets;
+using System.Threading.Tasks;
+
+using Agent.Sdk;
+using Agent.Sdk.Util;
+
+using BuildXL.Cache.ContentStore.Interfaces.Tracing;
+
+using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Clients.ActiveDirectory;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Client;
@@ -64,17 +71,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 throw new NotSupportedException($"This Azure DevOps organization '{serverUrl}' is not backed by Azure Active Directory.");
             }
 
-            LoggerCallbackHandler.LogCallback = ((LogLevel level, string message, bool containsPii) =>
+            LoggerCallbackHandler.LogCallback = ((Microsoft.IdentityModel.Clients.ActiveDirectory.LogLevel level, string message, bool containsPii) =>
             {
                 switch (level)
                 {
-                    case LogLevel.Information:
+                    case Microsoft.IdentityModel.Clients.ActiveDirectory.LogLevel.Information:
                         trace.Info(message);
                         break;
-                    case LogLevel.Error:
+                    case Microsoft.IdentityModel.Clients.ActiveDirectory.LogLevel.Error:
                         trace.Error(message);
                         break;
-                    case LogLevel.Warning:
+                    case Microsoft.IdentityModel.Clients.ActiveDirectory.LogLevel.Warning:
                         trace.Warning(message);
                         break;
                     default:
@@ -90,7 +97,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             {
                 throw new Exception("AAD isn't supported for MacOS");
             }
-            DeviceCodeResult codeResult = ctx.AcquireDeviceCodeAsync("https://management.core.windows.net/", _azureDevOpsClientId, queryParameters).GetAwaiter().GetResult();
+            IdentityModel.Clients.ActiveDirectory.DeviceCodeResult codeResult = ctx.AcquireDeviceCodeAsync("https://management.core.windows.net/", _azureDevOpsClientId, queryParameters).GetAwaiter().GetResult();
 
             var term = context.GetService<ITerminal>();
             term.WriteLine($"Please finish AAD device code flow in browser ({codeResult.VerificationUrl}), user code: {codeResult.UserCode}");
@@ -119,7 +126,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 }
             }
 
-            AuthenticationResult authResult = ctx.AcquireTokenByDeviceCodeAsync(codeResult).GetAwaiter().GetResult();
+            IdentityModel.Clients.ActiveDirectory.AuthenticationResult authResult = ctx.AcquireTokenByDeviceCodeAsync(codeResult).GetAwaiter().GetResult();
             ArgUtil.NotNull(authResult, nameof(authResult));
             trace.Info($"receive AAD auth result with {authResult.AccessTokenType} token");
 
@@ -312,4 +319,109 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             CredentialData.Data[Constants.Agent.CommandLine.Args.Password] = command.GetPassword();
         }
     }
+
+
+    public sealed class DeviceCodeCredential : CredentialProvider
+    {
+        public DeviceCodeCredential() : base(Constants.Configuration.DeviceCode) { }
+
+        public override VssCredentials GetVssCredentials(IHostContext context)
+        {
+            ArgUtil.NotNull(context, nameof(context));
+            Tracing trace = context.GetTrace(nameof(DeviceCodeCredential));
+            trace.Info(nameof(GetVssCredentials));
+
+            CredentialData.Data.TryGetValue(Constants.Agent.CommandLine.Args.TenantId, out string tenantId);
+            ArgUtil.NotNullOrEmpty(tenantId, nameof(tenantId));
+            trace.Info("tenant id retrieved: {0} chars", tenantId.Length);
+
+            CredentialData.Data.TryGetValue(Constants.Agent.CommandLine.Args.ClientId, out string clientId);
+            ArgUtil.NotNullOrEmpty(clientId, nameof(clientId));
+            trace.Info("client id retrieved: {0} chars", clientId.Length);
+
+            var app = PublicClientApplicationBuilder.Create(clientId).WithTenantId(tenantId).Build();
+
+            var authResult = AcquireATokenFromCacheOrDeviceCodeFlowAsync(context, app, new string[] { "499b84ac-1321-427f-aa17-267ca6975798/user_impersonation" }).GetAwaiter().GetResult(); ;
+
+            var aadCred = new VssAadCredential(new VssAadToken(authResult.TokenType, authResult.AccessToken));
+            VssCredentials creds = new VssCredentials(null, aadCred, CredentialPromptType.DoNotPrompt);
+            trace.Info("cred created");
+
+            return creds;
+        }
+        public override void EnsureCredential(IHostContext context, CommandSettings command, string serverUrl)
+        {
+            ArgUtil.NotNull(context, nameof(context));
+            Tracing trace = context.GetTrace(nameof(DeviceCodeCredential));
+            trace.Info(nameof(EnsureCredential));
+            ArgUtil.NotNull(command, nameof(command));
+            CredentialData.Data[Constants.Agent.CommandLine.Args.ClientId] = command.GetClientId();
+            CredentialData.Data[Constants.Agent.CommandLine.Args.TenantId] = command.GetTenantId();
+        }
+
+        public async Task<Microsoft.Identity.Client.AuthenticationResult> AcquireATokenFromCacheOrDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<String> scopes)
+        {
+            Microsoft.Identity.Client.AuthenticationResult result = null;
+            var accounts = await app.GetAccountsAsync().ConfigureAwait(false);
+
+            if (accounts.Any())
+            {
+
+                // Attempt to get a token from the cache (or refresh it silently if needed)
+                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
+                    .ExecuteAsync().ConfigureAwait(false);
+
+            }
+
+            // Cache empty or no token for account in the cache, attempt by device code flow
+            if (result == null)
+            {
+                result = await GetTokenUsingDeviceCodeFlowAsync(context, app, scopes).ConfigureAwait(false);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets an access token so that the application accesses the web api in the name of the user
+        /// who signs-in on a separate device
+        /// </summary>
+        /// <returns>An authentication result, or null if the user canceled sign-in, or did not sign-in on a separate device
+        /// after a timeout (15 mins)</returns>
+        private async Task<Microsoft.Identity.Client.AuthenticationResult> GetTokenUsingDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<string> scopes)
+        {
+            Microsoft.Identity.Client.AuthenticationResult result;
+            try
+            {
+                result = await app.AcquireTokenWithDeviceCode(scopes,
+                    deviceCodeCallback =>
+                    {
+                        // This will print the message on the console which tells the user where to go sign-in using 
+                        // a separate browser and the code to enter once they sign in.
+                        var term = context.GetService<ITerminal>();
+                        term.WriteLine($"Please finish AAD device code flow in browser ({deviceCodeCallback.VerificationUrl}), user code: {deviceCodeCallback.UserCode}"); return Task.FromResult(0);
+                    }).ExecuteAsync().ConfigureAwait(false);
+            }
+            catch (MsalServiceException ex)
+            {
+                string errorCode = ex.ErrorCode;
+                // AADSTS50059: No tenant-identifying information found in either the request or implied by any provided credentials.
+                // AADSTS90133: Device Code flow is not supported under /common or /consumers endpoint.
+                // AADSTS90002: Tenant <tenantId or domain you used in the authority> not found. This may happen if there are 
+                // no active subscriptions for the tenant. Check with your subscription administrator.
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                result = null;
+            }
+            catch (MsalClientException ex)
+            {
+                string errorCode = ex.ErrorCode;
+                result = null;
+            }
+            return result;
+        }
+    }
+
 }

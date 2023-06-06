@@ -105,6 +105,8 @@ namespace Microsoft.VisualStudio.Services.Agent
                     public const string UserName = "username";
                     public const string WindowsLogonAccount = "windowslogonaccount";
                     public const string Work = "work";
+                    public const string ClientId = "clientid";
+                    public const string TenantId = "tenantid";
 
                     // Secret args. Must be added to the "Secrets" getter as well.
                     public const string Password = "password";
@@ -209,6 +211,8 @@ namespace Microsoft.VisualStudio.Services.Agent
             public static readonly string Integrated = "Integrated";
             public static readonly string OAuth = "OAuth";
             public static readonly string ServiceIdentity = "ServiceIdentity";
+            public static readonly string DeviceCode = "DC";
+
         }
 
         public static class EndpointData
