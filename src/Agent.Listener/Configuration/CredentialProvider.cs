@@ -323,10 +323,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
     public sealed class DeviceCodeCredential : CredentialProvider
     {
+        private VssCredentials _cacheCreds = null;
+
         public DeviceCodeCredential() : base(Constants.Configuration.DeviceCode) { }
 
         public override VssCredentials GetVssCredentials(IHostContext context)
         {
+            if (_cacheCreds != null)
+                return _cacheCreds;
+
             ArgUtil.NotNull(context, nameof(context));
             Tracing trace = context.GetTrace(nameof(DeviceCodeCredential));
             trace.Info(nameof(GetVssCredentials));
@@ -346,7 +351,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             var aadCred = new VssAadCredential(new VssAadToken(authResult.TokenType, authResult.AccessToken));
             VssCredentials creds = new VssCredentials(null, aadCred, CredentialPromptType.DoNotPrompt);
             trace.Info("cred created");
-
+            _cacheCreds = creds;
             return creds;
         }
         public override void EnsureCredential(IHostContext context, CommandSettings command, string serverUrl)
