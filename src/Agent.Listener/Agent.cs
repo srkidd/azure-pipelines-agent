@@ -15,6 +15,10 @@ using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using Microsoft.TeamFoundation.TestClient.PublishTestResults.Telemetry;
+using Microsoft.VisualStudio.Services.Agent.Listener.Telemetry;
+using System.Collections.Generic;
+using Newtonsoft.Json;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener
 {
@@ -227,6 +231,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                         }
                     }
                 }
+
+                var tp = HostContext.GetService<IAgenetListenerTelemetryPublisher>();
+                
+                // Sample telemetry data to publish
+                //var cmd = new Command("area", "feature");
+                //var props = new Dictionary<string, string>() { { "test", "data" } };
+                //cmd.Data = JsonConvert.SerializeObject(props);
+                //cmd.Properties.Add("area", "PipelinesTasks");
+                //cmd.Properties.Add("feature", "ExecutionHandler");
+                //await tp.PublishEvent(HostContext, cmd);
+
                 // Run the agent interactively or as service
                 return await RunAsync(settings, command.GetRunOnce());
             }
