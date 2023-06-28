@@ -6,6 +6,7 @@ Script arguments:
         - pipelineId
         - token
     * Optional:
+        - templateParameters (JSON)
         - intervalInSeconds (20 by default)
 
 */
@@ -18,6 +19,10 @@ const args = minimist(process.argv.slice(2));
 const apiUrl = `${args.projectUrl}/_apis/pipelines/${args.pipelineId}/runs?api-version=7.0`;
 
 const data = {};
+
+if (args.templateParameters) {
+    data.templateParameters = JSON.parse(args.templateParameters);
+}
 
 const config = {
     auth: {
