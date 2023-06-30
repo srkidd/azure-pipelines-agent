@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+
 using Microsoft.VisualStudio.Services.Agent.Listener.Configuration;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Common;
@@ -30,30 +31,34 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Telemetry
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA2000:Dispose objects before losing scope", MessageId = "jobServer")]
         public async Task PublishEvent(IHostContext context, Command command)
         {
-            Trace.Info("Loading Credentials");
-            var credMgr = HostContext.GetService<ICredentialManager>();
-            VssCredentials creds = credMgr.LoadCredentials();
 
-            ArgUtil.NotNull(creds, nameof(creds));
-
-            var configManager = HostContext.GetService<IConfigurationManager>();
-            AgentSettings settings = configManager.LoadSettings();
-
-            var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, Trace);
-            try
+            if (_ciService == null)
             {
-                _ciService = HostContext.GetService<ICustomerIntelligenceServer>();
-                _ciService.Initialize(vssConnection);
-            }
+                var credMgr = context.GetService<ICredentialManager>();
+                VssCredentials creds = credMgr.LoadCredentials();
 
-            catch (Exception ex)
-            {
-                Trace.Warning(StringUtil.Loc("TelemetryCommandFailed", ex.Message));
-                return;
+                ArgUtil.NotNull(creds, nameof(creds));
+
+                var configManager = context.GetService<IConfigurationManager>();
+                AgentSettings settings = configManager.LoadSettings();
+
+                var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, Trace);
+                try
+                {
+                    _ciService = context.GetService<ICustomerIntelligenceServer>();
+                    _ciService.Initialize(vssConnection);
+                }
+
+                catch (Exception ex)
+                {
+                    Trace.Warning(StringUtil.Loc("TelemetryCommandFailed", ex.Message));
+                    return;
+                }
             }
 
             ArgUtil.NotNull(context, nameof(context));
             ArgUtil.NotNull(command, nameof(command));
+
             Dictionary<string, string> eventProperties = command.Properties;
             string data = command.Data;
             string area;

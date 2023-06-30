@@ -232,15 +232,33 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     }
                 }
 
-                var tp = HostContext.GetService<IAgenetListenerTelemetryPublisher>();
-                
-                // Sample telemetry data to publish
-                //var cmd = new Command("area", "feature");
-                //var props = new Dictionary<string, string>() { { "test", "data" } };
-                //cmd.Data = JsonConvert.SerializeObject(props);
-                //cmd.Properties.Add("area", "PipelinesTasks");
-                //cmd.Properties.Add("feature", "ExecutionHandler");
-                //await tp.PublishEvent(HostContext, cmd);
+                //Publish inital telemetry data
+                var telemetryPublisher = HostContext.GetService<IAgenetListenerTelemetryPublisher>();
+
+                try
+                {
+                    var systemVersion = PlatformUtil.GetSystemVersion();
+
+                    Dictionary<string, string> telemetryData = new Dictionary<string, string>
+                    {
+                        { "OS", PlatformUtil.GetSystemId() ?? "" },
+                        { "OSVersion", systemVersion?.Name?.ToString() ?? "" },
+                        { "OSBuild", systemVersion?.Version?.ToString() ?? "" },
+                        { "configuredAsService", $"{configuredAsService}"},
+                        { "startupType", startupTypeAsString }
+                    };
+                    var cmd = new Command("telemetry", "publish");
+                    cmd.Data = JsonConvert.SerializeObject(telemetryData);
+                    cmd.Properties.Add("area", "PipelinesTasks");
+                    cmd.Properties.Add("feature", "AgentListener");
+                    await telemetryPublisher.PublishEvent(HostContext, cmd);
+                }
+
+                catch (Exception ex)
+                {
+                    Trace.Warning($"Unable to publish telemetry data. {ex}");
+                }
+
 
                 // Run the agent interactively or as service
                 return await RunAsync(settings, command.GetRunOnce());
