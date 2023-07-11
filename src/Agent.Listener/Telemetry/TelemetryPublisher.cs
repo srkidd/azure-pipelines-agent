@@ -28,7 +28,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Telemetry
         public List<string> Aliases => null;
 
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA2000:Dispose objects before losing scope", MessageId = "jobServer")]
         public async Task PublishEvent(IHostContext context, Command command)
         {
 
@@ -42,7 +41,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Telemetry
                 var configManager = context.GetService<IConfigurationManager>();
                 AgentSettings settings = configManager.LoadSettings();
 
-                var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, Trace);
+
+                using var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, Trace);
                 try
                 {
                     _ciService = context.GetService<ICustomerIntelligenceServer>();
