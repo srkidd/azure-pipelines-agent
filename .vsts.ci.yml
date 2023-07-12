@@ -36,7 +36,7 @@ parameters:
   default: true
 - name: testProxyAgent
   type: boolean
-  default: true
+  default: false
   displayName: Test Proxy Agent
 
 pr:
