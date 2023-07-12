@@ -257,10 +257,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 executionContext.SetVariable(Constants.Variables.Build.RepoGitSubmoduleCheckout, submoduleCheckout.Value.ToString());
             }
 
-            if (repoCleanFromSelf.HasValue)
-            {
-                executionContext.SetVariable(Constants.Variables.Build.RepoClean, repoCleanFromSelf.Value.ToString());
-            }
+            executionContext.SetVariable(Constants.Variables.Build.RepoClean, repoCleanFromSelf.HasValue ? repoCleanFromSelf.Value.ToString() : "False");
         }
 
         private bool TryGetRepositoryInfoFromLocalPath(IExecutionContext executionContext, string localPath, out RepositoryInfo repoInfo)
