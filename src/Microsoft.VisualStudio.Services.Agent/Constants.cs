@@ -105,8 +105,6 @@ namespace Microsoft.VisualStudio.Services.Agent
                     public const string UserName = "username";
                     public const string WindowsLogonAccount = "windowslogonaccount";
                     public const string Work = "work";
-                    public const string ClientId = "clientid";
-                    public const string TenantId = "tenantid";
 
                     // Secret args. Must be added to the "Secrets" getter as well.
                     public const string Password = "password";
@@ -204,7 +202,6 @@ namespace Microsoft.VisualStudio.Services.Agent
 
         public static class Configuration
         {
-            public static readonly string AAD = "AAD";
             public static readonly string PAT = "PAT";
             public static readonly string Alternate = "ALT";
             public static readonly string Negotiate = "Negotiate";
