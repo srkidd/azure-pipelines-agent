@@ -61,7 +61,7 @@
     </ServicingStep>
     <ServicingStep name="Add x86 Windows alternate agent package" stepPerformer="DistributedTask" stepType="AddTaskPackage">
       <StepData>
-        <AddTaskPackageData packageType="pipelines-agent" platform="win-x86" hashValue="<HASH_VALUE>" version="<AGENT_VERSION>" downloadUrl="https://vstsagentpackage.azureedge.net/agent/<AGENT_VERSION>/pipelines-agent-win-x86-<AGENT_VERSION>.zip" infoUrl="https://go.microsoft.com/fwlink/?LinkId=798199" filename="pipelines-agent-osx-arm64-<AGENT_VERSION>.zip" />
+        <AddTaskPackageData packageType="pipelines-agent" platform="win-x86" hashValue="<HASH_VALUE>" version="<AGENT_VERSION>" downloadUrl="https://vstsagentpackage.azureedge.net/agent/<AGENT_VERSION>/pipelines-agent-win-x86-<AGENT_VERSION>.zip" infoUrl="https://go.microsoft.com/fwlink/?LinkId=798199" filename="pipelines-agent-win-x86-<AGENT_VERSION>.zip" />
       </StepData>
     </ServicingStep>
     <ServicingStep name="Add arm64 osx agent package" stepPerformer="DistributedTask" stepType="AddTaskPackage">
