@@ -30,9 +30,19 @@ indent_size = 4
 
 # TODO: Enable as warning/error and clean unused imports in the next PR
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0005#overview
-dotnet_diagnostic.CS8019.severity = error
-dotnet_diagnostic.IDE0005.severity = error
+dotnet_diagnostic.CS8019.severity = warning
 dotnet_analyzer_diagnostic.category-Style.severity = error
+
+# Code style rules
+
+# Remove unnecessary using directives
+dotnet_diagnostic.IDE0005.severity = warning
+
+# Enforce 'var' used
+dotnet_diagnostic.IDE0007.severity = none
+
+# Use explicit type instead of 'var'
+dotnet_diagnostic.IDE0008.severity = none
 
 dotnet_code_quality.ca1711.allowed_suffixes = Flag|Flags
 
