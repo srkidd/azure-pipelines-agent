@@ -179,10 +179,7 @@ function cmd_lint(){
 
     heading "Linting source code"
 
-    # TODO: Fix installation
-    "${DOTNETSDK_INSTALLDIR}/dotnet" tool install --global dotnet-format --version 5.1.250801 || true
-
-    dotnet-format --check -v diagnostic -f "$PROJECT_ROOT_DIR" || exit 1
+    "${DOTNETSDK_INSTALLDIR}/dotnet" format --verify-no-changes -v diag "$PROJECT_ROOT_DIR" || echo "Code lint failed." && exit 1
 }
 
 function cmd_package ()
