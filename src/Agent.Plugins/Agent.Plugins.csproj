@@ -5,6 +5,7 @@
   <PropertyGroup>
     <OutputType>Library</OutputType>
     <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>
 
   <ItemGroup>
