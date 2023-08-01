@@ -49,6 +49,9 @@ parameters:
 - name: linux_arm64
   type: boolean
   default: true
+- name: alpine_x64
+  type: boolean
+  default: false
 - name: rhel7_x64
   type: boolean
   default: true
@@ -61,12 +64,10 @@ parameters:
 
 resources:
   containers:
-  - container: dotnetcore_arm
-    image: azpagentinfra/arm:latest
-  - container: dotnetcore_centos6
-    image: azpagentinfra/centos6:latest
   - container: dotnetcore_centos7
     image: azpagentinfra/centos7:latest
+  - container: alpine
+    image: denis7rum/alpine:latest
 
 stages:
 
@@ -188,6 +189,25 @@ stages:
         timeoutInMinutes: 75
         os: linux
         arch: arm64
+        branch: ${{ parameters.branch }}
+        componentDetection: false
+        unitTests: ${{ parameters.test }}
+        functionalTests: ${{ parameters.test }}
+        sign: false
+        publishArtifacts: ${{ parameters.publishArtifacts }}
+        buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
+
+  # Alpine (x64)
+  - ${{ if parameters.alpine_x64 }}:
+    - template: build-jobs.yml
+      parameters:
+        jobName: build_alpine_x64
+        displayName: Alpine (x64)
+        pool:
+          vmImage: ubuntu-latest
+        container: alpine
+        os: linux-musl
+        arch: x64
         branch: ${{ parameters.branch }}
         componentDetection: false
         unitTests: ${{ parameters.test }}

@@ -74,6 +74,26 @@ namespace Agent.Sdk
             get => PlatformUtil.HostOS == PlatformUtil.OS.Linux;
         }
 
+        public static bool RunningOnAlpine
+        {
+            get
+            {
+                try
+                {
+                    if (File.Exists("/etc/alpine-release"))
+                    {
+                        return true;
+                    }
+                }
+                catch (Exception)
+                {
+                    // probably not Alpine
+                }
+
+                return false;
+            }
+        }
+
         public static bool RunningOnRHEL6
         {
             get
