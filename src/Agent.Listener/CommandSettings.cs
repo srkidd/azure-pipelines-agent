@@ -205,7 +205,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 description: StringUtil.Loc("LaunchBrowser"),
                 defaultValue: true);
         }
-
         /// <summary>
         /// Returns EnableServiceSidTypeUnrestricted flag or prompts user to set it up
         /// </summary>

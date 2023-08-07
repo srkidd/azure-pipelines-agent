@@ -36,6 +36,109 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
         public abstract void EnsureCredential(IHostContext context, CommandSettings command, string serverUrl);
     }
 
+    public sealed class AadDeviceCodeAccessToken : CredentialProvider
+    {
+        private VssCredentials _cacheCreds = null;
+
+        //Default Application (Client) Id
+        private readonly string _clientId = "97877f11-0fc6-4aee-b1ff-febb0519dd00";
+
+        //Default ADO resource ID for user impersonation scope
+        private readonly string _userImpersonationScope = "499b84ac-1321-427f-aa17-267ca6975798/user_impersonation";
+        public AadDeviceCodeAccessToken() : base(Constants.Configuration.AAD) { }
+
+        public override VssCredentials GetVssCredentials(IHostContext context)
+        {
+            if (_cacheCreds != null)
+                return _cacheCreds;
+
+            ArgUtil.NotNull(context, nameof(context));
+            Tracing trace = context.GetTrace(nameof(AadDeviceCodeAccessToken));
+            trace.Info(nameof(GetVssCredentials));
+
+            var app = PublicClientApplicationBuilder.Create(_clientId).Build();
+
+            var authResult = AcquireATokenFromCacheOrDeviceCodeFlowAsync(context, app, new string[] { _userImpersonationScope }).GetAwaiter().GetResult(); ;
+
+            var aadCred = new VssAadCredential(new VssAadToken(authResult.TokenType, authResult.AccessToken));
+            VssCredentials creds = new VssCredentials(null, aadCred, CredentialPromptType.DoNotPrompt);
+            trace.Info("cred created");
+            _cacheCreds = creds;
+            return creds;
+        }
+        public override void EnsureCredential(IHostContext context, CommandSettings command, string serverUrl)
+        {
+            ArgUtil.NotNull(context, nameof(context));
+            Tracing trace = context.GetTrace(nameof(AadDeviceCodeAccessToken));
+            trace.Info(nameof(EnsureCredential));
+            ArgUtil.NotNull(command, nameof(command));
+        }
+
+        public async Task<AuthenticationResult> AcquireATokenFromCacheOrDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<String> scopes)
+        {
+            AuthenticationResult result = null;
+            var accounts = await app.GetAccountsAsync().ConfigureAwait(false);
+
+            if (accounts.Any())
+            {
+
+                // Attempt to get a token from the cache (or refresh it silently if needed)
+                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
+                    .ExecuteAsync().ConfigureAwait(false);
+
+            }
+
+            // Cache empty or no token for account in the cache, attempt by device code flow
+            if (result == null)
+            {
+                result = await GetTokenUsingDeviceCodeFlowAsync(context, app, scopes).ConfigureAwait(false);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Gets an access token so that the application accesses the web api in the name of the user
+        /// who signs-in on a separate device
+        /// </summary>
+        /// <returns>An authentication result, or null if the user canceled sign-in, or did not sign-in on a separate device
+        /// after a timeout (15 mins)</returns>
+        private async Task<AuthenticationResult> GetTokenUsingDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<string> scopes)
+        {
+            AuthenticationResult result;
+            try
+            {
+                result = await app.AcquireTokenWithDeviceCode(scopes,
+                    deviceCodeCallback =>
+                    {
+                        // This will print the message on the console which tells the user where to go sign-in using 
+                        // a separate browser and the code to enter once they sign in.
+                        var term = context.GetService<ITerminal>();
+                        term.WriteLine($"Please finish AAD device code flow in browser ({deviceCodeCallback.VerificationUrl}), user code: {deviceCodeCallback.UserCode}"); return Task.FromResult(0);
+                    }).ExecuteAsync().ConfigureAwait(false);
+            }
+            catch (MsalServiceException ex)
+            {
+                string errorCode = ex.ErrorCode;
+                // AADSTS50059: No tenant-identifying information found in either the request or implied by any provided credentials.
+                // AADSTS90133: Device Code flow is not supported under /common or /consumers endpoint.
+                // AADSTS90002: Tenant <tenantId or domain you used in the authority> not found. This may happen if there are 
+                // no active subscriptions for the tenant. Check with your subscription administrator.
+                throw;
+            }
+            catch (OperationCanceledException)
+            {
+                result = null;
+            }
+            catch (MsalClientException ex)
+            {
+                string errorCode = ex.ErrorCode;
+                result = null;
+            }
+            return result;
+        }
+
+    }
     public sealed class PersonalAccessToken : CredentialProvider
     {
         public PersonalAccessToken() : base(Constants.Configuration.PAT) { }
@@ -166,109 +269,4 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             CredentialData.Data[Constants.Agent.CommandLine.Args.Password] = command.GetPassword();
         }
     }
-
-
-    public sealed class DeviceCodeCredential : CredentialProvider
-    {
-        private VssCredentials _cacheCreds = null;
-
-        //Default Application (Client) Id
-        private readonly string _clientId = "97877f11-0fc6-4aee-b1ff-febb0519dd00";
-
-        //Default ADO resource ID for user impersonation scope
-        private readonly string _userImpersonationScope = "499b84ac-1321-427f-aa17-267ca6975798/user_impersonation";
-        public DeviceCodeCredential() : base(Constants.Configuration.DeviceCode) { }
-
-        public override VssCredentials GetVssCredentials(IHostContext context)
-        {
-            if (_cacheCreds != null)
-                return _cacheCreds;
-
-            ArgUtil.NotNull(context, nameof(context));
-            Tracing trace = context.GetTrace(nameof(DeviceCodeCredential));
-            trace.Info(nameof(GetVssCredentials));
-
-            var app = PublicClientApplicationBuilder.Create(_clientId).Build();
-
-            var authResult = AcquireATokenFromCacheOrDeviceCodeFlowAsync(context, app, new string[] { _userImpersonationScope }).GetAwaiter().GetResult(); ;
-
-            var aadCred = new VssAadCredential(new VssAadToken(authResult.TokenType, authResult.AccessToken));
-            VssCredentials creds = new VssCredentials(null, aadCred, CredentialPromptType.DoNotPrompt);
-            trace.Info("cred created");
-            _cacheCreds = creds;
-            return creds;
-        }
-        public override void EnsureCredential(IHostContext context, CommandSettings command, string serverUrl)
-        {
-            ArgUtil.NotNull(context, nameof(context));
-            Tracing trace = context.GetTrace(nameof(DeviceCodeCredential));
-            trace.Info(nameof(EnsureCredential));
-            ArgUtil.NotNull(command, nameof(command));
-        }
-
-        public async Task<AuthenticationResult> AcquireATokenFromCacheOrDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<String> scopes)
-        {
-            AuthenticationResult result = null;
-            var accounts = await app.GetAccountsAsync().ConfigureAwait(false);
-
-            if (accounts.Any())
-            {
-
-                // Attempt to get a token from the cache (or refresh it silently if needed)
-                result = await app.AcquireTokenSilent(scopes, accounts.FirstOrDefault())
-                    .ExecuteAsync().ConfigureAwait(false);
-
-            }
-
-            // Cache empty or no token for account in the cache, attempt by device code flow
-            if (result == null)
-            {
-                result = await GetTokenUsingDeviceCodeFlowAsync(context, app, scopes).ConfigureAwait(false);
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Gets an access token so that the application accesses the web api in the name of the user
-        /// who signs-in on a separate device
-        /// </summary>
-        /// <returns>An authentication result, or null if the user canceled sign-in, or did not sign-in on a separate device
-        /// after a timeout (15 mins)</returns>
-        private async Task<AuthenticationResult> GetTokenUsingDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<string> scopes)
-        {
-            AuthenticationResult result;
-            try
-            {
-                result = await app.AcquireTokenWithDeviceCode(scopes,
-                    deviceCodeCallback =>
-                    {
-                        // This will print the message on the console which tells the user where to go sign-in using 
-                        // a separate browser and the code to enter once they sign in.
-                        var term = context.GetService<ITerminal>();
-                        term.WriteLine($"Please finish AAD device code flow in browser ({deviceCodeCallback.VerificationUrl}), user code: {deviceCodeCallback.UserCode}"); return Task.FromResult(0);
-                    }).ExecuteAsync().ConfigureAwait(false);
-            }
-            catch (MsalServiceException ex)
-            {
-                string errorCode = ex.ErrorCode;
-                // AADSTS50059: No tenant-identifying information found in either the request or implied by any provided credentials.
-                // AADSTS90133: Device Code flow is not supported under /common or /consumers endpoint.
-                // AADSTS90002: Tenant <tenantId or domain you used in the authority> not found. This may happen if there are 
-                // no active subscriptions for the tenant. Check with your subscription administrator.
-                throw;
-            }
-            catch (OperationCanceledException)
-            {
-                result = null;
-            }
-            catch (MsalClientException ex)
-            {
-                string errorCode = ex.ErrorCode;
-                result = null;
-            }
-            return result;
-        }
-    }
-
 }

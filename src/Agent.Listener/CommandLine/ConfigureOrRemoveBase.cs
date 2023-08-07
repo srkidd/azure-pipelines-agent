@@ -22,6 +22,5 @@ namespace Agent.Listener.CommandLine
 
         [Option(Constants.Agent.CommandLine.Args.UserName)]
         public string UserName { get; set; }
-
     }
 }
