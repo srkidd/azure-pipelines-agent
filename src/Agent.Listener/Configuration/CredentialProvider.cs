@@ -4,12 +4,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Http.Headers;
+using System.Net.Sockets;
 using System.Threading.Tasks;
+
+using Agent.Sdk;
+using Agent.Sdk.Util;
 
 using Microsoft.Identity.Client;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Client;
 using Microsoft.VisualStudio.Services.Common;
+using Microsoft.VisualStudio.Services.WebApi;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 {
@@ -56,6 +63,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             Tracing trace = context.GetTrace(nameof(AadDeviceCodeAccessToken));
             trace.Info(nameof(GetVssCredentials));
 
+            if (PlatformUtil.RunningOnMacOS)
+            {
+                throw new Exception("AAD isn't supported for MacOS");
+            }
+
+            CredentialData.Data.TryGetValue(Constants.Agent.CommandLine.Args.Url, out string serverUrl);
+            ArgUtil.NotNullOrEmpty(serverUrl, nameof(serverUrl));
+
+            var tenantAuthorityUrl = GetTenantAuthorityUrl(context, serverUrl);
+            if (tenantAuthorityUrl == null)
+            {
+                throw new NotSupportedException($"This Azure DevOps organization '{serverUrl}' is not backed by Azure Active Directory.");
+            }
+
             var app = PublicClientApplicationBuilder.Create(_clientId).Build();
 
             var authResult = AcquireATokenFromCacheOrDeviceCodeFlowAsync(context, app, new string[] { _userImpersonationScope }).GetAwaiter().GetResult(); ;
@@ -72,6 +93,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             Tracing trace = context.GetTrace(nameof(AadDeviceCodeAccessToken));
             trace.Info(nameof(EnsureCredential));
             ArgUtil.NotNull(command, nameof(command));
+            CredentialData.Data[Constants.Agent.CommandLine.Args.Url] = serverUrl;
         }
 
         public async Task<AuthenticationResult> AcquireATokenFromCacheOrDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<String> scopes)
@@ -95,6 +117,47 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             }
 
             return result;
+        }
+
+        private Uri GetTenantAuthorityUrl(IHostContext context, string serverUrl)
+        {
+            Tracing trace = context.GetTrace(nameof(AadDeviceCodeAccessToken));
+
+            using (var handler = context.CreateHttpClientHandler())
+            using (var client = new HttpClient(handler))
+            {
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.DefaultRequestHeaders.Add("X-TFS-FedAuthRedirect", "Suppress");
+                client.DefaultRequestHeaders.UserAgent.Clear();
+                client.DefaultRequestHeaders.UserAgent.AddRange(VssClientHttpRequestSettings.Default.UserAgent);
+                using (var requestMessage = new HttpRequestMessage(HttpMethod.Head, $"{serverUrl.Trim('/')}/_apis/connectiondata"))
+                {
+                    HttpResponseMessage response;
+                    try
+                    {
+                        response = client.SendAsync(requestMessage).GetAwaiter().GetResult();
+                    }
+                    catch (SocketException e)
+                    {
+                        ExceptionsUtil.HandleSocketException(e, serverUrl, trace.Error);
+                        throw;
+                    }
+
+                    // Get the tenant from the Login URL, MSA backed accounts will not return `Bearer` www-authenticate header.
+                    var bearerResult = response.Headers.WwwAuthenticate.Where(p => p.Scheme.Equals("Bearer", StringComparison.OrdinalIgnoreCase)).FirstOrDefault();
+                    if (bearerResult != null && bearerResult.Parameter.StartsWith("authorization_uri=", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var authorizationUri = bearerResult.Parameter.Substring("authorization_uri=".Length);
+                        if (Uri.TryCreate(authorizationUri, UriKind.Absolute, out Uri aadTenantUrl))
+                        {
+                            return aadTenantUrl;
+                        }
+                    }
+
+                    return null;
+                }
+            }
         }
 
         /// <summary>
