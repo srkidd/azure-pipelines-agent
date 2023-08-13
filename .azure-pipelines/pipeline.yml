@@ -99,7 +99,7 @@ stages:
               --projectUrl "$(CANARY_PROJECT_URL)" \
               --pipelineId "$(CANARY_PIPELINE_ID)" \
               --token "$(CANARY_PAT)" \
-              --templateParameters "{ \"branch\": \"${branch}\", \"template_timeout\": 2 }"
+              --templateParameters "{ \"branch\": \"${branch}\", \"template_timeout\": 3 }"
         displayName: Test Proxy Agent
 
   # Windows (x64)

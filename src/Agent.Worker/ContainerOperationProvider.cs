@@ -634,20 +634,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         addUserToGroup = (userName, groupName) => $"addgroup {userName} {groupName}";
                     }
 
-                    if (string.IsNullOrEmpty(containerUserName)) // Create a new user with same UID as on the host
+                    if (string.IsNullOrEmpty(containerUserName))
                     {
-                        string userNameSuffix = "_azpcontainer";
-                        // Linux allows for a 32-character username
-                        containerUserName = KeepAllowedLength(container.CurrentUserName, 32, userNameSuffix);
+                        string nameSuffix = "_azpcontainer";
 
+                        // Linux allows for a 32-character username
+                        containerUserName = KeepAllowedLength(container.CurrentUserName, 32, nameSuffix);
+
+                        // Create a new user with same UID as on the host
                         string fallback = addUserWithId(containerUserName, container.CurrentUserId);
 
-                        if (useHostGroupId) // Create a new user with the same UID and the same GID as on the host
+                        if (useHostGroupId)
                         {
                             try
                             {
                                 // Linux allows for a 32-character groupname
-                                string containerGroupName = KeepAllowedLength(container.CurrentGroupName, 32, userNameSuffix);
+                                string containerGroupName = KeepAllowedLength(container.CurrentGroupName, 32, nameSuffix);
+
+                                // Create a new user with the same UID and the same GID as on the host
                                 await DockerExec(executionContext, container.ContainerId, addGroupWithId(containerGroupName, container.CurrentGroupId));
                                 await DockerExec(executionContext, container.ContainerId, addUserWithIdAndGroup(containerUserName, container.CurrentUserId, containerGroupName));
                             }
@@ -665,8 +669,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                     executionContext.Output(StringUtil.Loc("GrantContainerUserSUDOPrivilege", containerUserName));
 
-                    // Create a new group for giving sudo permission
                     string sudoGroupName = "azure_pipelines_sudo";
+
+                    // Create a new group for giving sudo permission
                     await DockerExec(executionContext, container.ContainerId, addGroup(sudoGroupName));
 
                     // Add the new created user to the new created sudo group.
