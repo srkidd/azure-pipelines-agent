@@ -64,10 +64,10 @@ parameters:
 
 resources:
   containers:
-  - container: dotnetcore_centos7
+  - container: centos7
     image: azpagentinfra/centos7:latest
   - container: alpine
-    image: denis7rum/alpine:latest
+    image: azpagentinfra/alpine:latest
 
 stages:
 
@@ -165,7 +165,7 @@ stages:
         jobName: build_linux_arm
         displayName: Linux (ARM)
         pool:
-          vmImage: "ubuntu-20.04"
+          vmImage: ubuntu-20.04
         timeoutInMinutes: 75
         os: linux
         arch: arm
@@ -224,7 +224,7 @@ stages:
         displayName: RHEL7 (x64)
         pool:
           vmImage: ubuntu-20.04
-        container: dotnetcore_centos7
+        container: centos7
         os: linux
         arch: x64
         branch: ${{ parameters.branch }}
