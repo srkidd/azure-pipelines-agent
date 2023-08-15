@@ -606,6 +606,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         useHostGroupId = true;
                     }
 
+                    bool isAlpine = false;
+                    try
+                    {
+                        await DockerExec(executionContext, container.ContainerId, "useradd");
+                    }
+                    catch (InvalidOperationException)
+                    {
+                        Trace.Info($"Failed to execute 'useradd' command. Assuming Alpine-based image.");
+                        isAlpine = true;
+                    }
+
                     // List of commands
                     Func<string, string> addGroup;
                     Func<string, string, string> addGroupWithId;
@@ -613,25 +624,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Func<string, string, string, string> addUserWithIdAndGroup;
                     Func<string, string, string> addUserToGroup;
 
-                    try
+                    if (isAlpine)
                     {
-                        await DockerExec(executionContext, container.ContainerId, "useradd");
-
-                        addGroup = (groupName) => $"groupadd {groupName}";
-                        addGroupWithId = (groupName, groupId) => $"groupadd -g {groupId} {groupName}";
-                        addUserWithId = (userName, userId) => $"useradd -m -u {userId} {userName}";
-                        addUserWithIdAndGroup = (userName, userId, groupName) => $"useradd -m -g {groupName} -u {userId} {userName}";
-                        addUserToGroup = (userName, groupName) => $"usermod -a -G {groupName} {userName}";
-                    }
-                    catch (Exception ex) when (ex is InvalidOperationException)
-                    {
-                        Trace.Info($"Failed to execute 'useradd' command. Assuming Alpine-based image.");
-
                         addGroup = (groupName) => $"addgroup {groupName}";
                         addGroupWithId = (groupName, groupId) => $"addgroup -g {groupId} {groupName}";
                         addUserWithId = (userName, userId) => $"adduser -D -u {userId} {userName}";
                         addUserWithIdAndGroup = (userName, userId, groupName) => $"adduser -D -G {groupName} -u {userId} {userName}";
                         addUserToGroup = (userName, groupName) => $"addgroup {userName} {groupName}";
+                    }
+                    else
+                    {
+                        addGroup = (groupName) => $"groupadd {groupName}";
+                        addGroupWithId = (groupName, groupId) => $"groupadd -g {groupId} {groupName}";
+                        addUserWithId = (userName, userId) => $"useradd -m -u {userId} {userName}";
+                        addUserWithIdAndGroup = (userName, userId, groupName) => $"useradd -m -g {groupName} -u {userId} {userName}";
+                        addUserToGroup = (userName, groupName) => $"usermod -a -G {groupName} {userName}";
                     }
 
                     if (string.IsNullOrEmpty(containerUserName))

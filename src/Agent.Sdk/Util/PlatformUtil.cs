@@ -78,16 +78,9 @@ namespace Agent.Sdk
         {
             get
             {
-                try
+                if (File.Exists("/etc/alpine-release"))
                 {
-                    if (File.Exists("/etc/alpine-release"))
-                    {
-                        return true;
-                    }
-                }
-                catch (Exception)
-                {
-                    // probably not Alpine
+                    return true;
                 }
 
                 return false;
