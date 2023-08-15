@@ -47,11 +47,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
     {
         private VssCredentials _cacheCreds = null;
 
-        //Default Application (Client) Id
         private readonly string _clientId = "97877f11-0fc6-4aee-b1ff-febb0519dd00";
 
-        //Default ADO resource ID for user impersonation scope
-        private readonly string _userImpersonationScope = "499b84ac-1321-427f-aa17-267ca6975798/user_impersonation";
+        private readonly string _userImpersonationScope = "499b84ac-1321-427f-aa17-267ca6975798/.default";
         public AadDeviceCodeAccessToken() : base(Constants.Configuration.AAD) { }
 
         public override VssCredentials GetVssCredentials(IHostContext context)
@@ -62,11 +60,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             ArgUtil.NotNull(context, nameof(context));
             Tracing trace = context.GetTrace(nameof(AadDeviceCodeAccessToken));
             trace.Info(nameof(GetVssCredentials));
-
-            if (PlatformUtil.RunningOnMacOS)
-            {
-                throw new Exception("AAD isn't supported for MacOS");
-            }
 
             CredentialData.Data.TryGetValue(Constants.Agent.CommandLine.Args.Url, out string serverUrl);
             ArgUtil.NotNullOrEmpty(serverUrl, nameof(serverUrl));
@@ -79,7 +72,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
             var app = PublicClientApplicationBuilder.Create(_clientId).Build();
 
-            var authResult = AcquireATokenFromCacheOrDeviceCodeFlowAsync(context, app, new string[] { _userImpersonationScope }).GetAwaiter().GetResult(); ;
+            var authResult = AcquireATokenFromCacheOrDeviceCodeFlowAsync(context, app, new string[] { _userImpersonationScope }).GetAwaiter().GetResult();
 
             var aadCred = new VssAadCredential(new VssAadToken(authResult.TokenType, authResult.AccessToken));
             VssCredentials creds = new VssCredentials(null, aadCred, CredentialPromptType.DoNotPrompt);
@@ -168,6 +161,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
         /// after a timeout (15 mins)</returns>
         private async Task<AuthenticationResult> GetTokenUsingDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<string> scopes)
         {
+            Tracing trace = context.GetTrace(nameof(AadDeviceCodeAccessToken));
             AuthenticationResult result;
             try
             {
@@ -182,20 +176,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             }
             catch (MsalServiceException ex)
             {
-                string errorCode = ex.ErrorCode;
                 // AADSTS50059: No tenant-identifying information found in either the request or implied by any provided credentials.
                 // AADSTS90133: Device Code flow is not supported under /common or /consumers endpoint.
                 // AADSTS90002: Tenant <tenantId or domain you used in the authority> not found. This may happen if there are 
                 // no active subscriptions for the tenant. Check with your subscription administrator.
                 throw;
             }
-            catch (OperationCanceledException)
+            catch (OperationCanceledException ex)
             {
+                trace.Warning(ex.Message);
                 result = null;
             }
             catch (MsalClientException ex)
             {
-                string errorCode = ex.ErrorCode;
+                trace.Warning(ex.Message);
                 result = null;
             }
             return result;
