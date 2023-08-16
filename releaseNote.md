@@ -1,3 +1,22 @@
+## Features
+ - Adding support to Pipeline Artifact and Pipeline Caching, for larger chunk size. (#4157)
+ - Added telemetry classes to produce inline publish functionality (#4333)
+ - Support Node 20 handler (#4346)
+ - [Agent] - cert validation changes (#4350)
+ - WI 2048209 (#4367)
+ - Support Alpine OS (#4375)
+
+## Bugs
+
+
+## Misc
+ - Add output if step is skipped (#4349)
+ - Enable end-to-end test in the agent CI (#4359)
+ - Add `AZP_AGENT_CLEANUP_PSMODULES_IN_POWERSHELL` agent knob (#4360)
+ - Localization update (#4370)
+ - Move condition result trace from result code to output (#4371)
+ - Fix functional signing L1 tests (#4390)
+
 
 ## Agent Downloads
 
