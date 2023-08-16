@@ -260,7 +260,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
             // This condition is for maintaining backward compatibility.
             // Remove the if-else condition and keep only the context inside the 'else' to set the default value in future releases.
-            if (AgentKnobs.DisableCleanRepoDefaultValue.GetValue(executionContext).AsBoolean())
+            if (AgentKnobs.DisableCleanRepoDefaultValue.GetValue(UtilKnobValueContext.Instance()).AsBoolean())
             {
                 if (repoCleanFromSelf.HasValue)
                 {
