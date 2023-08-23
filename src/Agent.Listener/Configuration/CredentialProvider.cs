@@ -45,7 +45,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
     public sealed class AadDeviceCodeAccessToken : CredentialProvider
     {
-        private VssCredentials _cacheCreds = null;
+        private IPublicClientApplication _app = null;
 
         private readonly string _clientId = "97877f11-0fc6-4aee-b1ff-febb0519dd00";
 
@@ -54,9 +54,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
         public override VssCredentials GetVssCredentials(IHostContext context)
         {
-            if (_cacheCreds != null)
-                return _cacheCreds;
-
             ArgUtil.NotNull(context, nameof(context));
             Tracing trace = context.GetTrace(nameof(AadDeviceCodeAccessToken));
             trace.Info(nameof(GetVssCredentials));
@@ -70,14 +67,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 throw new NotSupportedException($"This Azure DevOps organization '{serverUrl}' is not backed by Azure Active Directory.");
             }
 
-            var app = PublicClientApplicationBuilder.Create(_clientId).Build();
+            if (_app == null)
+                _app = PublicClientApplicationBuilder.Create(_clientId).Build();
 
-            var authResult = AcquireATokenFromCacheOrDeviceCodeFlowAsync(context, app, new string[] { _userImpersonationScope }).GetAwaiter().GetResult();
+            var authResult = AcquireATokenFromCacheOrDeviceCodeFlowAsync(context, _app, new string[] { _userImpersonationScope }).GetAwaiter().GetResult();
 
             var aadCred = new VssAadCredential(new VssAadToken(authResult.TokenType, authResult.AccessToken));
             VssCredentials creds = new VssCredentials(null, aadCred, CredentialPromptType.DoNotPrompt);
             trace.Info("cred created");
-            _cacheCreds = creds;
             return creds;
         }
         public override void EnsureCredential(IHostContext context, CommandSettings command, string serverUrl)
@@ -89,7 +86,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             CredentialData.Data[Constants.Agent.CommandLine.Args.Url] = serverUrl;
         }
 
-        public async Task<AuthenticationResult> AcquireATokenFromCacheOrDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<String> scopes)
+        private async Task<AuthenticationResult> AcquireATokenFromCacheOrDeviceCodeFlowAsync(IHostContext context, IPublicClientApplication app, IEnumerable<String> scopes)
         {
             AuthenticationResult result = null;
             var accounts = await app.GetAccountsAsync().ConfigureAwait(false);
