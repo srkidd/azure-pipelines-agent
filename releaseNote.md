@@ -1,3 +1,21 @@
+## Features
+ - Service Principal auth (#4255)
+ - Support Alpine OS (#4375)
+ - [AgentService] - Migrate AgentService to .Net Framework 4.7.1 (#4387)
+ - Download `dotnet-install.(sh/ps1)` script when building the agent (#4401)
+
+## Bugs
+ - PlanId fixed in CustomerIntelligence data (#4347)
+ - fix detect rhel release (#4393)
+ - Fix - detect Alpine-based docker image (#4400)
+
+## Misc
+ - Localization update (#4370)
+ - Move condition result trace from result code to output (#4371)
+ - Fix functional signing L1 tests (#4390)
+ - Update agents git to 2.41.0 (#4394)
+ - fix agent CI - create AzureDevOps PRs (#4396)
+
 
 ## Agent Downloads
 
