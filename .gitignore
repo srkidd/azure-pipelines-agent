@@ -21,6 +21,7 @@ TestResults
 TestLogs
 .DS_Store
 **/*.DotSettings.user
+src/Misc/dotnet-install.*
 
 #generated
 src/Microsoft.VisualStudio.Services.Agent/BuildConstants.cs
