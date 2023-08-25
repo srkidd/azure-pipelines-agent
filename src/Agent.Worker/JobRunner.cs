@@ -18,6 +18,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
+using Microsoft.VisualStudio.Services.Agent.Listener;
+using BuildXL.Cache.ContentStore.Interfaces.Tracing;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -108,6 +110,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Trace.Info("Starting the job execution context.");
                 jobContext.Start();
                 jobContext.Section(StringUtil.Loc("StepStarting", message.JobDisplayName));
+
+
+                //Start Resource Diagnostics if enabled in the job message 
+                var resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
+                resourceDiagnosticManager.Setup(jobContext, HostContext.GetService<ITerminal>());
+                _ = resourceDiagnosticManager.Run();
 
                 agentShutdownRegistration = HostContext.AgentShutdownToken.Register(() =>
                 {
