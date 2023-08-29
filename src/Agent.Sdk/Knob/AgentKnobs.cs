@@ -498,5 +498,12 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AZP_AGENT_CLEANUP_PSMODULES_IN_POWERSHELL"),
             new EnvironmentKnobSource("AZP_AGENT_CLEANUP_PSMODULES_IN_POWERSHELL"),
             new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob AllowWorkDirectoryRepositories = new Knob(
+            nameof(AllowWorkDirectoryRepositories),
+            "Allows repositories to be checked out below work directory level on self hosted agents.",
+            new RuntimeKnobSource("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES"),
+            new EnvironmentKnobSource("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES"),
+            new BuiltInDefaultKnobSource("false"));
     }
 }
