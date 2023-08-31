@@ -74,6 +74,7 @@ stages:
       variables:
         DisableDockerDetector: true
         nugetMultiFeedWarnLevel: none
+      timeoutInMinutes: 300
       steps:
       - bash: |
           cd ./.azure-pipelines/scripts/
@@ -205,7 +206,7 @@ stages:
         publishArtifacts: ${{ parameters.publishArtifacts }}
         buildAlternatePackage: false
 
-  # macOS x64
+  # macOS (x64)
   - ${{ if parameters.macOS_x64 }}:
     - template: build-jobs.yml
       parameters:
@@ -223,12 +224,12 @@ stages:
         publishArtifacts: ${{ parameters.publishArtifacts }}
         buildAlternatePackage: ${{ parameters.buildAlternatePackage }}
 
-  # macOS arm64
+  # macOS (ARM64)
   - ${{ if parameters.macOS_arm64 }}:
     - template: build-jobs.yml
       parameters:
         jobName: build_osx_arm64
-        displayName: macOS (arm64)
+        displayName: macOS (ARM64)
         pool:
           vmImage: macOS-12
         os: osx
