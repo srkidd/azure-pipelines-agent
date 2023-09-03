@@ -12,10 +12,10 @@ using Microsoft.VisualStudio.Services.Agent.Worker;
 namespace Microsoft.VisualStudio.Services.Agent.Listener
 {
     [ServiceLocator(Default = typeof(ResourceMetricsManager))]
-    public interface IResourceMetricsManager : IAgentService
+    public interface IResourceMetricsManager : IAgentService, IDisposable
     {
         Task Run();
-        void Setup(IExecutionContext context, ITerminal terminal);
+        void Setup(IExecutionContext context);
     }
 
     public sealed class ResourceMetricsManager : AgentService, IResourceMetricsManager
@@ -24,21 +24,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
         IExecutionContext _context;
         private ITerminal _terminal;
 
-        public void Setup(IExecutionContext context, ITerminal terminal)
+        public void Setup(IExecutionContext context)
         {
             ArgUtil.NotNull(context, nameof(context));
-            ArgUtil.NotNull(terminal, nameof(terminal));
             _context = context;
 
-
-            _currentProcess = Process.GetCurrentProcess();
-            _terminal = terminal;
+            try
+            {
+                _currentProcess = Process.GetCurrentProcess();
+            }
+            catch (Exception ex)
+            {
+                _context.Warning($"Unable to get current process, ex:{ex.Message}");
+            }
         }
         public async Task Run()
         {
             while (!_context.CancellationToken.IsCancellationRequested)
             {
-                _context.Debug($"Agent running environment resource: Disk: {GetDiskInfo()}, Memory: {GetMemoryInfo(_terminal)}, CPU: {GetCpuInfo()}");
+                _context.Debug($"Agent running environment resource - {GetDiskInfo()}, {GetMemoryInfo(_terminal)}, {GetCpuInfo()}");
                 await Task.Delay(ACTIVE_MODE_INTERVAL, _context.CancellationToken);
             }
         }
@@ -49,7 +53,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 string root = Path.GetPathRoot(System.Reflection.Assembly.GetEntryAssembly().Location);
 
                 var s = new DriveInfo(root);
-                return $"{root}, label:{s.VolumeLabel}, available:{s.AvailableFreeSpace / c_kb}KB out of {s.TotalSize / c_kb}KB";
+                return $"Disk: {root}, label:{s.VolumeLabel}, available:{s.AvailableFreeSpace / c_kb}KB out of {s.TotalSize / c_kb}KB";
 
             }
             catch (Exception ex)
@@ -64,13 +68,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         public string GetCpuInfo()
         {
+            if (_currentProcess == null)
+                return $"Unable to get CPU info";
             try
             {
                 TimeSpan totalCpuTime = _currentProcess.TotalProcessorTime;
                 TimeSpan elapsedTime = DateTime.Now - _currentProcess.StartTime;
                 double cpuUsage = (totalCpuTime.TotalMilliseconds / elapsedTime.TotalMilliseconds) * 100.0;
 
-                return cpuUsage.ToString();
+                return $"CPU: {cpuUsage:0.00}";
             }
             catch (Exception ex)
             {
@@ -86,12 +92,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 var installedMemory = (int)(gcMemoryInfo.TotalAvailableMemoryBytes / 1048576.0);
                 var usedMemory = (int)(gcMemoryInfo.HeapSizeBytes / 1048576.0);
 
-                return $"{usedMemory}MB out of {installedMemory}MB";
+                return $"Memory: {usedMemory}MB out of {installedMemory}MB";
             }
             catch (Exception ex)
             {
                 return $"Unable to get Memory info, ex:{ex.Message}";
             }
+        }
+
+        public void Dispose()
+        {
+            _currentProcess?.Dispose();
         }
     }
 }
