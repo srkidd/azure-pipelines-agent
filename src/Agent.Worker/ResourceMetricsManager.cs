@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 
+using Agent.Sdk;
+
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Microsoft.VisualStudio.Services.Agent.Worker;
 
@@ -53,7 +55,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 string root = Path.GetPathRoot(System.Reflection.Assembly.GetEntryAssembly().Location);
 
                 var s = new DriveInfo(root);
-                return $"Disk: {root.Trim('/')} {s.VolumeLabel.Trim('/')}, available:{s.AvailableFreeSpace / c_mb:0.00}MB out of {s.TotalSize / c_mb:0.00}MB";
+                var diskLabel = string.Empty;
+
+                if (PlatformUtil.RunningOnWindows)
+                    diskLabel = $"{root} {s.VolumeLabel}";
+
+                return $"Disk:{diskLabel} available:{s.AvailableFreeSpace / c_mb:0.00}MB out of {s.TotalSize / c_mb:0.00}MB";
 
             }
             catch (Exception ex)
