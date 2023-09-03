@@ -18,9 +18,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
 using Newtonsoft.Json.Linq;
-using Microsoft.VisualStudio.Services.Agent.Listener;
-using BuildXL.Cache.ContentStore.Interfaces.Tracing;
-using System.Diagnostics;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {

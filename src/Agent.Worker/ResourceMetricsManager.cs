@@ -9,9 +9,8 @@ using System.Threading.Tasks;
 using Agent.Sdk;
 
 using Microsoft.VisualStudio.Services.Agent.Util;
-using Microsoft.VisualStudio.Services.Agent.Worker;
 
-namespace Microsoft.VisualStudio.Services.Agent.Listener
+namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
     [ServiceLocator(Default = typeof(ResourceMetricsManager))]
     public interface IResourceMetricsManager : IAgentService, IDisposable
