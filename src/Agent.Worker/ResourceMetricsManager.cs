@@ -53,7 +53,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 string root = Path.GetPathRoot(System.Reflection.Assembly.GetEntryAssembly().Location);
 
                 var s = new DriveInfo(root);
-                return $"Disk: {root}, label:{s.VolumeLabel}, available:{s.AvailableFreeSpace / c_kb}KB out of {s.TotalSize / c_kb}KB";
+                return $"Disk: {root.Trim('/')} {s.VolumeLabel.Trim('/')}, available:{s.AvailableFreeSpace / c_mb:0.00}MB out of {s.TotalSize / c_mb:0.00}MB";
 
             }
             catch (Exception ex)
@@ -62,7 +62,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             }
         }
 
-        private const int c_kb = 1024;
+        private const int c_mb = 1024*1024;
 
         private Process _currentProcess;
 
@@ -76,7 +76,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 TimeSpan elapsedTime = DateTime.Now - _currentProcess.StartTime;
                 double cpuUsage = (totalCpuTime.TotalMilliseconds / elapsedTime.TotalMilliseconds) * 100.0;
 
-                return $"CPU: {cpuUsage:0.00}";
+                return $"CPU: usage {cpuUsage:0.00}";
             }
             catch (Exception ex)
             {
@@ -92,7 +92,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 var installedMemory = (int)(gcMemoryInfo.TotalAvailableMemoryBytes / 1048576.0);
                 var usedMemory = (int)(gcMemoryInfo.HeapSizeBytes / 1048576.0);
 
-                return $"Memory: {usedMemory}MB out of {installedMemory}MB";
+                return $"Memory: used {usedMemory}MB out of {installedMemory}MB";
             }
             catch (Exception ex)
             {
