@@ -182,7 +182,7 @@ namespace Test.L0.Worker
             }
 
             var directoryManager = new Mock<Microsoft.VisualStudio.Services.Agent.Worker.Build.IBuildDirectoryManager>();
-            directoryManager.Setup(x => x.GetRelativeRepositoryPath(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<IExecutionContext>()))
+            directoryManager.Setup(x => x.GetRelativeRepositoryPath(It.IsAny<string>(), It.IsAny<string>()))
                 .Returns<string, string>((bd, path) => GetLastPathPart(path));
 
             hc.SetSingleton(directoryManager.Object);

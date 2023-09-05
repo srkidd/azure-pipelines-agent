@@ -11,6 +11,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using Xunit;
+using Agent.Sdk;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 {
@@ -280,6 +281,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             _variables.Set(Constants.Variables.System.DefinitionId, DefinitionId);
             _variables.Set(Constants.Variables.Build.Clean, $"{cleanOption}");
             _ec.Setup(x => x.Variables).Returns(_variables);
+
+            //var environment = new SystemEnvironment();
+            //environment.SetEnvironmentVariable("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES", "false");
+            //_ec.Setup(x => x.GetScopedEnvironment()).Returns(environment);
 
             // Store the expected tracking file path.
             _trackingFile = Path.Combine(
