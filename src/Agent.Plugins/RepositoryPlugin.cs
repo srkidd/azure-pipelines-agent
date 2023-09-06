@@ -118,6 +118,102 @@ namespace Agent.Plugins.Repository
 
         public override string Stage => "main";
 
+        //    public override async Task RunAsync(AgentTaskPluginExecutionContext executionContext, CancellationToken token)
+        //    {
+        //        var sourceSkipVar = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("agent.source.skip")?.Value) ||
+        //                            !StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("build.syncSources")?.Value ?? bool.TrueString);
+        //        if (sourceSkipVar)
+        //        {
+        //            executionContext.Output($"Skip sync source for repository.");
+        //            return;
+        //        }
+
+        //        var repoAlias = executionContext.GetInput(Pipelines.PipelineConstants.CheckoutTaskInputs.Repository, true);
+        //        var repo = executionContext.Repositories.Single(x => string.Equals(x.Alias, repoAlias, StringComparison.OrdinalIgnoreCase));
+
+        //        executionContext.PublishTelemetry(area: "AzurePipelinesAgent", feature: "Checkout", properties: new Dictionary<string, string>
+        //        {
+        //            { "RepoType", $"{repo.Type}" },
+        //            { "HostOS", $"{PlatformUtil.HostOS}" }
+        //        });
+
+        //        MergeCheckoutOptions(executionContext, repo);
+
+        //        var currentRepoPath = repo.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+        //        var buildDirectory = executionContext.Variables.GetValueOrDefault("agent.builddirectory")?.Value;
+        //        var tempDirectory = executionContext.Variables.GetValueOrDefault("agent.tempdirectory")?.Value;
+
+        //        ArgUtil.NotNullOrEmpty(currentRepoPath, nameof(currentRepoPath));
+        //        ArgUtil.NotNullOrEmpty(buildDirectory, nameof(buildDirectory));
+        //        ArgUtil.NotNullOrEmpty(tempDirectory, nameof(tempDirectory));
+
+        //        // Determine the path that we should clone/move the repository into
+        //        const string sourcesDirectory = "s"; //Constants.Build.Path.SourcesDirectory
+        //        string expectRepoPath;
+        //        var path = executionContext.GetInput("path");
+        //        if (!string.IsNullOrEmpty(path))
+        //        {
+        //            // When the checkout task provides a path, always use that one
+        //            expectRepoPath = IOUtil.ResolvePath(buildDirectory, path);
+        //            if (!expectRepoPath.StartsWith(buildDirectory.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar))
+        //            {
+        //                throw new ArgumentException($"Input path '{path}' should resolve to a directory under '{buildDirectory}', current resolved path '{expectRepoPath}'.");
+        //            }
+        //        }
+        //        else if (HasMultipleCheckouts(executionContext))
+        //        {
+        //            // When there are multiple checkout tasks (and this one didn't set the path), default to directory 1/s/<repoName>
+        //            expectRepoPath = Path.Combine(buildDirectory, sourcesDirectory, RepositoryUtil.GetCloneDirectory(repo));
+        //        }
+        //        else
+        //        {
+        //            // When there's a single checkout task that doesn't have path set, default to sources directory 1/s
+        //            expectRepoPath = Path.Combine(buildDirectory, sourcesDirectory);
+        //        }
+
+        //        // Update the repository path in the worker process
+        //        executionContext.UpdateRepositoryPath(repoAlias, expectRepoPath);
+
+        //        executionContext.Debug($"Repository requires to be placed at '{expectRepoPath}', current location is '{currentRepoPath}'");
+        //        if (!string.Equals(currentRepoPath.Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), expectRepoPath.Trim(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar), IOUtil.FilePathStringComparison))
+        //        {
+        //            executionContext.Output($"Repository is current at '{currentRepoPath}', move to '{expectRepoPath}'.");
+        //            var count = 1;
+        //            var staging = Path.Combine(tempDirectory, $"_{count}");
+        //            while (Directory.Exists(staging))
+        //            {
+        //                count++;
+        //                staging = Path.Combine(tempDirectory, $"_{count}");
+        //            }
+
+        //            try
+        //            {
+        //                executionContext.Debug($"Move existing repository '{currentRepoPath}' to '{expectRepoPath}' via staging directory '{staging}'.");
+        //                IOUtil.MoveDirectory(currentRepoPath, expectRepoPath, staging, CancellationToken.None);
+        //            }
+        //            catch (Exception ex)
+        //            {
+        //                executionContext.Debug("Catch exception during repository move.");
+        //                executionContext.Debug(ex.ToString());
+        //                executionContext.Warning("Unable move and reuse existing repository to required location.");
+        //                IOUtil.DeleteDirectory(expectRepoPath, CancellationToken.None);
+        //            }
+
+        //            executionContext.Output($"Repository will be located at '{expectRepoPath}'.");
+        //            repo.Properties.Set<string>(Pipelines.RepositoryPropertyNames.Path, expectRepoPath);
+        //        }
+
+        //        if (!PlatformUtil.RunningOnWindows && string.Equals(repo.Type, Pipelines.RepositoryTypes.Tfvc, StringComparison.OrdinalIgnoreCase))
+        //        {
+        //            initializeTeeUtil(executionContext, token);
+        //            await teeUtil.DownloadTeeIfAbsent();
+        //        }
+
+        //        ISourceProvider sourceProvider = SourceProviderFactory.GetSourceProvider(repo.Type);
+        //        await sourceProvider.GetSourceAsync(executionContext, repo, token);
+        //    }
+        //}
+
         public override async Task RunAsync(AgentTaskPluginExecutionContext executionContext, CancellationToken token)
         {
             var sourceSkipVar = StringUtil.ConvertToBoolean(executionContext.Variables.GetValueOrDefault("agent.source.skip")?.Value) ||
@@ -132,18 +228,20 @@ namespace Agent.Plugins.Repository
             var repo = executionContext.Repositories.Single(x => string.Equals(x.Alias, repoAlias, StringComparison.OrdinalIgnoreCase));
 
             executionContext.PublishTelemetry(area: "AzurePipelinesAgent", feature: "Checkout", properties: new Dictionary<string, string>
-            {
-                { "RepoType", $"{repo.Type}" },
-                { "HostOS", $"{PlatformUtil.HostOS}" }
-            });
+        {
+            { "RepoType", $"{repo.Type}" },
+            { "HostOS", $"{PlatformUtil.HostOS}" }
+        });
 
             MergeCheckoutOptions(executionContext, repo);
 
             var currentRepoPath = repo.Properties.Get<string>(Pipelines.RepositoryPropertyNames.Path);
+            var workDirectory = executionContext.Variables.GetValueOrDefault("agent.workfolder")?.Value;
             var buildDirectory = executionContext.Variables.GetValueOrDefault("agent.builddirectory")?.Value;
             var tempDirectory = executionContext.Variables.GetValueOrDefault("agent.tempdirectory")?.Value;
 
             ArgUtil.NotNullOrEmpty(currentRepoPath, nameof(currentRepoPath));
+            ArgUtil.NotNullOrEmpty(workDirectory, nameof(workDirectory));
             ArgUtil.NotNullOrEmpty(buildDirectory, nameof(buildDirectory));
             ArgUtil.NotNullOrEmpty(tempDirectory, nameof(tempDirectory));
 
@@ -151,13 +249,21 @@ namespace Agent.Plugins.Repository
             const string sourcesDirectory = "s"; //Constants.Build.Path.SourcesDirectory
             string expectRepoPath;
             var path = executionContext.GetInput("path");
+            var maxRootDirectory = buildDirectory;
+
             if (!string.IsNullOrEmpty(path))
             {
                 // When the checkout task provides a path, always use that one
                 expectRepoPath = IOUtil.ResolvePath(buildDirectory, path);
-                if (!expectRepoPath.StartsWith(buildDirectory.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar))
+
+                if (AgentKnobs.AllowWorkDirectoryRepositories.GetValue(executionContext).AsBoolean())
                 {
-                    throw new ArgumentException($"Input path '{path}' should resolve to a directory under '{buildDirectory}', current resolved path '{expectRepoPath}'.");
+                    maxRootDirectory = workDirectory;
+                }
+
+                if (!expectRepoPath.StartsWith(maxRootDirectory.Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar))
+                {
+                    throw new ArgumentException($"Input path '{path}' should resolve to a directory under '{maxRootDirectory}', current resolved path '{expectRepoPath}'.");
                 }
             }
             else if (HasMultipleCheckouts(executionContext))

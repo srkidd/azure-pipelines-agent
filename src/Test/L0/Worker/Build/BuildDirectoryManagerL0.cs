@@ -282,9 +282,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             _variables.Set(Constants.Variables.Build.Clean, $"{cleanOption}");
             _ec.Setup(x => x.Variables).Returns(_variables);
 
-            //var environment = new SystemEnvironment();
-            //environment.SetEnvironmentVariable("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES", "false");
-            //_ec.Setup(x => x.GetScopedEnvironment()).Returns(environment);
+            var environment = new SystemEnvironment();
+            environment.SetEnvironmentVariable("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES", "false");
+            _ec.Setup(x => x.GetScopedEnvironment()).Returns(environment);
 
             // Store the expected tracking file path.
             _trackingFile = Path.Combine(
