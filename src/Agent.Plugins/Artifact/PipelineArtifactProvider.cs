@@ -95,7 +95,7 @@ namespace Agent.Plugins
         {
             // create clients and group artifacts for each domain:
             Dictionary<IDomainId, (DedupManifestArtifactClient Client, BlobStoreClientTelemetry Telemetry, Dictionary<string, DedupIdentifier> ArtifactDictionary)> dedupManifestClients = 
-                new Dictionary<IDomainId, (DedupManifestArtifactClient Client, BlobStoreClientTelemetry Telemetry, Dictionary<string, DedupIdentifier> ArtifactDictionary)>();
+                new();
 
             foreach(var buildArtifact in buildArtifacts)
             {                
@@ -105,12 +105,13 @@ namespace Agent.Plugins
                 {
                     domainId = DomainIdFactory.Create(domainIdString);
                 }
+
                 // Have we already created the clients for this domain?
                 if(dedupManifestClients.ContainsKey(domainId)) {
                     // Clients already created for this domain, Just add the artifact to the list:
                     dedupManifestClients[domainId].ArtifactDictionary.Add(buildArtifact.Name, DedupIdentifier.Create(buildArtifact.Resource.Data));
                 }
-                else 
+                else
                 {
                     // create the clients:
                     var (dedupManifestClient, clientTelemetry) = await DedupManifestArtifactClientFactory.Instance.CreateDedupManifestClientAsync(
@@ -118,18 +119,21 @@ namespace Agent.Plugins
                         (str) => this.context.Output(str),
                         this.connection,
                         DedupManifestArtifactClientFactory.Instance.GetDedupStoreClientMaxParallelism(context),
-                        WellKnownDomainIds.DefaultDomainId,
+                        domainId,
                         Microsoft.VisualStudio.Services.BlobStore.WebApi.Contracts.Client.PipelineArtifact,
                         context,
                         cancellationToken);
-                    
+
                     // and create the artifact dictionary with the current artifact
-                    var artifactDictionary = new Dictionary<string, DedupIdentifier>();
-                    artifactDictionary.Add(buildArtifact.Name, DedupIdentifier.Create(buildArtifact.Resource.Data));
+                    var artifactDictionary = new Dictionary<string, DedupIdentifier>
+                    {
+                        { buildArtifact.Name, DedupIdentifier.Create(buildArtifact.Resource.Data) }
+                    };
 
                     dedupManifestClients.Add(domainId, (dedupManifestClient, clientTelemetry, artifactDictionary));
                 }
             }
+
             foreach(var clientInfo in dedupManifestClients.Values)
             {
                 using (clientInfo.Telemetry)

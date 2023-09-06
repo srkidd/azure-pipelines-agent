@@ -41,8 +41,8 @@ namespace Agent.Plugins
             IDictionary<string, string> properties,
             CancellationToken cancellationToken)
         {
-            // Get the client settings, if any:
-            var tracer = DedupManifestArtifactClientFactory.CreateArtifactsTracer(false, (str) => context.Output(str));
+            // Get the client settings, if any.
+            var tracer = DedupManifestArtifactClientFactory.CreateArtifactsTracer(verbose: false, (str) => context.Output(str));
             VssConnection connection = context.VssConnection;
             var clientSettings = await DedupManifestArtifactClientFactory.GetClientSettingsAsync(
                 connection,

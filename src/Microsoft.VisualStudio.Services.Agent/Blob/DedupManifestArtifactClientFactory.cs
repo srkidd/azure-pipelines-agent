@@ -96,6 +96,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
         private DedupManifestArtifactClientFactory()
         {
         }
+
         /// <summary>
         /// Creates a DedupManifestArtifactClient client and retrieves any client settings from the server
         /// </summary>
@@ -109,7 +110,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             AgentTaskPluginExecutionContext context,
             CancellationToken cancellationToken)
         {
-            var clientSettings = await DedupManifestArtifactClientFactory.GetClientSettingsAsync(
+            var clientSettings = await GetClientSettingsAsync(
                 connection,
                 client,
                 CreateArtifactsTracer(verbose, traceOutput),
@@ -142,6 +143,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             {
                 maxParallelism = DefaultDedupStoreClientMaxParallelism;
             }
+
             traceOutput($"Max dedup parallelism: {maxParallelism}");
 
             ArtifactHttpClientFactory factory = new ArtifactHttpClientFactory(
@@ -149,6 +151,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                 connection.Settings.SendTimeout,
                 tracer,
                 cancellationToken);
+
             var helper = new HttpRetryHelper(maxRetries,e => true);
 
             IDedupStoreHttpClient dedupStoreHttpClient = helper.Invoke(
@@ -294,7 +297,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
         {
             try
             {
-                ArtifactHttpClientFactory factory = new ArtifactHttpClientFactory(
+                ArtifactHttpClientFactory factory = new(
                     connection.Credentials,
                     connection.Settings.SendTimeout,
                     tracer,
@@ -302,7 +305,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
 
                 var blobUri = connection.GetClient<ClientSettingsHttpClient>().BaseAddress;
                 var clientSettingsHttpClient = factory.CreateVssHttpClient<IClientSettingsHttpClient, ClientSettingsHttpClient>(blobUri);
-                return await clientSettingsHttpClient.GetSettingsAsync(client, cancellationToken);                
+                return await clientSettingsHttpClient.GetSettingsAsync(client, userState: null, cancellationToken);                
             }
             catch (Exception exception)
             {
@@ -317,7 +320,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             IDomainId domainId = WellKnownDomainIds.DefaultDomainId;
             if (clientSettings != null && clientSettings.Properties.ContainsKey(DefaultDomainIdKey))
             {
-                try {
+                try
+                {
                     domainId = DomainIdFactory.Create(clientSettings.Properties[DefaultDomainIdKey]);
                 }
                 catch (Exception exception)
@@ -333,11 +337,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
         {
             HashType hashType = ChunkerHelper.DefaultChunkHashType;
 
+            // Note: 9/6/2023 Remove the below check in couple of months.
             if (AgentKnobs.AgentEnablePipelineArtifactLargeChunkSize.GetValue(context).AsBoolean())
             {
                 if (clientSettings != null && clientSettings.Properties.ContainsKey(ClientSettingsConstants.ChunkSize))
                 {
-                    HashTypeExtensions.Deserialize(clientSettings.Properties[ClientSettingsConstants.ChunkSize], out hashType);
+                    try
+                    {
+                        HashTypeExtensions.Deserialize(clientSettings.Properties[ClientSettingsConstants.ChunkSize], out hashType);
+                    }
+                    catch (Exception exception)
+                    {
+                        tracer.Info($"Error converting the chunk size '{clientSettings.Properties[ClientSettingsConstants.ChunkSize]}': {exception.Message}.  Falling back to default.");
+                    }
                 }
             }
 
