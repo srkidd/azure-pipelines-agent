@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using Agent.Sdk.Knob;
 using Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
@@ -189,24 +187,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             return trackingConfig;
         }
 
-        //public string GetRelativeRepositoryPath(
-        //    string buildDirectory,
-        //    string repositoryPath)
-        //{
-        //    ArgUtil.NotNullOrEmpty(buildDirectory, nameof(buildDirectory));
-        //    ArgUtil.NotNullOrEmpty(repositoryPath, nameof(repositoryPath));
-
-        //    if (repositoryPath.StartsWith(buildDirectory + Path.DirectorySeparatorChar) || repositoryPath.StartsWith(buildDirectory + Path.AltDirectorySeparatorChar))
-        //    {
-        //        // The sourcesDirectory in tracking file is a relative path to agent's work folder.
-        //        return repositoryPath.Substring(HostContext.GetDirectory(WellKnownDirectory.Work).Length + 1).TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar);
-        //    }
-        //    else
-        //    {
-        //        throw new ArgumentException($"Repository path '{repositoryPath}' should be located under agent's work directory '{buildDirectory}'.");
-        //    }
-        //}
-
         public string GetRelativeRepositoryPath(
             string buildDirectory,
             string repositoryPath,
@@ -236,11 +216,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             {
                 if (allowWorkDirectoryRepositories)
                 {
-                    throw new ArgumentException($"Repository path '{repositoryPath}' should be located under agent's NEW work directory '{workDirectory}'.");
+                    throw new ArgumentException($"Repository path '{repositoryPath}' should be located under agent's work directory '{workDirectory}'.");
                 }
                 else
                 {
-                    throw new ArgumentException($"Repository path '{repositoryPath}' should be located under agent's work directory '{buildDirectory}'.");
+                    throw new ArgumentException($"Repository path '{repositoryPath}' should be located under agent's build directory '{buildDirectory}'.");
                 }
             }
         }

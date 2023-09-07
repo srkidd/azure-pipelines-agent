@@ -297,7 +297,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 var exception = Assert.Throws<ArgumentException>(() => _buildDirectoryManager.UpdateDirectory(_ec.Object, _repository));
 
                 // Assert.
-                Assert.True(exception.Message.Contains("should be located under agent's work directory"));
+                Assert.True(exception.Message.Contains("should be located under agent's build directory"));
             }
         }
 
@@ -319,7 +319,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 var exception = Assert.Throws<ArgumentException>(() => _buildDirectoryManager.UpdateDirectory(_ec.Object, _repository));
 
                 // Assert.
-                Assert.True(exception.Message.Contains("should be located under agent's NEW work directory"));
+                Assert.True(exception.Message.Contains("should be located under agent's work directory"));
             }
         }
         // TODO: Updates legacy config.
