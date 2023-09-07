@@ -39,6 +39,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             // Arrange.
             using (TestHostContext hc = Setup())
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 // Act.
                 _buildDirectoryManager.PrepareDirectory(_ec.Object, _repositories, _workspaceOptions);
 
@@ -57,6 +59,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             // Arrange.
             using (TestHostContext hc = Setup())
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 // Act.
                 var repos = new[] { _repository };
                 _buildDirectoryManager.PrepareDirectory(_ec.Object, repos, _workspaceOptions);
@@ -74,6 +78,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             // Arrange.
             using (TestHostContext hc = Setup(existingConfigKind: ExistingConfigKind.Nonmatching))
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 // Act.
                 var repos = new[] { _repository };
                 _buildDirectoryManager.PrepareDirectory(_ec.Object, repos, _workspaceOptions);
@@ -93,6 +99,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             // Arrange.
             using (TestHostContext hc = Setup(cleanOption: BuildCleanOption.Source))
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 string sourcesDirectory = Path.Combine(_workFolder, _newConfig.BuildDirectory, Constants.Build.Path.SourcesDirectory);
                 string sourceFile = Path.Combine(sourcesDirectory, "some subdirectory", "some source file");
                 Directory.CreateDirectory(Path.GetDirectoryName(sourceFile));
@@ -115,6 +123,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             // Arrange.
             using (TestHostContext hc = Setup())
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 string artifactsDirectory = Path.Combine(_workFolder, _newConfig.BuildDirectory, Constants.Build.Path.ArtifactsDirectory);
                 string artifactFile = Path.Combine(artifactsDirectory, "some subdirectory", "some artifact file");
                 Directory.CreateDirectory(Path.GetDirectoryName(artifactFile));
@@ -145,6 +155,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             // Arrange.
             using (TestHostContext hc = Setup(cleanOption: BuildCleanOption.All))
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 string buildDirectory = Path.Combine(_workFolder, _newConfig.BuildDirectory);
                 string looseFile = Path.Combine(buildDirectory, "some loose directory", "some loose file");
                 Directory.CreateDirectory(Path.GetDirectoryName(looseFile));
@@ -170,6 +182,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             // Arrange.
             using (TestHostContext hc = Setup(cleanOption: BuildCleanOption.Binary))
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 string binariesDirectory = Path.Combine(_workFolder, _newConfig.BuildDirectory, Constants.Build.Path.BinariesDirectory);
                 string binaryFile = Path.Combine(binariesDirectory, "some subdirectory", "some binary file");
                 Directory.CreateDirectory(Path.GetDirectoryName(binaryFile));
@@ -192,6 +206,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             // Arrange.
             using (TestHostContext hc = Setup())
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 // Act.
                 _buildDirectoryManager.PrepareDirectory(_ec.Object, _repositories, _workspaceOptions);
 
@@ -208,6 +224,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             // Arrange.
             using (TestHostContext hc = Setup(existingConfigKind: ExistingConfigKind.Matching))
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 // Act.
                 _buildDirectoryManager.PrepareDirectory(_ec.Object, _repositories, _workspaceOptions);
 
@@ -220,11 +238,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
-        public void UpdateDirectory()
+        public void UpdateDirectory_DontAllowWorkingDirectoryRepositories()
         {
             // Arrange.
             using (TestHostContext hc = Setup(existingConfigKind: ExistingConfigKind.Matching))
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 // Act.
                 var tracking = _buildDirectoryManager.PrepareDirectory(_ec.Object, _repositories, _workspaceOptions);
 
@@ -240,11 +260,35 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
-        public void UpdateDirectoryFailOnInvalidPath()
+        public void UpdateDirectory_AllowWorkingDirectoryRepositories()
         {
             // Arrange.
             using (TestHostContext hc = Setup(existingConfigKind: ExistingConfigKind.Matching))
             {
+                SetupEnvironmentVariables(allowWorkDirectory: "true");
+
+                // Act.
+                var tracking = _buildDirectoryManager.PrepareDirectory(_ec.Object, _repositories, _workspaceOptions);
+
+                _repository.Properties.Set<string>(Pipelines.RepositoryPropertyNames.Path, Path.Combine(hc.GetDirectory(WellKnownDirectory.Work), $"test{Path.DirectorySeparatorChar}foo"));
+
+                var newTracking = _buildDirectoryManager.UpdateDirectory(_ec.Object, _repository);
+
+                // Assert.
+                Assert.Equal(newTracking.SourcesDirectory, $"test{Path.DirectorySeparatorChar}foo");
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public void UpdateDirectoryFailOnInvalidPath_DontAllowWorkingDirectoryRepositories()
+        {
+            // Arrange.
+            using (TestHostContext hc = Setup(existingConfigKind: ExistingConfigKind.Matching))
+            {
+                SetupEnvironmentVariables(allowWorkDirectory: "false");
+
                 // Act.
                 var tracking = _buildDirectoryManager.PrepareDirectory(_ec.Object, _repositories, _workspaceOptions);
 
@@ -254,6 +298,28 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 
                 // Assert.
                 Assert.True(exception.Message.Contains("should be located under agent's work directory"));
+            }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
+        public void UpdateDirectoryFailOnInvalidPath_AllowWorkingDirectoryRepositories()
+        {
+            // Arrange.
+            using (TestHostContext hc = Setup(existingConfigKind: ExistingConfigKind.Matching))
+            {
+                SetupEnvironmentVariables(allowWorkDirectory: "true");
+
+                // Act.
+                var tracking = _buildDirectoryManager.PrepareDirectory(_ec.Object, _repositories, _workspaceOptions);
+
+                _repository.Properties.Set<string>(Pipelines.RepositoryPropertyNames.Path, Path.Combine(hc.GetDirectory(WellKnownDirectory.Work), $"..{Path.DirectorySeparatorChar}test{Path.DirectorySeparatorChar}foo"));
+
+                var exception = Assert.Throws<ArgumentException>(() => _buildDirectoryManager.UpdateDirectory(_ec.Object, _repository));
+
+                // Assert.
+                Assert.True(exception.Message.Contains("should be located under agent's NEW work directory"));
             }
         }
         // TODO: Updates legacy config.
@@ -281,10 +347,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             _variables.Set(Constants.Variables.System.DefinitionId, DefinitionId);
             _variables.Set(Constants.Variables.Build.Clean, $"{cleanOption}");
             _ec.Setup(x => x.Variables).Returns(_variables);
-
-            var environment = new SystemEnvironment();
-            environment.SetEnvironmentVariable("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES", "false");
-            _ec.Setup(x => x.GetScopedEnvironment()).Returns(environment);
 
             // Store the expected tracking file path.
             _trackingFile = Path.Combine(
@@ -370,6 +432,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             _buildDirectoryManager = new BuildDirectoryManager();
             _buildDirectoryManager.Initialize(hc);
             return hc;
+        }
+
+        private void SetupEnvironmentVariables(string allowWorkDirectory)
+        {
+            var environment = new SystemEnvironment();
+            environment.SetEnvironmentVariable("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES", allowWorkDirectory);
+            _ec.Setup(x => x.GetScopedEnvironment()).Returns(environment);
         }
 
         private enum ExistingConfigKind
