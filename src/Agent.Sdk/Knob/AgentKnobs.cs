@@ -503,6 +503,12 @@ namespace Agent.Sdk.Knob
             nameof(DisableCleanRepoDefaultValue),
             "Avoid to set default value if build.repository.clean variable is not set on Trigger Yaml UI or in checkout steps yaml config",
             new EnvironmentKnobSource("AGENT_DISABLE_CLEAN_REPO_DEFAULT_VALUE"),
+        
+          public static readonly Knob IgnoreVSTSTaskLib = new Knob(
+            nameof(IgnoreVSTSTaskLib),
+            "Ignores the VSTSTaskLib folder when copying tasks.",
+            new RuntimeKnobSource("AZP_AGENT_IGNORE_VSTSTASKLIB"),
+            new EnvironmentKnobSource("AZP_AGENT_IGNORE_VSTSTASKLIB"),
             new BuiltInDefaultKnobSource("false"));
     }
 }
