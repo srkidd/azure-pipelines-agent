@@ -503,7 +503,13 @@ namespace Agent.Sdk.Knob
             nameof(AllowWorkDirectoryRepositories),
             "Allows repositories to be checked out below work directory level on self hosted agents.",
             new RuntimeKnobSource("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES"),
-            new EnvironmentKnobSource("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES"),
+            new EnvironmentKnobSource("AZP_AGENT_ALLOW_WORK_DIRECTORY_REPOSITORIES"));
+            
+        public static readonly Knob IgnoreVSTSTaskLib = new Knob(
+            nameof(IgnoreVSTSTaskLib),
+            "Ignores the VSTSTaskLib folder when copying tasks.",
+            new RuntimeKnobSource("AZP_AGENT_IGNORE_VSTSTASKLIB"),
+            new EnvironmentKnobSource("AZP_AGENT_IGNORE_VSTSTASKLIB"),
             new BuiltInDefaultKnobSource("false"));
     }
 }
