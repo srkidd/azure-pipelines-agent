@@ -53,7 +53,7 @@ namespace Agent.Listener.Configuration
                 return FeatureFlagStatus;
             } catch(VssServiceException e)
             {
-                Trace.Warning("Unable to retrview feature flag status: " + e.ToString());
+                Trace.Warning("Unable to retrive feature flag status: " + e.ToString());
                 return new FeatureFlag(featureFlagName, "", "", "Off", "Off");
             }
         }
