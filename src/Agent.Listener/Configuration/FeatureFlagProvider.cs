@@ -36,7 +36,7 @@ namespace Agent.Listener.Configuration
 
         public async Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName, ITraceWriter traceWriter)
         {
-            Trace.Verbose(nameof(GetFeatureFlagAsync));
+            traceWriter.Verbose(nameof(GetFeatureFlagAsync));
             ArgUtil.NotNull(featureFlagName, nameof(featureFlagName));
 
             var credMgr = context.GetService<ICredentialManager>();
