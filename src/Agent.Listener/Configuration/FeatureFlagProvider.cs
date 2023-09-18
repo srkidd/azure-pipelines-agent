@@ -38,14 +38,19 @@ namespace Agent.Listener.Configuration
         {
             Trace.Verbose(nameof(GetFeatureFlagAsync));
             ArgUtil.NotNull(featureFlagName, nameof(featureFlagName));
+
             var credMgr = context.GetService<ICredentialManager>();
+            var configManager = context.GetService<IConfigurationManager>();
+
             VssCredentials creds = credMgr.LoadCredentials();
             ArgUtil.NotNull(creds, nameof(creds));
-            var configManager = context.GetService<IConfigurationManager>();
+            
             AgentSettings settings = configManager.LoadSettings();
             using var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, Trace);
             var client = vssConnection.GetClient<FeatureAvailabilityHttpClient>();
+
             var FeatureFlagStatus = await client.GetFeatureFlagByNameAsync(featureFlagName);
+
             return FeatureFlagStatus;
         }
     }
