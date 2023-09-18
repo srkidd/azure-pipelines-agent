@@ -33,7 +33,7 @@ namespace Agent.Listener.Configuration
     public class FeatureFlagProvider : AgentService, IFeatureFlagProvider
     {
 
-        public async Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName, ITraceWriter traceWriter)
+        public async Task<bool> TryGetFeatureFlagAsync(IHostContext context, string featureFlagName, ITraceWriter traceWriter, out FeatureFlag featureFlag)
         {
             traceWriter.Verbose(nameof(GetFeatureFlagAsync));
             ArgUtil.NotNull(featureFlagName, nameof(featureFlagName));
