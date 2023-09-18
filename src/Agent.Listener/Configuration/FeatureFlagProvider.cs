@@ -46,7 +46,7 @@ namespace Agent.Listener.Configuration
             ArgUtil.NotNull(creds, nameof(creds));
             
             AgentSettings settings = configManager.LoadSettings();
-            using var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, Trace);
+            using var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, traceWriter);
             var client = vssConnection.GetClient<FeatureAvailabilityHttpClient>();
 
             var FeatureFlagStatus = await client.GetFeatureFlagByNameAsync(featureFlagName);
