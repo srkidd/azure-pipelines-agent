@@ -48,10 +48,15 @@ namespace Agent.Listener.Configuration
             AgentSettings settings = configManager.LoadSettings();
             using var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, traceWriter);
             var client = vssConnection.GetClient<FeatureAvailabilityHttpClient>();
-
-            var FeatureFlagStatus = await client.GetFeatureFlagByNameAsync(featureFlagName);
-
-            return FeatureFlagStatus;
+            try
+            {
+                var FeatureFlagStatus = await client.GetFeatureFlagByNameAsync(featureFlagName);
+                return FeatureFlagStatus;
+            } catch(VssServiceException e)
+            {
+                Trace.Warning("Unable to retrview feature flag status: " + e.ToString());
+                return new FeatureFlag(featureFlagName, "", "", "Off", "Off");
+            }
         }
     }
 }
