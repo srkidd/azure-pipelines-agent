@@ -26,7 +26,6 @@ namespace Agent.Listener.Configuration
         /// <returns>The status of the feature flag.</returns>
         /// <exception cref="VssUnauthorizedException">Thrown if token is not suitable for retriving feature flag status</exception>
         /// <exception cref="InvalidOperationException">Thrown if agent is not configured</exception>
-        /// <exception cref="VssServiceException">Thrown if network issue or feature flag not found on remote endpoint</exception>
         public Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName, ITraceWriter traceWriter);
 
     }
