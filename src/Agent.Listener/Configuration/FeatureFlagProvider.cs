@@ -50,7 +50,8 @@ namespace Agent.Listener.Configuration
             try
             {
                 var FeatureFlagStatus = await client.GetFeatureFlagByNameAsync(featureFlagName);
-                return FeatureFlagStatus;
+                featureFlag = FeatureFlagStatus;
+                return true;
             } catch(VssServiceException e)
             {
                 Trace.Warning("Unable to retrive feature flag status: " + e.ToString());
