@@ -258,9 +258,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     }
                     else
                     {
-                        Trace.Verbose($"No message retrieved from session '{_session.SessionId}'.");
+                        Trace.Info($"No message retrieved from session '{_session.SessionId}'.");
                     }
 
+                    _getNextMessageRetryInterval = BackoffTimerHelper.GetRandomBackoff(TimeSpan.FromSeconds(5), TimeSpan.FromSeconds(15), _getNextMessageRetryInterval);
+                    Trace.Info("Sleeping for {0} seconds before retrying.", _getNextMessageRetryInterval.TotalSeconds);
+                    await HostContext.Delay(_getNextMessageRetryInterval, token);
                     continue;
                 }
 
