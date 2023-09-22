@@ -7,6 +7,7 @@ using Microsoft.VisualStudio.Services.Agent.Util;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -143,7 +144,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
             if ((disableInlineExecution && (enableSecureArgumentsAudit || enableSecureArguments)) || enableTelemetry)
             {
-                var (processedArgs, telemetry) = ProcessHandlerHelper.ProcessInputArguments(arguments);
+                var (processedArgs, telemetry) = ProcessHandlerHelper.ProcessInputArguments(arguments, Environment);
 
                 if (disableInlineExecution && enableSecureArgumentsAudit)
                 {
@@ -152,6 +153,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 if (enableFileArgs)
                 {
                     GenerateScriptFile(cmdExe, command, processedArgs);
+
+                    DisableDelayedExpansion(command);
                 }
                 if (enableTelemetry)
                 {
@@ -208,6 +211,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 {
                     throw new Exception(StringUtil.Loc("ProcessCompletedWithExitCode0", exitCode));
                 }
+            }
+        }
+
+        // Dirt fix: we're writing to user's sript file disable of "Delayed expansion" mode.
+        // Reason we're doing this is because we're enable this mode first for args fix with '/V:ON' cmd flag.
+        private void DisableDelayedExpansion(string scriptPath)
+        {
+            ExecutionContext.Debug("Appending disable of Delayed Expansion mode into target script");
+
+            var lines = File.ReadAllLines(scriptPath);
+            if (lines.Length > 0)
+            {
+                string disableDELine = "SetLocal DisableDelayedExpansion".ToLower();
+                if (lines[0].ToLower() != disableDELine)
+                {
+                    lines = new[] { "SetLocal DisableDelayedExpansion" }.Concat(lines).ToArray();
+                }
+
+                File.WriteAllLines(scriptPath, lines);
             }
         }
 

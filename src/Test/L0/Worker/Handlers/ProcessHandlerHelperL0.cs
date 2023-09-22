@@ -14,7 +14,7 @@ namespace Test.L0.Worker.Handlers
             string argsLine = "";
             string expectedArgs = "";
 
-            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(argsLine, new());
 
             Assert.Equal(expectedArgs, actualArgs);
         }
@@ -24,9 +24,12 @@ namespace Test.L0.Worker.Handlers
         {
             string argsLine = "%VAR1% 2";
             string expectedArgs = "value1 2";
-            Environment.SetEnvironmentVariable("VAR1", "value1");
+            var testEnv = new Dictionary<string, string>()
+            {
+                { "VAR1", "value1"}
+            };
 
-            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(argsLine, testEnv);
 
             Assert.Equal(expectedArgs, actualArgs);
         }
@@ -36,10 +39,13 @@ namespace Test.L0.Worker.Handlers
         {
             string argsLine = "1 %VAR1% %VAR2%";
             string expectedArgs = "1 value1 value2";
-            Environment.SetEnvironmentVariable("VAR1", "value1");
-            Environment.SetEnvironmentVariable("VAR2", "value2");
+            var testEnv = new Dictionary<string, string>()
+            {
+                { "VAR1", "value1" },
+                { "VAR2", "value2" }
+            };
 
-            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(argsLine, testEnv);
 
             Assert.Equal(expectedArgs, actualArgs);
         }
@@ -50,11 +56,14 @@ namespace Test.L0.Worker.Handlers
         [InlineData("%VAR1%%VAR2%%VAR3%", "123")]
         public void TestWithCloseVars(string inputArgs, string expectedArgs)
         {
-            Environment.SetEnvironmentVariable("VAR1", "1");
-            Environment.SetEnvironmentVariable("VAR2", "2");
-            Environment.SetEnvironmentVariable("VAR3", "3");
+            var testEnv = new Dictionary<string, string>()
+            {
+                { "VAR1", "1" },
+                { "VAR2", "2" },
+                { "VAR3", "3" }
+            };
 
-            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(inputArgs);
+            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(inputArgs, testEnv);
 
             Assert.Equal(expectedArgs, actualArgs);
         }
@@ -64,11 +73,14 @@ namespace Test.L0.Worker.Handlers
         {
             string argsLine = "%VAR1% %VAR2%";
             string expectedArgs = "%NESTED% 2";
-            Environment.SetEnvironmentVariable("VAR1", "%NESTED%");
-            Environment.SetEnvironmentVariable("VAR2", "2");
-            Environment.SetEnvironmentVariable("NESTED", "nested");
+            var testEnv = new Dictionary<string, string>()
+            {
+                { "VAR1", "%NESTED%" },
+                { "VAR2", "2"},
+                { "NESTED", "nested" }
+            };
 
-            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (actualArgs, _) = ProcessHandlerHelper.ProcessInputArguments(argsLine, testEnv);
 
             Assert.Equal(expectedArgs, actualArgs);
         }

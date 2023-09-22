@@ -6,7 +6,7 @@ namespace Agent.Worker.Handlers.Helpers
 {
     public static class ProcessHandlerHelper
     {
-        public static (string, CmdTelemetry) ProcessInputArguments(string inputArgs)
+        public static (string, CmdTelemetry) ProcessInputArguments(string inputArgs, Dictionary<string, string> environment)
         {
             const char quote = '"';
             const char escapingSymbol = '^';
@@ -93,7 +93,16 @@ namespace Agent.Worker.Handlers.Helpers
                     telemetry.VariablesWithESInside++;
                 }
 
-                var envValue = System.Environment.GetEnvironmentVariable(envName) ?? "";
+                // Since Windows have case-insensetive environment, and Process handler is windows-specific, we should allign this behavior.
+                var windowsEnvironment = new Dictionary<string, string>(environment, StringComparer.OrdinalIgnoreCase);
+
+                windowsEnvironment.TryGetValue(envName, out string envValue);
+                if (string.IsNullOrEmpty(envValue))
+                {
+                    telemetry.NotExistingEnv++;
+                    envValue = string.Empty;
+                }
+
                 var tail = result[(envEndIndex + envPostfix.Length)..];
 
                 result = head + envValue + tail;
@@ -134,6 +143,7 @@ namespace Agent.Worker.Handlers.Helpers
         public int VariablesWithESInside { get; set; } = 0;
         public int QuotesNotEnclosed { get; set; } = 0;
         public int NotClosedEnvSyntaxPosition { get; set; } = 0;
+        public int NotExistingEnv { get; set; } = 0;
 
         public Dictionary<string, int> ToDictionary()
         {
@@ -149,7 +159,8 @@ namespace Agent.Worker.Handlers.Helpers
                 ["bracedVariables"] = BracedVariables,
                 ["bariablesWithESInside"] = VariablesWithESInside,
                 ["quotesNotEnclosed"] = QuotesNotEnclosed,
-                ["notClosedBraceSyntaxPosition"] = NotClosedEnvSyntaxPosition
+                ["notClosedBraceSyntaxPosition"] = NotClosedEnvSyntaxPosition,
+                ["notExistingEnv"] = NotExistingEnv
             };
         }
 

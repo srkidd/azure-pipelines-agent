@@ -15,7 +15,7 @@ namespace Test.L0.Worker.Handlers
             // we're thinking that whitespaces are also may be env variables, so here the '% %' and '%' env enterances.
             var expectedTelemetry = new { foundPrefixes = 2 };
 
-            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine, new());
 
             Assert.Equal(expectedTelemetry.foundPrefixes, resultTelemetry.FoundPrefixes);
         }
@@ -26,7 +26,7 @@ namespace Test.L0.Worker.Handlers
             string argsLine = "%1";
             var expectedTelemetry = new { NotClosedEnvSyntaxPosition = 0 };
 
-            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine, new());
 
             Assert.Equal(expectedTelemetry.NotClosedEnvSyntaxPosition, resultTelemetry.NotClosedEnvSyntaxPosition);
         }
@@ -37,7 +37,7 @@ namespace Test.L0.Worker.Handlers
             string argsLine = "\"%\" %";
             var expectedTelemetry = new { NotClosedEnvSyntaxPosition = 4 };
 
-            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine, new());
 
             Assert.Equal(expectedTelemetry.NotClosedEnvSyntaxPosition, resultTelemetry.NotClosedEnvSyntaxPosition);
         }
@@ -48,7 +48,7 @@ namespace Test.L0.Worker.Handlers
             string argsLine = "\" %var%";
             var expectedTelemetry = new { quotesNotEnclosed = 1 };
 
-            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine, new());
 
             Assert.Equal(expectedTelemetry.quotesNotEnclosed, resultTelemetry.QuotesNotEnclosed);
         }
@@ -59,7 +59,7 @@ namespace Test.L0.Worker.Handlers
             string argsLine = "\" 1";
             var expectedTelemetry = new { quotesNotEnclosed = 0 };
 
-            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine, new());
 
             Assert.Equal(expectedTelemetry.quotesNotEnclosed, resultTelemetry.QuotesNotEnclosed);
         }
@@ -71,7 +71,7 @@ namespace Test.L0.Worker.Handlers
             string argsLine = "\"%VAR1%\" \"%VAR2%\" \"3\"";
             var expectedTelemetry = new { quottedBlocks = 2 };
 
-            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine, new());
 
             Assert.Equal(expectedTelemetry.quottedBlocks, resultTelemetry.QuottedBlocks);
         }
@@ -82,7 +82,7 @@ namespace Test.L0.Worker.Handlers
             string argsLine = "%^VAR1% \"%^VAR2%\" %^VAR3%";
             var expectedTelemetry = new { variablesStartsFromES = 2 };
 
-            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine);
+            var (_, resultTelemetry) = ProcessHandlerHelper.ProcessInputArguments(argsLine, new());
 
             Assert.Equal(expectedTelemetry.variablesStartsFromES, resultTelemetry.VariablesStartsFromES);
         }
