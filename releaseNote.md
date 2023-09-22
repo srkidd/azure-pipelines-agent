@@ -1,16 +1,9 @@
 ## Features
- - Adding support to Pipeline Artifact and Pipeline Caching, for larger chunk size. (#4157)
- - Added telemetry classes to produce inline publish functionality (#4333)
- - Support Node 20 handler (#4346)
- - WI 2048209 (#4367)
 
 ## Bugs
-
+- Set UTF-8 encoding for working with GB18030 (#4447)
 
 ## Misc
- - Add output if step is skipped (#4349)
- - Enable end-to-end test in the agent CI (#4359)
- - Add `AZP_AGENT_CLEANUP_PSMODULES_IN_POWERSHELL` agent knob (#4360)
 
 
 ## Agent Downloads
