@@ -1,3 +1,34 @@
+## Features
+ - Service Principal auth (#4255)
+ - Add Device Code Flow as Pipeline Agent authentication (#4315)
+ - Add default value if build repository clean is not set (#4356)
+ - Support Alpine OS (#4375)
+ - [AgentService] - Migrate AgentService to .Net Framework 4.7.1 (#4387)
+ - Download `dotnet-install.(sh/ps1)` script when building the agent (#4401)
+ - Enable CI for Alpine (x64) (#4404)
+ - Add resource utilization metrics (#4405)
+
+## Bugs
+ - PlanId fixed in CustomerIntelligence data (#4347)
+ - fix detect rhel release (#4393)
+ - Fix - detect Alpine-based docker image (#4400)
+ - Fix return type of GetFutureFlagAsync (#4441)
+ - Set UTF-8 encoding for working with GB18030 (#4447)
+ - Revert "Update agents git to 2.41.0" (#4452)
+
+## Misc
+ - Fix release npm dependencies (#4293)
+ - Localization update (#4370)
+ - Move condition result trace from result code to output (#4371)
+ - Fix functional signing L1 tests (#4390)
+ - Update agents git to 2.41.0 (#4394)
+ - fix agent CI - create AzureDevOps PRs (#4396)
+ - Remove RHEL from the agent CI (#4408)
+ - Add ability to retrieve featureflag status (#4415)
+ - Remove  not used "Microsoft.IdentityModel.Clients.ActiveDirectory" (#4420)
+ - Update the `installdependencies.sh` script for Alpine (#4421)
+ - Bump dotnet to 6.0.413 & node16 to 16.20.2 (#4429)
+
 
 ## Agent Downloads
 
