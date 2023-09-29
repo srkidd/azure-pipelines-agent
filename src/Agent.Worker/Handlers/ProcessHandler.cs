@@ -226,7 +226,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 string disableDELine = "SetLocal DisableDelayedExpansion".ToLower();
                 if (lines[0].ToLower() != disableDELine)
                 {
-                    lines = new[] { "SetLocal DisableDelayedExpansion" }.Concat(lines).ToArray();
+                    lines = new[] { disableDELine }.Concat(lines).ToArray();
                 }
 
                 File.WriteAllLines(scriptPath, lines);
