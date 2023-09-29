@@ -154,7 +154,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 {
                     GenerateScriptFile(cmdExe, command, processedArgs);
 
-                    DisableDelayedExpansion(command);
+                    command = DisableDelayedExpansion(command);
                 }
                 if (enableTelemetry)
                 {
@@ -214,9 +214,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             }
         }
 
-        // Dirt fix: we're writing to user's sript file disable of "Delayed expansion" mode.
+        // We're writing to user's sript file disable of "Delayed expansion" mode.
         // Reason we're doing this is because we're enable this mode first for args fix with '/V:ON' cmd flag.
-        private void DisableDelayedExpansion(string scriptPath)
+        private string DisableDelayedExpansion(string scriptPath)
         {
             ExecutionContext.Debug("Appending disable of Delayed Expansion mode into target script");
 
@@ -229,8 +229,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     lines = new[] { disableDELine }.Concat(lines).ToArray();
                 }
 
-                File.WriteAllLines(scriptPath, lines);
+                // Creating new temp script to prevent possible write permission issues.
+                var agentTemp = ExecutionContext.GetVariableValueOrDefault(Constants.Variables.Agent.TempDirectory);
+                var tempScriptName = $"tempScript_{Guid.NewGuid()}{Path.GetExtension(scriptPath)}";
+                var tempScriptPath = Path.Combine(agentTemp, tempScriptName);
+
+                File.WriteAllLines(tempScriptPath, lines);
+
+                return tempScriptPath;
             }
+
+            return scriptPath;
         }
 
         private string PrepareCmdExeArgs(string command, string arguments, bool enableFileArgs)
