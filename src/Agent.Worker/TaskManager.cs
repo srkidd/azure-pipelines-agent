@@ -319,14 +319,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             if (deprecated != null && deprecated.Value<bool>())
             {
+                string friendlyName = taskJson["friendlyName"].Value<string>();
                 int majorVersion = new Version(task.Version).Major;
-                string deprecationMessage = $"Task '{task.Name}' version {majorVersion} is deprecated";
+                string deprecationMessage = $"Task '{friendlyName}' version {majorVersion} ({task.Name}@{majorVersion}) is deprecated";
                 var removalDate = taskJson["removalDate"];
 
                 if (removalDate != null)
                 {
                     string removalDateString = removalDate.Value<DateTime>().ToString("MMMM d, yyyy");
-                    deprecationMessage += $" and will be removed on {removalDateString}";
+                    deprecationMessage += $" and may not be available after {removalDateString}";
                 }
 
                 executionContext.Warning($"{deprecationMessage}.");
