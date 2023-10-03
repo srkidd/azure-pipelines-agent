@@ -7,6 +7,7 @@ using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Microsoft.VisualStudio.Services.Agent.Util;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -74,6 +75,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     continue;
                 }
                 await DownloadAsync(executionContext, task);
+                CheckTaskDeprecation(executionContext, task);
             }
         }
 
@@ -305,6 +307,29 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Trace.Warning("Failed to delete temp folder '{0}'. Exception: {1}", tempDirectory, ex);
                     executionContext.Warning(StringUtil.Loc("FailedDeletingTempDirectory0Message1", tempDirectory, ex.Message));
                 }
+            }
+        }
+
+        private void CheckTaskDeprecation(IExecutionContext executionContext, Pipelines.TaskStepDefinitionReference task)
+        {
+            string taskJsonPath = Path.Combine(GetDirectory(task), "task.json");
+            string taskJsonText = File.ReadAllText(taskJsonPath);
+            JObject taskJson = JObject.Parse(taskJsonText);
+            var deprecated = taskJson["deprecated"];
+
+            if (deprecated != null && deprecated.Value<bool>())
+            {
+                int majorVersion = new Version(task.Version).Major;
+                string deprecationMessage = $"Task '{task.Name}' version {majorVersion} is deprecated";
+                var removalDate = taskJson["removalDate"];
+
+                if (removalDate != null)
+                {
+                    string removalDateString = removalDate.Value<DateTime>().ToString("MMMM d, yyyy");
+                    deprecationMessage += $" and will be removed on {removalDateString}";
+                }
+
+                executionContext.Warning($"{deprecationMessage}.");
             }
         }
 
