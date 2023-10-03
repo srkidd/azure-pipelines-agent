@@ -145,6 +145,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             }
 
             traceOutput($"Max dedup parallelism: {maxParallelism}");
+            traceOutput($"DomainId: {domainId}");
 
             ArtifactHttpClientFactory factory = new ArtifactHttpClientFactory(
                 connection.Credentials,
@@ -176,14 +177,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                 });
 
             var telemetry = new BlobStoreClientTelemetry(tracer, dedupStoreHttpClient.BaseAddress);
-            traceOutput($"Hashtype: {this.HashType.Value}");
-            
             this.HashType = GetClientHashType(clientSettings, context, tracer);
 
             if (this.HashType == BuildXL.Cache.ContentStore.Hashing.HashType.Dedup1024K)
             {
                 dedupStoreHttpClient.RecommendedChunkCountPerCall = 10; // This is to workaround IIS limit - https://learn.microsoft.com/en-us/iis/configuration/system.webserver/security/requestfiltering/requestlimits/
             }
+            traceOutput($"Hashtype: {this.HashType.Value}");
 
             var dedupClient = new DedupStoreClientWithDataport(dedupStoreHttpClient, new DedupStoreClientContext(maxParallelism), this.HashType.Value); 
             return (new DedupManifestArtifactClient(telemetry, dedupClient, tracer), telemetry);

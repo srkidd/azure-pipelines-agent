@@ -3,6 +3,7 @@
 
 namespace Agent.Plugins
 {
+    // Use PipelineArtifactContants.cs from ADO, once the latest libs are available.
     public class PipelineArtifactConstants
     {
         public const string AzurePipelinesAgent = "AzurePipelinesAgent";
