@@ -152,9 +152,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 }
                 if (enableFileArgs)
                 {
-                    GenerateScriptFile(cmdExe, command, processedArgs);
-
                     command = DisableDelayedExpansion(command);
+
+                    GenerateScriptFile(cmdExe, command, processedArgs);
                 }
                 if (enableTelemetry)
                 {
@@ -231,9 +231,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
                 // Creating new temp script to prevent possible write permission issues.
                 var agentTemp = ExecutionContext.GetVariableValueOrDefault(Constants.Variables.Agent.TempDirectory);
-                var tempScriptName = $"tempScript_{Guid.NewGuid()}{Path.GetExtension(scriptPath)}";
+                var tempScriptName = $"{Path.GetFileName(scriptPath)}_{Guid.NewGuid().ToString()[..8]}{Path.GetExtension(scriptPath)}";
                 var tempScriptPath = Path.Combine(agentTemp, tempScriptName);
 
+                ExecutionContext.Debug($"Writing temp script file: {tempScriptPath}");
                 File.WriteAllLines(tempScriptPath, lines);
 
                 return tempScriptPath;
