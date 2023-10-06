@@ -232,7 +232,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     if (AgentKnobs.ForceAZCLIToolDowngradeTo252.GetValue(jobContext).AsBoolean())
                     {
                         context.Output("Temporary step with AZ CLI downgrading.");
-                        string powershell = WhichUtil.Which("powershell", require: true, trace: Trace);
+                        string powershell = WhichUtil.Which("powershell", trace: Trace);
+                        string bash = WhichUtil.Which("bash", trace: Trace);
                         var downgradeAZCLIScript = GenerateAZCLIDowngradeScript();
 
                         using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
@@ -282,7 +283,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                             var exitCode = await processInvoker.ExecuteAsync(
                                 workingDirectory: string.Empty,
-                                fileName: powershell,
+                                fileName: PlatformUtil.RunningOnWindows ? powershell : bash,
                                 arguments: "az --version",
                                 environment: null,
                                 cancellationToken: CancellationToken.None);
