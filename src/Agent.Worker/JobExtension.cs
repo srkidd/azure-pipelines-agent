@@ -583,6 +583,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             File.WriteAllText(downgradeScript, template);
 
+            var unixUtil = HostContext.CreateService<IUnixUtil>();
+            unixUtil.ChmodAsync("755", downgradeScript).GetAwaiter().GetResult();
+
             return downgradeScript;
         }
 
