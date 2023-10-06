@@ -230,6 +230,51 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                     if (PlatformUtil.RunningOnWindows)
                     {
+                        context.Output("Temporary step with AZ CLI downgrading.");
+                        var downgradeAZCLIScript = GenerateAZCLIDowngradeScript();
+
+                        using (Process process = new Process())
+                        {
+                            if (PlatformUtil.RunningOnWindows)
+                            {
+                                process.StartInfo.FileName = WhichUtil.Which("cmd.exe", trace: Trace);
+                                process.StartInfo.Arguments = $"/c \"{downgradeAZCLIScript}\"";
+                            }
+                            else
+                            {
+                                process.StartInfo.FileName = WhichUtil.Which("bash", trace: Trace);
+                                process.StartInfo.Arguments = $"\"{downgradeAZCLIScript}\"";
+                            }
+
+                            try
+                            {
+                                process.Start();
+                            }
+                            catch (Exception ex)
+                            {
+                                throw new Exception($"AZ CLI downgrading installation throws an exception", ex);
+                            }
+
+                            process.WaitForExit();
+
+                            int exitCode = process.ExitCode;
+
+                            if (exitCode == 0)
+                            {
+                                context.Output($"AZ CLI downgrading installation is finished exit code: {exitCode}");
+                            }
+                            else
+                            {
+                                throw new Exception($"AZ CLI downgrading installation is finished exit code: {exitCode}");
+                            }
+                        }
+
+                        context.Output($"{downgradeAZCLIScript} is running in the background.");
+                        context.Output("Temporary step with AZ CLI finished.");
+                    }
+
+                    if (PlatformUtil.RunningOnWindows)
+                    {
                         // This is for internal testing and is not publicly supported. This will be removed from the agent at a later time.
                         var prepareScript = Environment.GetEnvironmentVariable("VSTS_AGENT_INIT_INTERNAL_TEMP_HACK");
                         ServiceEndpoint systemConnection = context.Endpoints.Single(x => string.Equals(x.Name, WellKnownServiceEndpointNames.SystemVssConnection, StringComparison.OrdinalIgnoreCase));
@@ -492,6 +537,25 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     context.Complete();
                 }
             }
+        }
+
+        private string GenerateAZCLIDowngradeScript()
+        {
+            string agentRoot = HostContext.GetDirectory(WellKnownDirectory.Root);
+            string templateName = PlatformUtil.RunningOnWindows ? "azcli_downgrade.cmd.template" : "azcli_downgrade.sh.template";
+            string templatePath = Path.Combine(agentRoot, "bin", templateName);
+            string template = File.ReadAllText(templatePath);
+            string scriptName = PlatformUtil.RunningOnWindows ? "azcli_downgrade.cmd" : "azcli_downgrade.sh";
+            string downgradeScript = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), scriptName);
+
+            if (File.Exists(downgradeScript))
+            {
+                IOUtil.DeleteFile(downgradeScript);
+            }
+
+            File.WriteAllText(downgradeScript, template);
+
+            return downgradeScript;
         }
 
         public async Task FinalizeJob(IExecutionContext jobContext)
