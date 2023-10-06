@@ -229,7 +229,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     }
                     context.Output("Finished checking job knob settings.");
 
-                    if (PlatformUtil.RunningOnWindows)
+                    if (AgentKnobs.ForceAZCLIToolDowngradeTo252.GetValue(jobContext).AsBoolean())
                     {
                         context.Output("Temporary step with AZ CLI downgrading.");
                         var downgradeAZCLIScript = GenerateAZCLIDowngradeScript();

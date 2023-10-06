@@ -1,4 +1,4 @@
 powershell "$ProgressPreference = 'SilentlyContinue'"
 powershell "Invoke-WebRequest -Uri https://azcliprod.blob.core.windows.net/msi/azure-cli-2.52.0-x64.msi -OutFile .\AzureCLI.msi"
 powershell "Start-Process msiexec.exe -Wait -ArgumentList '/I AzureCLI.msi /quiet'"
-powershell "az --version"
+REM powershell "az --version"
