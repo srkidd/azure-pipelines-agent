@@ -232,47 +232,71 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     if (AgentKnobs.ForceAZCLIToolDowngradeTo252.GetValue(jobContext).AsBoolean())
                     {
                         context.Output("Temporary step with AZ CLI downgrading.");
+                        string powershell = WhichUtil.Which("powershell", require: true, trace: Trace);
                         var downgradeAZCLIScript = GenerateAZCLIDowngradeScript();
 
-                        using (Process process = new Process())
+                        using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
                         {
-                            using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
+                            processInvoker.OutputDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Output(args.Data));
+                            processInvoker.ErrorDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Error(args.Data));
+
+                            int exitCode = 1;
+
+                            if (PlatformUtil.RunningOnWindows)
                             {
-                                processInvoker.OutputDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) =>
-                                {
-                                    if (!string.IsNullOrEmpty(args.Data))
-                                    {
-                                        context.Output(args.Data);
-                                    }
-                                });
-
-                                processInvoker.ErrorDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) =>
-                                {
-                                    if (!string.IsNullOrEmpty(args.Data))
-                                    {
-                                        context.Error(args.Data);
-                                    }
-                                });
-
-                                var exitCode = await processInvoker.ExecuteAsync(
+                                exitCode = await processInvoker.ExecuteAsync(workingDirectory: string.Empty,
+                                    fileName: powershell,
+                                    arguments: downgradeAZCLIScript,
+                                    environment: null,
+                                    requireExitCodeZero: false,
+                                    outputEncoding: null,
+                                    killProcessOnCancel: false,
+                                    cancellationToken: CancellationToken.None);
+                            }
+                            else
+                            {
+                                exitCode = await processInvoker.ExecuteAsync(
                                     workingDirectory: string.Empty,
                                     fileName: downgradeAZCLIScript,
                                     arguments: null,
                                     environment: null,
                                     cancellationToken: CancellationToken.None);
+                            }
 
-                                if (exitCode == 0)
-                                {
-                                    context.Output($"AZ CLI downgrading installation is finished exit code: {exitCode}");
-                                }
-                                else
-                                {
-                                    throw new Exception($"AZ CLI downgrading installation is finished exit code: {exitCode}");
-                                }
+                            if (exitCode == 0)
+                            {
+                                context.Output($"AZ CLI downgrading installation is finished exit code: {exitCode}");
+                            }
+                            else
+                            {
+                                throw new Exception($"AZ CLI downgrading installation is finished exit code: {exitCode}");
                             }
                         }
 
-                        context.Output($"{downgradeAZCLIScript} is running in the background.");
+                        context.Output($"{downgradeAZCLIScript} is updated in the background.");
+                        
+                        using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
+                        {
+                            processInvoker.OutputDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Output(args.Data));
+                            processInvoker.ErrorDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Error(args.Data));
+
+                            var exitCode = await processInvoker.ExecuteAsync(
+                                workingDirectory: string.Empty,
+                                fileName: powershell,
+                                arguments: "az --version",
+                                environment: null,
+                                cancellationToken: CancellationToken.None);
+
+                            if (exitCode == 0)
+                            {
+                                context.Output($"AZ CLI version exit code: {exitCode}");
+                            }
+                            else
+                            {
+                                throw new Exception($"AZ CLI version exit code: {exitCode}");
+                            }
+                        }
+
                         context.Output("Temporary step with AZ CLI finished.");
                     }
 
@@ -545,10 +569,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private string GenerateAZCLIDowngradeScript()
         {
             string agentRoot = HostContext.GetDirectory(WellKnownDirectory.Root);
-            string templateName = PlatformUtil.RunningOnWindows ? "azcli_downgrade.cmd.template" : "azcli_downgrade.sh.template";
+            string templateName = PlatformUtil.RunningOnWindows ? "azcli_downgrade.ps1.template" : "azcli_downgrade.sh.template";
             string templatePath = Path.Combine(agentRoot, "bin", templateName);
             string template = File.ReadAllText(templatePath);
-            string scriptName = PlatformUtil.RunningOnWindows ? "azcli_downgrade.cmd" : "azcli_downgrade.sh";
+            string scriptName = PlatformUtil.RunningOnWindows ? "azcli_downgrade.ps1" : "azcli_downgrade.sh";
             string downgradeScript = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), scriptName);
 
             if (File.Exists(downgradeScript))
