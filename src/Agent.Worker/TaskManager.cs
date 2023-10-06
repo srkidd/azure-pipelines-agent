@@ -328,6 +328,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     string removalDateString = removalDate.Value<DateTime>().ToString("MMMM d, yyyy");
                     deprecationMessage += $" and may not be available after {removalDateString}";
+                    var helpUrl = taskJson["helpUrl"];
+
+                    if (helpUrl != null)
+                    {
+                        string helpUrlString = helpUrl.Value<string>();
+                        string category = taskJson["category"].Value<string>().ToLower();
+                        string urlPrefix = $"https://docs.microsoft.com/azure/devops/pipelines/tasks/{category}/";
+
+                        if (helpUrlString.StartsWith(urlPrefix))
+                        {
+                            string versionHelpUrl = $"{helpUrlString}-v{majorVersion}".Replace(urlPrefix, $"https://learn.microsoft.com/azure/devops/pipelines/tasks/reference/");
+                            deprecationMessage += $". Please see {versionHelpUrl} for more information about this task";
+                        }
+                    }
                 }
 
                 executionContext.Warning($"{deprecationMessage}.");
