@@ -327,7 +327,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 if (removalDate != null)
                 {
                     string removalDateString = removalDate.Value<DateTime>().ToString("MMMM d, yyyy");
-                    deprecationMessage += $" and may not be available after {removalDateString}";
+                    deprecationMessage += $" and will be removed. From {removalDateString} onwards it may no longer be available";
                     var helpUrl = taskJson["helpUrl"];
 
                     if (helpUrl != null)
