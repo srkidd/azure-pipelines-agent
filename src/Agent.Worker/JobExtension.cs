@@ -13,6 +13,7 @@ using System.Linq;
 using System.Diagnostics;
 using Agent.Sdk;
 using Agent.Sdk.Knob;
+using System.Threading;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -235,37 +236,39 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                         using (Process process = new Process())
                         {
-                            if (PlatformUtil.RunningOnWindows)
+                            using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
                             {
-                                process.StartInfo.FileName = WhichUtil.Which("cmd.exe", trace: Trace);
-                                process.StartInfo.Arguments = $"/c \"{downgradeAZCLIScript}\"";
-                            }
-                            else
-                            {
-                                process.StartInfo.FileName = WhichUtil.Which("bash", trace: Trace);
-                                process.StartInfo.Arguments = $"\"{downgradeAZCLIScript}\"";
-                            }
+                                processInvoker.OutputDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) =>
+                                {
+                                    if (!string.IsNullOrEmpty(args.Data))
+                                    {
+                                        context.Output(args.Data);
+                                    }
+                                });
 
-                            try
-                            {
-                                process.Start();
-                            }
-                            catch (Exception ex)
-                            {
-                                throw new Exception($"AZ CLI downgrading installation throws an exception", ex);
-                            }
+                                processInvoker.ErrorDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) =>
+                                {
+                                    if (!string.IsNullOrEmpty(args.Data))
+                                    {
+                                        context.Error(args.Data);
+                                    }
+                                });
 
-                            process.WaitForExit();
+                                var exitCode = await processInvoker.ExecuteAsync(
+                                    workingDirectory: string.Empty,
+                                    fileName: downgradeAZCLIScript,
+                                    arguments: null,
+                                    environment: null,
+                                    cancellationToken: CancellationToken.None);
 
-                            int exitCode = process.ExitCode;
-
-                            if (exitCode == 0)
-                            {
-                                context.Output($"AZ CLI downgrading installation is finished exit code: {exitCode}");
-                            }
-                            else
-                            {
-                                throw new Exception($"AZ CLI downgrading installation is finished exit code: {exitCode}");
+                                if (exitCode == 0)
+                                {
+                                    context.Output($"AZ CLI downgrading installation is finished exit code: {exitCode}");
+                                }
+                                else
+                                {
+                                    throw new Exception($"AZ CLI downgrading installation is finished exit code: {exitCode}");
+                                }
                             }
                         }
 
