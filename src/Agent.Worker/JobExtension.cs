@@ -229,75 +229,85 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     }
                     context.Output("Finished checking job knob settings.");
 
-                    if (AgentKnobs.ForceAZCLIToolDowngradeTo252.GetValue(jobContext).AsBoolean())
+                    if (AgentKnobs.ForceAZCLIToolDowngradeTo252.GetValue(jobContext).AsBoolean()
+                        || context.Variables.Get(Constants.Variables.Features.ForceAZCLIToolDowngradeTo252) == "On")
                     {
-                        context.Output("Temporary step with AZ CLI downgrading.");
-                        string powershell = WhichUtil.Which("powershell", require: true, trace: Trace);
-                        var downgradeAZCLIScript = GenerateAZCLIDowngradeScript();
 
-                        using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
+                        if (PlatformUtil.RunningOnLinux)
                         {
-                            processInvoker.OutputDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Output(args.Data));
-                            processInvoker.ErrorDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Error(args.Data));
+                            context.Output("Temporary step with AZ CLI downgrading.");
+                            var downgradeAZCLIScript = GenerateAZCLIDowngradeScript();
 
-                            int exitCode = 1;
-
-                            if (PlatformUtil.RunningOnWindows)
+                            using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
                             {
-                                exitCode = await processInvoker.ExecuteAsync(workingDirectory: string.Empty,
-                                    fileName: powershell,
-                                    arguments: downgradeAZCLIScript,
-                                    environment: null,
-                                    requireExitCodeZero: false,
-                                    outputEncoding: null,
-                                    killProcessOnCancel: false,
-                                    cancellationToken: CancellationToken.None);
-                            }
-                            else
-                            {
-                                exitCode = await processInvoker.ExecuteAsync(
-                                    workingDirectory: string.Empty,
-                                    fileName: downgradeAZCLIScript,
-                                    arguments: null,
-                                    environment: null,
-                                    cancellationToken: CancellationToken.None);
+                                processInvoker.OutputDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Output(args.Data));
+                                processInvoker.ErrorDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Error(args.Data));
+
+                                int exitCode = 1;
+
+                                if (PlatformUtil.RunningOnWindows)
+                                {
+                                    string powershell = WhichUtil.Which("powershell", require: true, trace: Trace);
+                                    exitCode = await processInvoker.ExecuteAsync(workingDirectory: string.Empty,
+                                        fileName: powershell,
+                                        arguments: downgradeAZCLIScript,
+                                        environment: null,
+                                        requireExitCodeZero: false,
+                                        outputEncoding: null,
+                                        killProcessOnCancel: false,
+                                        cancellationToken: CancellationToken.None);
+                                }
+                                else
+                                {
+                                    string bash = WhichUtil.Which("bash", require: true, trace: Trace);
+                                    exitCode = await processInvoker.ExecuteAsync(
+                                        workingDirectory: string.Empty,
+                                        fileName: bash,
+                                        arguments: downgradeAZCLIScript,
+                                        environment: null,
+                                        cancellationToken: CancellationToken.None);
+                                }
+
+                                if (exitCode == 0)
+                                {
+                                    context.Output($"AZ CLI downgrading installation is finished exit code: {exitCode}");
+                                }
+                                else
+                                {
+                                    throw new Exception($"AZ CLI downgrading installation is finished exit code: {exitCode}");
+                                }
                             }
 
-                            if (exitCode == 0)
-                            {
-                                context.Output($"AZ CLI downgrading installation is finished exit code: {exitCode}");
-                            }
-                            else
-                            {
-                                throw new Exception($"AZ CLI downgrading installation is finished exit code: {exitCode}");
-                            }
-                        }
+                            context.Output($"{downgradeAZCLIScript} is updated in the background.");
 
-                        context.Output($"{downgradeAZCLIScript} is updated in the background.");
-                        
-                        using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
-                        {
-                            processInvoker.OutputDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Output(args.Data));
-                            processInvoker.ErrorDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Error(args.Data));
+                            using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
+                            {
+                                processInvoker.OutputDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Output(args.Data));
+                                processInvoker.ErrorDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Error(args.Data));
 
-                            var exitCode = await processInvoker.ExecuteAsync(
+                                var exitCode = await processInvoker.ExecuteAsync(
                                 workingDirectory: string.Empty,
-                                fileName: powershell,
-                                arguments: "az --version",
+                                fileName: "az",
+                                arguments: "--version",
                                 environment: null,
                                 cancellationToken: CancellationToken.None);
 
-                            if (exitCode == 0)
-                            {
-                                context.Output($"AZ CLI version exit code: {exitCode}");
+                                if (exitCode == 0)
+                                {
+                                    context.Output($"AZ CLI version exit code: {exitCode}");
+                                }
+                                else
+                                {
+                                    throw new Exception($"AZ CLI version exit code: {exitCode}");
+                                }
                             }
-                            else
-                            {
-                                throw new Exception($"AZ CLI version exit code: {exitCode}");
-                            }
-                        }
 
-                        context.Output("Temporary step with AZ CLI finished.");
+                            context.Output("Temporary step with AZ CLI finished.");
+                        }
+                    } 
+                    else
+                    {
+                        context.Output("Skip: Temporary step with AZ CLI downgrading due to not running on Windows.");
                     }
 
                     if (PlatformUtil.RunningOnWindows)
