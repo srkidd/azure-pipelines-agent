@@ -238,6 +238,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             context.Output("Temporary step with AZ CLI downgrading.");
                             var downgradeAZCLIScript = GenerateAZCLIDowngradeScript();
 
+                            context.Output($"temporary file azcli downgrade script: {downgradeAZCLIScript}");
+
                             using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
                             {
                                 processInvoker.OutputDataReceived += new EventHandler<ProcessDataReceivedEventArgs>((sender, args) => context.Output(args.Data));
@@ -591,6 +593,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             File.WriteAllText(downgradeScript, template);
+
+            if (!PlatformUtil.RunningOnWindows)
+            {
+                var unixUtil = HostContext.CreateService<IUnixUtil>();
+                unixUtil.ChmodAsync("755", downgradeScript).GetAwaiter().GetResult();
+            }
 
             return downgradeScript;
         }

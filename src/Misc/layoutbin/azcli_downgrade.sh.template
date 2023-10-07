@@ -1,3 +1,5 @@
+#!/bin/bash
+
 sudo -n apt-get update
 sudo -n apt-get install -y ca-certificates curl apt-transport-https lsb-release gnupg
 sudo -n mkdir -p /etc/apt/keyrings
