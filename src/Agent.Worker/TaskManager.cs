@@ -74,8 +74,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Trace.Info("Skip download checkout task.");
                     continue;
                 }
+
                 await DownloadAsync(executionContext, task);
-                CheckTaskDeprecation(executionContext, task);
+
+                if (!AgentKnobs.DisableTaskDeprecationCheck.GetValue(UtilKnobValueContext.Instance()).AsBoolean())
+                {
+                    CheckTaskDeprecation(executionContext, task);
+                }
             }
         }
 
