@@ -519,10 +519,10 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AZP_AGENT_IGNORE_VSTSTASKLIB"),
             new BuiltInDefaultKnobSource("false"));
 
-        public static readonly Knob DisableTaskDeprecationCheck = new Knob(
-            nameof(DisableTaskDeprecationCheck),
-            "Disables the task deprecation check.",
-            new EnvironmentKnobSource("AZP_AGENT_DISABLE_TASK_DEPRECATION_CHECK"),
+        public static readonly Knob CheckForTaskDeprecation = new Knob(
+            nameof(CheckForTaskDeprecation),
+            "If true, the agent will check in the 'Initialize job' step each task used in the job for task deprecation.",
+            new EnvironmentKnobSource("AZP_AGENT_CHECK_FOR_TASK_DEPRECATION"),
             new BuiltInDefaultKnobSource("false"));
     }
 }

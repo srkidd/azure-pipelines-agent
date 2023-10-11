@@ -77,9 +77,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 await DownloadAsync(executionContext, task);
 
-                if (!AgentKnobs.DisableTaskDeprecationCheck.GetValue(UtilKnobValueContext.Instance()).AsBoolean())
+                if (AgentKnobs.CheckForTaskDeprecation.GetValue(UtilKnobValueContext.Instance()).AsBoolean())
                 {
-                    CheckTaskDeprecation(executionContext, task);
+                    CheckForTaskDeprecation(executionContext, task);
                 }
             }
         }
@@ -315,7 +315,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        private void CheckTaskDeprecation(IExecutionContext executionContext, Pipelines.TaskStepDefinitionReference task)
+        private void CheckForTaskDeprecation(IExecutionContext executionContext, Pipelines.TaskStepDefinitionReference task)
         {
             string taskJsonPath = Path.Combine(GetDirectory(task), "task.json");
             string taskJsonText = File.ReadAllText(taskJsonPath);
