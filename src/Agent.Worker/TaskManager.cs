@@ -326,13 +326,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 string friendlyName = taskJson["friendlyName"].Value<string>();
                 int majorVersion = new Version(task.Version).Major;
-                string deprecationMessage = $"Task '{friendlyName}' version {majorVersion} ({task.Name}@{majorVersion}) is deprecated";
+                string deprecationMessage = StringUtil.Loc("DeprecationMessage", friendlyName, majorVersion, task.Name);
                 var removalDate = taskJson["removalDate"];
 
                 if (removalDate != null)
                 {
+                    string whitespace = " ";
                     string removalDateString = removalDate.Value<DateTime>().ToString("MMMM d, yyyy");
-                    deprecationMessage += $" and will be removed. From {removalDateString} onwards it may no longer be available";
+                    deprecationMessage += whitespace + StringUtil.Loc("DeprecationMessageRemovalDate", removalDateString);
                     var helpUrl = taskJson["helpUrl"];
 
                     if (helpUrl != null)
@@ -344,12 +345,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         if (helpUrlString.StartsWith(urlPrefix))
                         {
                             string versionHelpUrl = $"{helpUrlString}-v{majorVersion}".Replace(urlPrefix, $"https://learn.microsoft.com/azure/devops/pipelines/tasks/reference/");
-                            deprecationMessage += $". Please see {versionHelpUrl} for more information about this task";
+                            deprecationMessage += whitespace + StringUtil.Loc("DeprecationMessageHelpUrl", versionHelpUrl);
                         }
                     }
                 }
 
-                executionContext.Warning($"{deprecationMessage}.");
+                executionContext.Warning(deprecationMessage);
             }
         }
 
