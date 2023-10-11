@@ -2,6 +2,7 @@
 
 ## Bugs
 - Set UTF-8 encoding for working with GB18030 (#4447)
+- Update tf tool version on x64
 
 ## Misc
 
