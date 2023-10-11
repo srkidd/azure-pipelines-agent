@@ -351,6 +351,13 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("ALLOW_TFVC_UNSHELVE_ERRORS"),
             new BuiltInDefaultKnobSource("false"));
 
+        public static readonly Knob EnableFCSItemPathFix = new Knob(
+            nameof(EnableFCSItemPathFix),
+            "If true, enable the fix for the path of the item when associating or uploading to the file container server.",
+            new RuntimeKnobSource("ENABLE_FCS_ITEM_PATH_FIX"),
+            new EnvironmentKnobSource("ENABLE_FCS_ITEM_PATH_FIX"),
+            new BuiltInDefaultKnobSource("false"));
+
         // Set DISABLE_JAVA_CAPABILITY_HIGHER_THAN_9 variable with any value
         // to disable recognition of Java higher than 9
         public static readonly Knob DisableRecognitionOfJDKHigherThen9 = new Knob(
@@ -456,15 +463,20 @@ namespace Agent.Sdk.Knob
         public static readonly Knob ProcessHandlerSecureArguments = new Knob(
             nameof(ProcessHandlerSecureArguments),
             "Enables passing arguments for process handler secure way",
-            new RuntimeKnobSource("AGENT_PH_ENABLE_SECURE_ARGUMENTS"),
-            new EnvironmentKnobSource("AGENT_PH_ENABLE_SECURE_ARGUMENTS"),
+            new RuntimeKnobSource("AZP_75787_ENABLE_NEW_LOGIC"),
+            new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob ProcessHandlerSecureArgumentsAudit = new Knob(
+            nameof(ProcessHandlerSecureArguments),
+            "Enables logging of passing arguments for process handler secure way",
+            new RuntimeKnobSource("AZP_75787_ENABLE_NEW_LOGIC_LOG"),
             new BuiltInDefaultKnobSource("false"));
 
         public static readonly Knob ProcessHandlerTelemetry = new Knob(
             nameof(ProcessHandlerTelemetry),
             "Enables publishing telemetry about processing of arguments for Process Handler",
-            new RuntimeKnobSource("AGENT_PH_ENABLE_TELEMETRY"),
-            new EnvironmentKnobSource("AGENT_PH_ENABLE_TELEMETRY"),
+            new RuntimeKnobSource("AZP_75787_ENABLE_COLLECT"),
+            new EnvironmentKnobSource("AZP_75787_ENABLE_COLLECT"),
             new BuiltInDefaultKnobSource("false"));
 
         public static readonly Knob DisableDrainQueuesAfterTask = new Knob(
@@ -492,6 +504,19 @@ namespace Agent.Sdk.Knob
             "Removes the PSModulePath environment variable if the agent is running in PowerShell.",
             new RuntimeKnobSource("AZP_AGENT_CLEANUP_PSMODULES_IN_POWERSHELL"),
             new EnvironmentKnobSource("AZP_AGENT_CLEANUP_PSMODULES_IN_POWERSHELL"),
+            new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob DisableCleanRepoDefaultValue = new DeprecatedKnob(
+            nameof(DisableCleanRepoDefaultValue),
+            "Avoid to set default value if build.repository.clean variable is not set on Trigger Yaml UI or in checkout steps yaml config",
+            new EnvironmentKnobSource("AGENT_DISABLE_CLEAN_REPO_DEFAULT_VALUE"),
+            new BuiltInDefaultKnobSource("false"));
+
+          public static readonly Knob IgnoreVSTSTaskLib = new Knob(
+            nameof(IgnoreVSTSTaskLib),
+            "Ignores the VSTSTaskLib folder when copying tasks.",
+            new RuntimeKnobSource("AZP_AGENT_IGNORE_VSTSTASKLIB"),
+            new EnvironmentKnobSource("AZP_AGENT_IGNORE_VSTSTASKLIB"),
             new BuiltInDefaultKnobSource("false"));
     }
 }
