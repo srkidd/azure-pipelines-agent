@@ -160,24 +160,19 @@ namespace Microsoft.VisualStudio.Services.Agent
                 + @"(?<ClientSecret>(""data:text/plain,.+""|[a-z0-9/+=_.-]{10,200}[^\(\[\{;,\r\n]|[^\s""';<,\)]{5,200}))" // match
                 + @"", // post-match
 
-                // CommunityStringContext
-                  @"(?<=(^|\W{2}|set )snmp(\-server)?( | [ -~]+? )(community|priv)\s[""']?)" // pre-match
-                + @"(?<CommunityString>[^\s]+)" // match
-                + @"(?=[""']?(\s|$))", // post-match
-
-                // PasswordContextInScript
-                  @"(?<=\s-(admin|user|vm)?password\s+[""']?)" // pre-match
-                + @"(?<ScriptArgumentPassword>[^$\(\[<\{\-\s,""']+)[""']?(\s|$)" // match
-                + @"", // post-match
-
-                // PasswordContextInScript
-                  @"(?<=certutil(\.exe)?.{1,10}\-p\s+[""']?)" // pre-match
-                + @"(?<CertUtilPassword>[^\s,]{2,50})" // match
-                + @"(?=[""']?)", // post-match
-
-                // PasswordContextInScript
-                  @"(?<=(^|[_\s\$])[a-z]*(password|secret(key)?)[ \t]*[=:]+[ \t]*)" // pre-match
-                + @"(?<ScriptAssignmentPassword>[^:\s""';,<]{2,200})" // match
+                  // Azure Search keys.
+                  @"\b" // pre-match
+                + @"[0-9A-Za-z]{42}AzSe[A-D][0-9A-Za-z]{5}" // match
+                + @"\b", // post-match
+                  
+                  // Azure Container Registry keys.
+                  @"\b" // pre-match
+                + @"[0-9A-Za-z+/]{42}\+ACR[A-D][0-9A-Za-z+/]{5}" // match
+                + @"\b", // post-match
+                  
+                  // Azure Cache for Redis keys.
+                  @"\b" // pre-match
+                + @"[0-9A-Za-z]{33}AzCa[A-P][0-9A-Za-z]{5}=" // match
                 + @"", // post-match
 
                 // PasswordContextInScript
