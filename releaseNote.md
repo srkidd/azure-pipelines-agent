@@ -1,3 +1,14 @@
+## Features
+ - Update process handler (#4425)
+ - Check task deprecation (#4458)
+ - Enable Domains for Pipeline Artifact (#4460)
+
+## Bugs
+
+
+## Misc
+
+
 
 ## Agent Downloads
 
