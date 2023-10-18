@@ -188,7 +188,7 @@ namespace Agent.Plugins
                     else
                     {
                         context.Output(StringUtil.Loc("DownloadingMultiplePipelineArtifacts", pipelineArtifacts.Count()));
-                        await provider.DownloadMultipleArtifactsAsync(downloadParameters,artifacts, cancellationToken, context);
+                        await provider.DownloadMultipleArtifactsAsync(downloadParameters, pipelineArtifacts, cancellationToken, context);
                     }
                 }
                 else if (downloadOptions == DownloadOptions.SingleDownload)
