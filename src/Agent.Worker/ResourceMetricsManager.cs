@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Agent.Sdk;
@@ -89,7 +90,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 TimeSpan totalCpuTime = _currentProcess.TotalProcessorTime;
                 TimeSpan elapsedTime = DateTime.Now - _currentProcess.StartTime;
-                double cpuUsage = (totalCpuTime.TotalMilliseconds / elapsedTime.TotalMilliseconds) * 100.0;
+                double cpuUsage = totalCpuTime.TotalMilliseconds / elapsedTime.TotalMilliseconds * 100.0;
 
                 return $"CPU: usage {cpuUsage:0.00}";
             }
@@ -107,13 +108,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
 
                 var gcMemoryInfo = GC.GetGCMemoryInfo();
-                var installedMemory = (int)(gcMemoryInfo.TotalAvailableMemoryBytes / 1048576.0);
+                var installedMemory = (int)(gcMemoryInfo.TotalAvailableMemoryBytes / c_mb);
 
                 // Since Agent contains multiple processes, we need to sum up all the memory usage
                 ulong totalUsedMemory = 0;
-                foreach (Process proc in processes)
+                
+                var siblingProcesses = WindowsProcessUtil.GetProcessList(_currentProcess);
+                foreach (Process proc in siblingProcesses)
                 {
-                    totalUsedMemory += (ulong)proc.WorkingSet64;
+                    totalUsedMemory += (ulong)(proc.WorkingSet64 / c_mb);
                 }
 
                 return $"Memory: used {totalUsedMemory}MB out of {installedMemory}MB";
