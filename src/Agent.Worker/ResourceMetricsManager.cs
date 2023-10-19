@@ -17,6 +17,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     {
         Task Run();
         void Setup(IExecutionContext context);
+        void SetContext(IExecutionContext context);
     }
 
     public sealed class ResourceMetricsManager : AgentService, IResourceMetricsManager
@@ -27,6 +28,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public void Setup(IExecutionContext context)
         {
+            //initializa context
             ArgUtil.NotNull(context, nameof(context));
             _context = context;
 
@@ -39,6 +41,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 _context.Warning($"Unable to get current process, ex:{ex.Message}");
             }
         }
+
+        public void SetContext(IExecutionContext context)
+        {
+            ArgUtil.NotNull(context, nameof(context));
+            _context = context;
+        }
+
         public async Task Run()
         {
             while (!_context.CancellationToken.IsCancellationRequested)
@@ -68,7 +77,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        private const int c_mb = 1024*1024;
+        private const int c_mb = 1024 * 1024;
 
         private Process _currentProcess;
 
@@ -94,11 +103,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             try
             {
+                var processes = Process.GetProcesses();
+
+
                 var gcMemoryInfo = GC.GetGCMemoryInfo();
                 var installedMemory = (int)(gcMemoryInfo.TotalAvailableMemoryBytes / 1048576.0);
-                var usedMemory = (int)(gcMemoryInfo.HeapSizeBytes / 1048576.0);
 
-                return $"Memory: used {usedMemory}MB out of {installedMemory}MB";
+                // Since Agent contains multiple processes, we need to sum up all the memory usage
+                ulong totalUsedMemory = 0;
+                foreach (Process proc in processes)
+                {
+                    totalUsedMemory += (ulong)proc.WorkingSet64;
+                }
+
+                return $"Memory: used {totalUsedMemory}MB out of {installedMemory}MB";
             }
             catch (Exception ex)
             {
