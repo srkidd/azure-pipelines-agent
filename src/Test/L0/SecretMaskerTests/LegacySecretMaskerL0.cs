@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Agent.Sdk;
 using Microsoft.TeamFoundation.DistributedTask.Logging;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests
 {
-    public sealed class SecretMaskerL0
+    public sealed class LegacySecretMaskerL0
     {
         private ISecretMasker initSecretMasker()
         {
