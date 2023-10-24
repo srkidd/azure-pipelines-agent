@@ -12,6 +12,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Agent.Sdk;
 using Agent.Sdk.Knob;
+
 using Microsoft.TeamFoundation.Framework.Common;
 
 namespace Microsoft.VisualStudio.Services.Agent.Util

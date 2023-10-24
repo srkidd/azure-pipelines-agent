@@ -1,5 +1,6 @@
-using Microsoft.TeamFoundation.DistributedTask.Logging;
 using System;
+
+using Microsoft.VisualStudio.Services.Agent;
 
 namespace Agent.Sdk.Util
 {

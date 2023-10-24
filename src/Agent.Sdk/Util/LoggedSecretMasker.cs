@@ -1,4 +1,3 @@
-using Microsoft.TeamFoundation.DistributedTask.Logging;
 using System;
 
 namespace Agent.Sdk.Util

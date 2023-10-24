@@ -15,6 +15,7 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
 using Newtonsoft.Json;
 using Agent.Sdk.Knob;
+using Microsoft.TeamFoundation.DistributedTask.Expressions;
 
 namespace Agent.Sdk
 {
