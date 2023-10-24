@@ -1,7 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 
-using BuildXL.Cache.ContentStore.Interfaces.Secrets;
+using System;
+using System.Collections.Generic;
 
 using Microsoft.VisualStudio.Services.Common;
 
