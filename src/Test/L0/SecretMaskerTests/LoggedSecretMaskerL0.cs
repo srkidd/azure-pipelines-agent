@@ -2,8 +2,6 @@
 using System;
 using Xunit;
 
-using AgentSecretMasker = Agent.Sdk.SecretMasker;
-
 namespace Microsoft.VisualStudio.Services.Agent.Tests
 {
     public class LoggedSecretMaskerL0
