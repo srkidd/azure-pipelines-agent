@@ -12,7 +12,8 @@ namespace Agent.Sdk
         {
             ArgumentUtility.CheckStringForNullOrEmpty(pattern, nameof(pattern));
             m_pattern = pattern;
-            m_regex = new Regex(pattern, RegexOptions.CultureInvariant | RegexOptions.ExplicitCapture | RegexOptions.Compiled);
+
+            m_regex = new Regex(pattern, _regexOptions);
         }
 
         public override Boolean Equals(Object obj)
@@ -49,5 +50,7 @@ namespace Agent.Sdk
 
         private readonly String m_pattern;
         private readonly Regex m_regex;
+
+        private static readonly RegexOptions _regexOptions = RegexOptions.Compiled | RegexOptions.ExplicitCapture;
     }
 }
