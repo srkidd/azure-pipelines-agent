@@ -21,7 +21,7 @@ using Microsoft.TeamFoundation.DistributedTask.Logging;
 using System.Net.Http.Headers;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Agent.Sdk.Util;
-using BuildXL.Cache.ContentStore.Interfaces.Tracing;
+using AgentSecretMasker = Agent.Sdk.SecretMasker;
 
 namespace Microsoft.VisualStudio.Services.Agent
 {
@@ -69,8 +69,7 @@ namespace Microsoft.VisualStudio.Services.Agent
         private static int[] _vssHttpCredentialEventIds = new int[] { 11, 13, 14, 15, 16, 17, 18, 20, 21, 22, 27, 29 };
         private readonly ConcurrentDictionary<Type, object> _serviceInstances = new ConcurrentDictionary<Type, object>();
         protected readonly ConcurrentDictionary<Type, Type> ServiceTypes = new ConcurrentDictionary<Type, Type>();
-        SecretMasker _basicSecretMasker = new SecretMasker();
-        private readonly ILoggedSecretMasker _secretMasker;
+        private LoggedSecretMasker _secretMasker;
         private readonly ProductInfoHeaderValue _userAgent = new ProductInfoHeaderValue($"VstsAgentCore-{BuildConstants.AgentPackage.PackageName}", BuildConstants.AgentPackage.Version);
         private CancellationTokenSource _agentShutdownTokenSource = new CancellationTokenSource();
         private object _perfLock = new object();
@@ -92,7 +91,7 @@ namespace Microsoft.VisualStudio.Services.Agent
 
         public HostContext(HostType hostType, string logFile = null)
         {
-            _secretMasker = new LoggedSecretMasker(_basicSecretMasker);
+            _secretMasker = new LoggedSecretMasker();
 
             // Validate args.
             if (hostType == HostType.Undefined)
@@ -590,8 +589,8 @@ namespace Microsoft.VisualStudio.Services.Agent
                 _trace = null;
                 _httpTrace?.Dispose();
                 _httpTrace = null;
-                _basicSecretMasker?.Dispose();
-                _basicSecretMasker = null;
+                _secretMasker?.Dispose();
+                _secretMasker = null;
 
                 _agentShutdownTokenSource?.Dispose();
                 _agentShutdownTokenSource = null;
@@ -740,6 +739,7 @@ namespace Microsoft.VisualStudio.Services.Agent
         public static void AddAdditionalMaskingRegexes(this IHostContext context)
         {
             ArgUtil.NotNull(context, nameof(context));
+
             foreach (var pattern in AdditionalMaskingRegexes.CredScanPatterns)
             {
                 context.SecretMasker.AddRegex(pattern, $"HostContext_{WellKnownSecretAliases.CredScanPatterns}");

@@ -6,9 +6,8 @@ namespace Agent.Sdk.Util
     /// <summary>
     /// Extended secret masker service, that allows to log origins of secrets
     /// </summary>
-    public class LoggedSecretMasker : ILoggedSecretMasker
+    public class LoggedSecretMasker : SecretMasker, ILoggedSecretMasker
     {
-        private ISecretMasker _secretMasker;
         private ITraceWriter _trace;
 
         private void Trace(string msg)
@@ -16,19 +15,13 @@ namespace Agent.Sdk.Util
             this._trace?.Info(msg);
         }
 
-        public LoggedSecretMasker(ISecretMasker secretMasker)
+        public LoggedSecretMasker()
         {
-            this._secretMasker = secretMasker;
         }
 
         public void SetTrace(ITraceWriter trace)
         {
             this._trace = trace;
-        }
-
-        public void AddValue(string pattern)
-        {
-            this._secretMasker.AddValue(pattern);
         }
 
         /// <summary>
@@ -46,11 +39,6 @@ namespace Agent.Sdk.Util
             }
 
             AddValue(value);
-        }
-
-        public void AddRegex(string pattern)
-        {
-            this._secretMasker.AddRegex(pattern);
         }
 
         /// <summary>
@@ -74,21 +62,22 @@ namespace Agent.Sdk.Util
         // Note: the secret that will be ignored is of length n-1.
         public static int MinSecretLengthLimit => 6;
 
-        public int MinSecretLength
+        int _minSecretLength;
+        public override int MinSecretLength
         {
             get
             {
-                return _secretMasker.MinSecretLength;
+                return _minSecretLength;
             }
             set
             {
                 if (value > MinSecretLengthLimit)
                 {
-                    _secretMasker.MinSecretLength = MinSecretLengthLimit;
+                    _minSecretLength = MinSecretLengthLimit;
                 }
                 else
                 {
-                    _secretMasker.MinSecretLength = value;
+                    _minSecretLength = value;
                 }
             }
         }
@@ -96,12 +85,7 @@ namespace Agent.Sdk.Util
         public void RemoveShortSecretsFromDictionary()
         {
             this._trace?.Info("Removing short secrets from masking dictionary");
-            _secretMasker.RemoveShortSecretsFromDictionary();
-        }
-
-        public void AddValueEncoder(ValueEncoder encoder)
-        {
-            this._secretMasker.AddValueEncoder(encoder);
+            base.RemoveShortSecretsFromDictionary();
         }
 
         /// <summary>
@@ -120,16 +104,6 @@ namespace Agent.Sdk.Util
             }
 
             AddValueEncoder(encoder);
-        }
-
-        public ISecretMasker Clone()
-        {
-            return new LoggedSecretMasker(this._secretMasker.Clone());
-        }
-
-        public string MaskSecrets(string input)
-        {
-            return this._secretMasker.MaskSecrets(input);
         }
     }
 }
