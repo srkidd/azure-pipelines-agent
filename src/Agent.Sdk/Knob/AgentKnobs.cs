@@ -557,7 +557,6 @@ namespace Agent.Sdk.Knob
         public static readonly Knob MaskRefactoring = new Knob(
             nameof(MaskRefactoring),
             "If true, the agent uses refactored masking.",
-            new RuntimeKnobSource("AZP_AGENT_MASK_REFACTOR"),
             new EnvironmentKnobSource("AZP_AGENT_MASK_REFACTOR"),
             new BuiltInDefaultKnobSource("false"));
     }
