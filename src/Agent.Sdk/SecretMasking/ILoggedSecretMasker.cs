@@ -1,3 +1,5 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
 using Microsoft.TeamFoundation.DistributedTask.Logging;
 using System;
 

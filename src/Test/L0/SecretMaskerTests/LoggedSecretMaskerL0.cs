@@ -1,4 +1,6 @@
-﻿using Agent.Sdk.Util;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+using Agent.Sdk.Util;
 using System;
 using Agent.Sdk.SecretMasking;
 using Xunit;

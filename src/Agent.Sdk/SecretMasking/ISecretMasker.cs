@@ -1,4 +1,6 @@
-﻿using System;
+﻿// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+using System;
 using ValueEncoder = Microsoft.TeamFoundation.DistributedTask.Logging.ValueEncoder;
 using ISecretMaskerVSO = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
 
