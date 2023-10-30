@@ -1,5 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.using Agent.Sdk.SecretMasking;
+using Agent.Sdk.SecretMasking;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests;
