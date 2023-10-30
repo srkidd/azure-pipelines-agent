@@ -546,6 +546,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Features.GitLfsSupport,
                 Features.GitShallowDepth,
                 Features.SkipSyncSource,
+                Features.EnableCompiledRegex,
                 // Pipeline variables
                 Pipeline.Workspace,
                 // Release variables
