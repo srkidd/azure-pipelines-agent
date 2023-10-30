@@ -1,7 +1,9 @@
-using Microsoft.TeamFoundation.DistributedTask.Logging;
-using System;
 
-namespace Agent.Sdk.Util
+using System;
+using ValueEncoder = Microsoft.TeamFoundation.DistributedTask.Logging.ValueEncoder;
+using ISecretMaskerVSO = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
+
+namespace Agent.Sdk.SecretMasking
 {
     /// <summary>
     /// Extended secret masker service, that allows to log origins of secrets
@@ -10,6 +12,8 @@ namespace Agent.Sdk.Util
     {
         private ISecretMasker _secretMasker;
         private ITraceWriter _trace;
+
+        public bool UseCompiledRegex { get; set; } = false;
 
         private void Trace(string msg)
         {
@@ -20,16 +24,22 @@ namespace Agent.Sdk.Util
         {
             this._secretMasker = secretMasker;
         }
-
         public void SetTrace(ITraceWriter trace)
         {
             this._trace = trace;
+        }
+
+        public void AddCompiledRegex(string pattern)
+        {
+            this._secretMasker.AddCompiledRegex(pattern);
         }
 
         public void AddValue(string pattern)
         {
             this._secretMasker.AddValue(pattern);
         }
+
+
 
         /// <summary>
         /// Overloading of AddValue method with additional logic for logging origin of provided secret
@@ -50,7 +60,15 @@ namespace Agent.Sdk.Util
 
         public void AddRegex(string pattern)
         {
-            this._secretMasker.AddRegex(pattern);
+            if (this.UseCompiledRegex)
+            {
+                this._secretMasker.AddCompiledRegex(pattern);    
+            }
+            else
+            {
+                this._secretMasker.AddRegex(pattern);
+            }
+            
         }
 
         /// <summary>
@@ -93,6 +111,8 @@ namespace Agent.Sdk.Util
             }
         }
 
+
+
         public void RemoveShortSecretsFromDictionary()
         {
             this._trace?.Info("Removing short secrets from masking dictionary");
@@ -103,6 +123,7 @@ namespace Agent.Sdk.Util
         {
             this._secretMasker.AddValueEncoder(encoder);
         }
+
 
         /// <summary>
         /// Overloading of AddValueEncoder method with additional logic for logging origin of provided secret
@@ -130,6 +151,11 @@ namespace Agent.Sdk.Util
         public string MaskSecrets(string input)
         {
             return this._secretMasker.MaskSecrets(input);
+        }
+
+        ISecretMaskerVSO ISecretMaskerVSO.Clone()
+        {
+            return this.Clone();
         }
     }
 }

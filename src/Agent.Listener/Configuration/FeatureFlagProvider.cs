@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.FeatureAvailability;
 using Microsoft.VisualStudio.Services.FeatureAvailability.WebApi;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Agent.Listener.Configuration
@@ -29,11 +30,12 @@ namespace Agent.Listener.Configuration
         public Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName, ITraceWriter traceWriter);
 
     }
-
+    
     public class FeatureFlagProvider : AgentService, IFeatureFlagProvider
     {
 
-        public async Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName, ITraceWriter traceWriter)
+        public async Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName,
+            ITraceWriter traceWriter)
         {
             traceWriter.Verbose(nameof(GetFeatureFlagAsync));
             ArgUtil.NotNull(featureFlagName, nameof(featureFlagName));
@@ -43,16 +45,17 @@ namespace Agent.Listener.Configuration
 
             VssCredentials creds = credMgr.LoadCredentials();
             ArgUtil.NotNull(creds, nameof(creds));
-            
+
             AgentSettings settings = configManager.LoadSettings();
             using var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, traceWriter);
             var client = vssConnection.GetClient<FeatureAvailabilityHttpClient>();
             try
             {
                 return await client.GetFeatureFlagByNameAsync(featureFlagName, checkFeatureExists: false);
-            } catch(VssServiceException e)
+            }
+            catch (VssServiceException e)
             {
-                Trace.Warning("Unable to retrive feature flag status: " + e.ToString());
+                Trace.Warning("Unable to retrieve feature flag status: " + e.ToString());
                 return new FeatureFlag(featureFlagName, "", "", "Off", "Off");
             }
         }

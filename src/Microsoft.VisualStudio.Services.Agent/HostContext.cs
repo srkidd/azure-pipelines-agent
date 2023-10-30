@@ -17,11 +17,13 @@ using System.Threading.Tasks;
 using System.Diagnostics;
 using System.Net.Http;
 using System.Diagnostics.Tracing;
-using Microsoft.TeamFoundation.DistributedTask.Logging;
 using System.Net.Http.Headers;
+using Agent.Sdk.SecretMasking;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Agent.Sdk.Util;
 using BuildXL.Cache.ContentStore.Interfaces.Tracing;
+using Microsoft.TeamFoundation.DistributedTask.Logging;
+using SecretMasker = Agent.Sdk.SecretMasking.SecretMasker;
 
 namespace Microsoft.VisualStudio.Services.Agent
 {

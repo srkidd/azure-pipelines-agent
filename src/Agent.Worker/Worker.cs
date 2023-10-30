@@ -161,6 +161,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private void InitializeSecretMasker(Pipelines.AgentJobRequestMessage message)
         {
             Trace.Entering();
+            if(message.Variables.TryGetValue(Constants.Variables.Features.EnableCompiledRegex, out var enableCompiledRegex))
+            {
+                HostContext.SecretMasker.UseCompiledRegex = enableCompiledRegex.Value == "On";
+            }
             ArgUtil.NotNull(message, nameof(message));
             ArgUtil.NotNull(message.Resources, nameof(message.Resources));
             // Add mask hints for secret variables

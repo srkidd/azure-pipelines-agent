@@ -1,6 +1,6 @@
 ﻿using Agent.Sdk.Util;
-using Microsoft.TeamFoundation.DistributedTask.Logging;
 using System;
+using Agent.Sdk.SecretMasking;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests

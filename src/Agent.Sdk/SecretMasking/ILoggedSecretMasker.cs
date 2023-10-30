@@ -1,7 +1,7 @@
 using Microsoft.TeamFoundation.DistributedTask.Logging;
 using System;
 
-namespace Agent.Sdk.Util
+namespace Agent.Sdk.SecretMasking
 {
     /// <summary>
     /// Extended ISecretMasker interface that is adding support of logging secret masker methods
