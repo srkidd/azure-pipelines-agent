@@ -41,8 +41,6 @@ namespace Agent.Sdk.SecretMasking
             this._secretMasker.AddValue(pattern);
         }
 
-
-
         /// <summary>
         /// Overloading of AddValue method with additional logic for logging origin of provided secret
         /// </summary>

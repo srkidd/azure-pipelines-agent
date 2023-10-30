@@ -52,9 +52,7 @@ namespace Agent.Listener.Configuration
             try
             {
                 return await client.GetFeatureFlagByNameAsync(featureFlagName, checkFeatureExists: false);
-            }
-            catch (VssServiceException e)
-            {
+            } catch (VssServiceException e) {
                 Trace.Warning("Unable to retrieve feature flag status: " + e.ToString());
                 return new FeatureFlag(featureFlagName, "", "", "Off", "Off");
             }

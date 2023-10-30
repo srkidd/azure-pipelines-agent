@@ -46,7 +46,6 @@ internal sealed class RegexSecret : ISecret
     }
 
     public string Pattern { get { return m_pattern; } }
-
     private readonly String m_pattern;
     private readonly Regex m_regex;
 }
