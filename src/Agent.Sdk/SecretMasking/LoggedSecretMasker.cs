@@ -4,6 +4,7 @@
 using System;
 using ValueEncoder = Microsoft.TeamFoundation.DistributedTask.Logging.ValueEncoder;
 using ISecretMaskerVSO = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
+using System.Text.RegularExpressions;
 
 namespace Agent.Sdk.SecretMasking
 {
@@ -12,10 +13,10 @@ namespace Agent.Sdk.SecretMasking
     /// </summary>
     public class LoggedSecretMasker : ILoggedSecretMasker
     {
+        public bool UsePerformanceEnhancements { get; set; } = false;
         private ISecretMasker _secretMasker;
         private ITraceWriter _trace;
 
-        public bool UseCompiledRegex { get; set; } = false;
 
         private void Trace(string msg)
         {
@@ -29,11 +30,6 @@ namespace Agent.Sdk.SecretMasking
         public void SetTrace(ITraceWriter trace)
         {
             this._trace = trace;
-        }
-
-        public void AddCompiledRegex(string pattern)
-        {
-            this._secretMasker.AddCompiledRegex(pattern);
         }
 
         public void AddValue(string pattern)
@@ -58,18 +54,23 @@ namespace Agent.Sdk.SecretMasking
             AddValue(value);
         }
 
+        public void AddRegex(string pattern, RegexOptions options)
+        {
+            this._secretMasker.AddRegex(pattern, options);
+        }
+
         public void AddRegex(string pattern)
         {
-            if (this.UseCompiledRegex)
+            if (this.UsePerformanceEnhancements)
             {
-                this._secretMasker.AddCompiledRegex(pattern);    
-            }
-            else
+                this._secretMasker.AddRegex(pattern, RegexOptions.Compiled);
+            } else
             {
                 this._secretMasker.AddRegex(pattern);
             }
             
         }
+
 
         /// <summary>
         /// Overloading of AddRegex method with additional logic for logging origin of provided secret
@@ -153,9 +154,8 @@ namespace Agent.Sdk.SecretMasking
             return this._secretMasker.MaskSecrets(input);
         }
 
-        ISecretMaskerVSO ISecretMaskerVSO.Clone()
-        {
-            return this.Clone();
-        }
+        ISecretMaskerVSO ISecretMaskerVSO.Clone() => this.Clone();
+
+        
     }
 }

@@ -7,13 +7,12 @@ using System.Text;
 using System.Threading;
 using ValueEncoder = Microsoft.TeamFoundation.DistributedTask.Logging.ValueEncoder;
 using ISecretMaskerVSO = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
-
+using System.Text.RegularExpressions;
 
 namespace Agent.Sdk.SecretMasking;
 
- public sealed class SecretMasker : ISecretMasker, IDisposable
+public sealed class SecretMasker : ISecretMasker, IDisposable
  {
-     public bool UseCompiledRegex { get; set; } = false;
 
      public SecretMasker()
      {
@@ -61,10 +60,10 @@ namespace Agent.Sdk.SecretMasking;
      /// </summary>
      public int MinSecretLength { get; set; }
 
-     /// <summary>
-     /// This implementation assumes no more than one thread is adding regexes, values, or encoders at any given time.
-     /// </summary>
-     public void AddRegex(String pattern)
+    /// <summary>
+    /// This implementation assumes no more than one thread is adding regexes, values, or encoders at any given time.
+    /// </summary>
+    public void AddRegex(String pattern)
      {
          // Test for empty.
          if (String.IsNullOrEmpty(pattern))
@@ -94,36 +93,6 @@ namespace Agent.Sdk.SecretMasking;
          }
      }
 
-     public void AddCompiledRegex(string pattern)
-     {
-         RegexSecret regexSecret = new RegexSecret(pattern, compiled: true);
-         // Test for empty.
-         if (String.IsNullOrEmpty(pattern))
-         {
-             return;
-         }
-
-         if (pattern.Length < MinSecretLength)
-         {
-             return;
-         }
-
-         // Write section.
-         try
-         {
-             m_lock.EnterWriteLock();
-
-             // Add the value.
-             m_regexSecrets.Add(regexSecret);
-         }
-         finally
-         {
-             if (m_lock.IsWriteLockHeld)
-             {
-                 m_lock.ExitWriteLock();
-             }
-         }
-     }
 
      /// <summary>
      /// This implementation assumes no more than one thread is adding regexes, values, or encoders at any given time.
@@ -416,6 +385,37 @@ namespace Agent.Sdk.SecretMasking;
              }
          }
      }
+
+    public void AddRegex(string pattern, RegexOptions options)
+    {
+        RegexSecret regexSecret = new RegexSecret(pattern, options);
+        // Test for empty.
+        if (String.IsNullOrEmpty(pattern))
+        {
+            return;
+        }
+
+        if (pattern.Length < MinSecretLength)
+        {
+            return;
+        }
+
+        // Write section.
+        try
+        {
+            m_lock.EnterWriteLock();
+
+            // Add the value.
+            m_regexSecrets.Add(regexSecret);
+        }
+        finally
+        {
+            if (m_lock.IsWriteLockHeld)
+            {
+                m_lock.ExitWriteLock();
+            }
+        }
+    }
 
     ISecretMaskerVSO ISecretMaskerVSO.Clone()
     {

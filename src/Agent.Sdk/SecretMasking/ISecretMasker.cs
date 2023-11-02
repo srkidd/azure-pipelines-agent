@@ -3,13 +3,13 @@
 using System;
 using ValueEncoder = Microsoft.TeamFoundation.DistributedTask.Logging.ValueEncoder;
 using ISecretMaskerVSO = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
+using System.Text.RegularExpressions;
 
 namespace Agent.Sdk.SecretMasking;
 public interface ISecretMasker : ISecretMaskerVSO
 {
     new void AddRegex(String pattern);
-
-    void AddCompiledRegex(String pattern);
+    void AddRegex(String pattern, RegexOptions options);
 
     new void AddValue(String value);
 
@@ -20,8 +20,6 @@ public interface ISecretMasker : ISecretMaskerVSO
     new String MaskSecrets(String input);
 
     new int MinSecretLength { get; set; }
-
-    bool UseCompiledRegex { get; set; }
 
     new void RemoveShortSecretsFromDictionary();
 }

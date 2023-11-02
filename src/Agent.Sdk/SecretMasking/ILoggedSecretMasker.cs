@@ -16,5 +16,6 @@ namespace Agent.Sdk.SecretMasking
         void AddValue(String value, string origin);
         void AddValueEncoder(ValueEncoder encoder, string origin);
         void SetTrace(ITraceWriter trace);
+        public bool UsePerformanceEnhancements { get; set; }
     }
 }

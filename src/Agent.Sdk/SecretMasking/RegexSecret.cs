@@ -7,11 +7,10 @@ namespace Agent.Sdk.SecretMasking;
 
 internal sealed class RegexSecret : ISecret
 {
-    public RegexSecret(String pattern, bool compiled = false)
+    public RegexSecret(String pattern, RegexOptions options = RegexOptions.None)
     {
         ArgUtil.NotNullOrEmpty(pattern, nameof(pattern));
         m_pattern = pattern;
-        var options = compiled ? RegexOptions.Compiled : RegexOptions.None;
         m_regex = new Regex(pattern, options);
     }
 
