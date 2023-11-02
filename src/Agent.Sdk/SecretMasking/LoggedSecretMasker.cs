@@ -71,7 +71,6 @@ namespace Agent.Sdk.SecretMasking
             
         }
 
-
         /// <summary>
         /// Overloading of AddRegex method with additional logic for logging origin of provided secret
         /// </summary>
@@ -111,8 +110,6 @@ namespace Agent.Sdk.SecretMasking
                 }
             }
         }
-
-
 
         public void RemoveShortSecretsFromDictionary()
         {
@@ -155,7 +152,5 @@ namespace Agent.Sdk.SecretMasking
         }
 
         ISecretMaskerVSO ISecretMaskerVSO.Clone() => this.Clone();
-
-        
     }
 }
