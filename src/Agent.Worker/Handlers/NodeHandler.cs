@@ -11,7 +11,6 @@ using System;
 using Newtonsoft.Json.Linq;
 using System.Text.RegularExpressions;
 using System.Linq;
-using System.Threading;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -102,7 +101,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             ArgUtil.NotNull(Inputs, nameof(Inputs));
             ArgUtil.Directory(TaskDirectory, nameof(TaskDirectory));
 
-            if (!PlatformUtil.RunningOnWindows)
+            if (!PlatformUtil.RunningOnWindows && !AgentKnobs.IgnoreVSTSTaskLib.GetValue(ExecutionContext).AsBoolean())
             {
                 // Ensure compat vso-task-lib exist at the root of _work folder
                 // This will make vsts-agent work against 2015 RTM/QU1 TFS, since tasks in those version doesn't package with task lib
@@ -148,8 +147,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             // as long as vsts-task-lib be loaded into memory, it will overwrite the implementation node 6.x has,
             // so any script that use the second parameter (length) will encounter unexpected result.
             // to avoid customer hit this error, we will modify the file (extensions.js) under vsts-task-lib module folder when customer choose to use Node 6.x
-            Trace.Info("Inspect node_modules folder, make sure vsts-task-lib doesn't overwrite String.startsWith/endsWith.");
-            FixVstsTaskLibModule();
+            if (!AgentKnobs.IgnoreVSTSTaskLib.GetValue(ExecutionContext).AsBoolean())
+            {
+                Trace.Info("Inspect node_modules folder, make sure vsts-task-lib doesn't overwrite String.startsWith/endsWith.");
+                FixVstsTaskLibModule();
+            } else
+            {
+                Trace.Info("AZP_AGENT_IGNORE_VSTSTASKLIB enabled, ignoring fix");
+            }
 
             StepHost.OutputDataReceived += OnDataReceived;
             StepHost.ErrorDataReceived += OnDataReceived;
@@ -219,16 +224,21 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             bool useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsBoolean();
             bool useNode16 = AgentKnobs.UseNode16.GetValue(ExecutionContext).AsBoolean();
             bool useNode20 = AgentKnobs.UseNode20.GetValue(ExecutionContext).AsBoolean();
+            bool UseNode20InUnsupportedSystem = AgentKnobs.UseNode20InUnsupportedSystem.GetValue(ExecutionContext).AsBoolean();
             bool taskHasNode10Data = Data is Node10HandlerData;
             bool taskHasNode16Data = Data is Node16HandlerData;
             bool taskHasNode20Data = Data is Node20HandlerData;
             string useNodeKnob = AgentKnobs.UseNode.GetValue(ExecutionContext).AsString();
 
             string nodeFolder = NodeHandler.nodeFolder;
-            if (PlatformUtil.RunningOnRHEL6 && taskHasNode16Data)
+
+            if (taskHasNode20Data && !IsNode20SupportedSystems() && !UseNode20InUnsupportedSystem)
             {
-                Trace.Info($"Detected RedHat 6, using node 10 as execution handler, instead node16");
-                nodeFolder = NodeHandler.node10Folder;
+                ExecutionContext.Warning($"The operating system the agent is running on doesn't support Node20. Using node16 runner instead. " +
+                             "Please upgrade the operating system of this host to ensure compatibility with Node20 tasks: " +
+                             "https://github.com/nodesource/distributions");
+                Trace.Info($"Task.json has node20 handler data: {taskHasNode20Data}, but it's running in a unsupported system version. Using node16 for node tasks.");
+                nodeFolder = NodeHandler.node16Folder;
             }
             else if (taskHasNode20Data)
             {
@@ -245,9 +255,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 Trace.Info($"Task.json has node10 handler data: {taskHasNode10Data}");
                 nodeFolder = NodeHandler.node10Folder;
             }
-
-            if (useNode20)
+            else if (PlatformUtil.RunningOnAlpine)
             {
+                Trace.Info($"Detected Alpine, using node10 instead of node (6)");
+                nodeFolder = NodeHandler.node10Folder;
+            }
+
+            if (useNode20 && !IsNode20SupportedSystems() && !UseNode20InUnsupportedSystem) {
+                ExecutionContext.Warning($"The operating system the agent is running on doesn't support Node20. Using node16 runner instead. " +
+                             "Please upgrade the operating system of this host to ensure compatibility with Node20 tasks: " +
+                             "https://github.com/nodesource/distributions");
+                Trace.Info($"Found UseNode20 knob, but it's running in a unsupported system version. Using node16 for node tasks.");
+                nodeFolder = NodeHandler.node16Folder;
+            } 
+            else if (useNode20) {
                 Trace.Info($"Found UseNode20 knob, using node20 for node tasks {useNode20}");
                 nodeFolder = NodeHandler.node20Folder;
             }
@@ -323,6 +344,32 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 ExecutionContext.Output(e.Data);
             }
+        }
+
+        private bool IsNode20SupportedSystems() {
+            var systemName = PlatformUtil.GetSystemId() ?? "";
+            var systemVersion = PlatformUtil.GetSystemVersion()?.Name?.ToString() ?? "";
+            if (systemName.Equals("ubuntu") &&
+                int.TryParse(systemVersion, out int ubuntuVersion) &&
+                ubuntuVersion <= 18.04) {
+                Trace.Info($"Detected Ubuntu version: " + ubuntuVersion);
+                return false;
+            }
+            if (systemName.Equals("debian") &&
+                int.TryParse(systemVersion, out int debianVersion) &&
+                debianVersion <= 9) {
+                Trace.Info($"Detected Debian version: " + debianVersion);
+                return false;
+            } 
+            if (PlatformUtil.RunningOnRHEL6) {
+                Trace.Info($"Detected RedHat 6");
+                return false;
+            }
+            if (PlatformUtil.RunningOnRHEL7) {
+                Trace.Info($"Detected RedHat 7");
+                return false;
+            }
+            return true;
         }
 
         private void FixVstsTaskLibModule()
