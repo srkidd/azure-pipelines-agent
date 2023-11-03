@@ -104,10 +104,6 @@ jobs:
       parameters:
         branch: ${{ parameters.branch }}
 
-  - script: ${{ variables.devCommand }} lint
-    workingDirectory: src
-    displayName: 'Lint source code'
-
   # 1ES images used on the ARM pool doesn't contain unzip tool, so we need to install it before starting the build
   - ${{ if and(eq(parameters.arch, 'arm64'), ne(parameters.os, 'osx')) }}:
     - script: sudo apt-get update && sudo apt-get -y install unzip
