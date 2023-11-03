@@ -31,6 +31,8 @@ indent_size = 4
 # TODO: Enable as warning/error and clean unused imports in the next PR
 # https://learn.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/ide0005#overview
 dotnet_diagnostic.CS8019.severity = warning
+# https://github.com/dotnet/format/issues/1623
+dotnet_diagnostic.IDE0130.severity = none
 dotnet_analyzer_diagnostic.category-Style.severity = error
 
 # Code style rules
