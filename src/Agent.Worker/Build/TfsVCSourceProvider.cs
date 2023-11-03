@@ -405,7 +405,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                         // Cleanup the comment file.
                         if (File.Exists(commentFile))
                         {
-                            File.Delete(commentFile);
+                                               try
+                    {
+                        File.Delete(commentFile);
+                    }
+                    catch
+                    {
+                        executionContext.Warning("Unable to delete comment file");
+                    }
                         }
                     }
                 }

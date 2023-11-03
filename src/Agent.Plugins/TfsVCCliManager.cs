@@ -172,7 +172,14 @@ namespace Agent.Plugins.Repository
 
                 if (useSecureParameterPassing)
                 {
-                    File.Delete(Path.Combine(this.SourcesDirectory, temporaryFileWithCommand));
+                    try
+                    {
+                        File.Delete(Path.Combine(this.SourcesDirectory, temporaryFileWithCommand));
+                    }
+                    catch
+                    {
+                        ExecutionContext.Warning($"Unable to delete command file which is used to pass data");
+                    }
                 }
 
                 return result;
@@ -287,7 +294,14 @@ namespace Agent.Plugins.Repository
                 if (useSecretParameterPassing)
                 {
                     CleanupTfsVCOutput(ref result, formattedArguments);
-                    File.Delete(Path.Combine(this.SourcesDirectory, cmdFileName));
+                    try
+                    {
+                        File.Delete(Path.Combine(this.SourcesDirectory, cmdFileName));
+                    }
+                    catch
+                    {
+                        ExecutionContext.Warning($"Unable to delete command file");
+                    }
                 }
 
                 return result;

@@ -377,18 +377,39 @@ namespace Agent.Plugins.BuildArtifacts
                 DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
                 foreach (FileInfo file in directoryInfo.GetFiles())
                 {
-                    file.Delete();
+                    try
+                    {
+                        file.Delete();
+                    }
+                    catch
+                    {
+                        context.Warning($"Unable to delete build artifact file");
+                    }
                 }
 
                 foreach (DirectoryInfo subDirectory in directoryInfo.GetDirectories())
                 {
-                    subDirectory.Delete(true);
+                    try
+                    {
+                        subDirectory.Delete(true);
+                    }
+                    catch
+                    {
+                        context.Warning($"Unable to delete build subdirecotry");
+                    }
                 }
             }
             else
             {
-                // specified folder is not a directory. Delete it.
-                File.Delete(directoryPath);
+                try
+                {
+                    // specified folder is not a directory. Delete it.
+                    File.Delete(directoryPath);
+                }
+                catch
+                {
+                    context.Warning($"Unable to delete build artifact data");
+                }
             }
         }
 

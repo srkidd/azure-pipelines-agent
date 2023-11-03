@@ -545,7 +545,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             string oldLocation = GetTrackingFileLocation(executionContext, false);
             if (File.Exists(oldLocation))
             {
-                File.Delete(oldLocation);
+                try
+                {
+                    File.Delete(oldLocation);
+                }
+                catch
+                {
+                    executionContext.Warning("Unable to delete old tracking folder");
+                }
             }
 
             WriteToFile(GetTrackingFileLocation(executionContext, true), config);

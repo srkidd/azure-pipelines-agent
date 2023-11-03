@@ -427,7 +427,14 @@ namespace Agent.Plugins
 
                     ExtractTar(fileArtifactPath, extractedFilesDir);
 
-                    File.Delete(fileArtifactPath);
+                    try
+                    {
+                        File.Delete(fileArtifactPath);
+                    }
+                    catch
+                    {
+                        context.Warning($"Unable to delete artifact files");
+                    }
                 }
             }
 

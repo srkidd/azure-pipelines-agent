@@ -108,7 +108,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
         {
             if (File.Exists(filePath))
             {
-                File.Delete(filePath);
+                try
+                {
+                    File.Delete(filePath);
+                }
+                catch
+                { }
             }
         }
 

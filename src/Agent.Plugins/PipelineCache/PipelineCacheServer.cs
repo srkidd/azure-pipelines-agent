@@ -104,7 +104,14 @@ namespace Agent.Plugins.PipelineCache
                     {
                         if (File.Exists(uploadPath))
                         {
-                            File.Delete(uploadPath);
+                            try
+                            {
+                                File.Delete(uploadPath);
+                            }
+                            catch
+                            {
+                                context.Warning($"Unable to delete pipeline cache file");
+                            }
                         }
                     }
                     catch { }
@@ -310,7 +317,14 @@ namespace Agent.Plugins.PipelineCache
                 {
                     if (File.Exists(manifestPath))
                     {
-                        File.Delete(manifestPath);
+                        try
+                        {
+                            File.Delete(manifestPath);
+                        }
+                        catch
+                        {
+                            ExecutionContext.Warning($"Unable to delete manifest file");
+                        }
                     }
                 }
                 catch { }
