@@ -86,7 +86,8 @@ function detect_platform_and_runtime_id ()
     fi
 }
 
-function make_build (){
+function make_build ()
+{
     TARGET=$1
 
     echo "MSBuild target = ${TARGET}"
@@ -177,11 +178,12 @@ function cmd_test ()
     cmd_test_l1
 }
 
-function cmd_lint(){
+function cmd_lint ()
+{
 
     heading "Linting source code"
 
-    "${DOTNETSDK_INSTALLDIR}/dotnet" format --verify-no-changes -v diag "$PROJECT_ROOT_DIR" || echo "Code lint failed." && exit 1
+    "${DOTNETSDK_INSTALLDIR}/dotnet" format --verify-no-changes -v diag "$REPO_ROOT" || echo "Code lint failed." && exit 1
 }
 
 function cmd_package ()
