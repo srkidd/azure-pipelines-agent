@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.Services.FeatureAvailability;
 using Microsoft.VisualStudio.Services.FeatureAvailability.WebApi;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Agent.Listener.Configuration
@@ -27,7 +28,7 @@ namespace Agent.Listener.Configuration
         /// <returns>The status of the feature flag.</returns>
         /// <exception cref="VssUnauthorizedException">Thrown if token is not suitable for retriving feature flag status</exception>
         /// <exception cref="InvalidOperationException">Thrown if agent is not configured</exception>
-        public Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName, ITraceWriter traceWriter);
+        public Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName, ITraceWriter traceWriter, CancellationToken ctk = default);
 
     }
     
@@ -35,7 +36,7 @@ namespace Agent.Listener.Configuration
     {
 
         public async Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName,
-            ITraceWriter traceWriter)
+            ITraceWriter traceWriter, CancellationToken ctk = default)
         {
             traceWriter.Verbose(nameof(GetFeatureFlagAsync));
             ArgUtil.NotNull(featureFlagName, nameof(featureFlagName));

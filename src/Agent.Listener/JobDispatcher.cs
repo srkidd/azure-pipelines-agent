@@ -336,8 +336,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         private async Task RunAsync(Pipelines.AgentJobRequestMessage message, WorkerDispatcher previousJobDispatch, WorkerDispatcher newJobDispatch)
         {
-            var featureFlagProvider = HostContext.GetService<IFeatureFlagProvider>();
-            var newSecretMaskerFeaturFlagStatusAsync = featureFlagProvider.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.UseMaskingPerformanceEnhancements", Trace);
+            
             if (previousJobDispatch != null)
             {
                 Trace.Verbose($"Make sure the previous job request {previousJobDispatch.JobId} has successfully finished on worker.");
@@ -350,7 +349,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
             var jobRequestCancellationToken = newJobDispatch.WorkerCancellationTokenSource.Token;
             var workerCancelTimeoutKillToken = newJobDispatch.WorkerCancelTimeoutKillTokenSource.Token;
-
+            var featureFlagProvider = HostContext.GetService<IFeatureFlagProvider>();
+            var newSecretMaskerFeaturFlagStatusAsync = featureFlagProvider.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.UseMaskingPerformanceEnhancements", Trace, jobRequestCancellationToken);
             var term = HostContext.GetService<ITerminal>();
             term.WriteLine(StringUtil.Loc("RunningJob", DateTime.UtcNow, message.JobDisplayName));
 
