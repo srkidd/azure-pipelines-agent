@@ -336,6 +336,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
         private async Task RunAsync(Pipelines.AgentJobRequestMessage message, WorkerDispatcher previousJobDispatch, WorkerDispatcher newJobDispatch)
         {
+            var featureFlagProvider = HostContext.GetService<IFeatureFlagProvider>();
+            var newSecretMaskerFeaturFlagStatusAsync = featureFlagProvider.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.UseMaskingPerformanceEnhancements", Trace);
             if (previousJobDispatch != null)
             {
                 Trace.Verbose($"Make sure the previous job request {previousJobDispatch.JobId} has successfully finished on worker.");
@@ -410,7 +412,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                     // The worker will shutdown after 30 seconds if it hasn't received the job message.
                     processChannel.StartServer(
                         // Delegate to start the child process.
-                        startProcess: (string pipeHandleOut, string pipeHandleIn) =>
+                        startProcess: async (string pipeHandleOut, string pipeHandleIn) =>
                         {
                             // Validate args.
                             ArgUtil.NotNullOrEmpty(pipeHandleOut, nameof(pipeHandleOut));
@@ -439,7 +441,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                     }
                                 }
                             };
-
+                            var newSecretMaskerFeaturFlagStatus = await newSecretMaskerFeaturFlagStatusAsync;
+                            var environment = new Dictionary<string, string>();
+                            if(newSecretMaskerFeaturFlagStatus.EffectiveState =="On")
+                            {
+                                environment.Add("AZP_ENABLE_NEW_SECRET_MASKER", "true");
+                            }
+                            
 
                             // Start the child process.
                             HostContext.WritePerfCounter("StartingWorkerProcess");
@@ -449,7 +457,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                 workingDirectory: assemblyDirectory,
                                 fileName: workerFileName,
                                 arguments: "spawnclient " + pipeHandleOut + " " + pipeHandleIn,
-                                environment: null,
+                                environment: environment,
                                 requireExitCodeZero: false,
                                 outputEncoding: null,
                                 killProcessOnCancel: true,

@@ -388,7 +388,7 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
 
     public void AddRegex(string pattern, RegexOptions options)
     {
-        RegexSecret regexSecret = new RegexSecret(pattern, options);
+        RegexSecret regexSecret = new RegexSecret(pattern);
         // Test for empty.
         if (String.IsNullOrEmpty(pattern))
         {

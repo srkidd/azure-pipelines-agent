@@ -7,11 +7,11 @@ namespace Agent.Sdk.SecretMasking;
 
 internal sealed class RegexSecret : ISecret
 {
-    public RegexSecret(String pattern, RegexOptions options = RegexOptions.None)
+    public RegexSecret(String pattern)
     {
         ArgUtil.NotNullOrEmpty(pattern, nameof(pattern));
         m_pattern = pattern;
-        m_regex = new Regex(pattern, options);
+        m_regex = new Regex(pattern, _regexOptions);
     }
 
     public override Boolean Equals(Object obj)
@@ -47,4 +47,5 @@ internal sealed class RegexSecret : ISecret
     public string Pattern { get { return m_pattern; } }
     private readonly String m_pattern;
     private readonly Regex m_regex;
+    private static readonly RegexOptions _regexOptions = RegexOptions.Compiled | RegexOptions.ExplicitCapture;
 }

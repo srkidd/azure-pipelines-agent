@@ -553,5 +553,11 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AZP_AGENT_MOUNT_WORKSPACE"),
             new EnvironmentKnobSource("AZP_AGENT_MOUNT_WORKSPACE"),
             new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob EnableNewSecretMasker = new Knob(
+            nameof(EnableNewSecretMasker),
+            "If true, the agent will mount the Pipeline.Workspace directory instead of the Working directory for steps which target a Docker container.",
+            new EnvironmentKnobSource("AZP_ENABLE_NEW_SECRET_MASKER"),
+            new BuiltInDefaultKnobSource("false"));
     }
 }

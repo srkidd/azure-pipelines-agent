@@ -13,7 +13,7 @@ namespace Agent.Sdk.SecretMasking
     /// </summary>
     public class LoggedSecretMasker : ILoggedSecretMasker
     {
-        public bool UsePerformanceEnhancements { get; set; } = false;
+        private bool _usePerformanceEnhancements;
         private ISecretMasker _secretMasker;
         private ITraceWriter _trace;
 
@@ -26,6 +26,12 @@ namespace Agent.Sdk.SecretMasking
         public LoggedSecretMasker(ISecretMasker secretMasker)
         {
             this._secretMasker = secretMasker;
+        }
+
+        public LoggedSecretMasker(ISecretMasker secretMasker, bool usePerformanceEnhancements)
+        {
+            this._secretMasker = secretMasker;
+            this._usePerformanceEnhancements = usePerformanceEnhancements;
         }
         public void SetTrace(ITraceWriter trace)
         {
@@ -53,22 +59,9 @@ namespace Agent.Sdk.SecretMasking
 
             AddValue(value);
         }
-
-        public void AddRegex(string pattern, RegexOptions options)
-        {
-            this._secretMasker.AddRegex(pattern, options);
-        }
-
         public void AddRegex(string pattern)
         {
-            if (this.UsePerformanceEnhancements)
-            {
-                this._secretMasker.AddRegex(pattern, RegexOptions.Compiled);
-            } else
-            {
-                this._secretMasker.AddRegex(pattern);
-            }
-            
+            this._secretMasker.AddRegex(pattern);
         }
 
         /// <summary>
@@ -143,7 +136,7 @@ namespace Agent.Sdk.SecretMasking
 
         public ISecretMasker Clone()
         {
-            return new LoggedSecretMasker(this._secretMasker.Clone());
+            return new LoggedSecretMasker(this._secretMasker.Clone(), _usePerformanceEnhancements);
         }
 
         public string MaskSecrets(string input)

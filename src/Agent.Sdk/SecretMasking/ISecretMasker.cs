@@ -9,7 +9,6 @@ namespace Agent.Sdk.SecretMasking;
 public interface ISecretMasker : ISecretMaskerVSO
 {
     new void AddRegex(String pattern);
-    void AddRegex(String pattern, RegexOptions options);
 
     new void AddValue(String value);
 

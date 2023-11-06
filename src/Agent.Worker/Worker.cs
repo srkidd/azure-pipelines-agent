@@ -11,6 +11,8 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.WebApi;
 using Agent.Sdk.Util;
 using Agent.Sdk.Knob;
+using Agent.Sdk.Util.SecretMasking;
+using Agent.Sdk.SecretMasking;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -161,10 +163,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private void InitializeSecretMasker(Pipelines.AgentJobRequestMessage message)
         {
             Trace.Entering();
-            if(message.Variables.TryGetValue(Constants.Variables.Features.UseMaskingPerformanceEnhancements, out var UsePerformanceEnhancements))
-            {
-                HostContext.SecretMasker.UsePerformanceEnhancements = UsePerformanceEnhancements.Value == "true";
-            }
             ArgUtil.NotNull(message, nameof(message));
             ArgUtil.NotNull(message.Resources, nameof(message.Resources));
             // Add mask hints for secret variables
