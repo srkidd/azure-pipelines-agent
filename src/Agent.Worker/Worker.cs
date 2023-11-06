@@ -11,8 +11,6 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.Services.WebApi;
 using Agent.Sdk.Util;
 using Agent.Sdk.Knob;
-using Agent.Sdk.Util.SecretMasking;
-using Agent.Sdk.SecretMasking;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {

@@ -1,7 +1,6 @@
 ﻿using Agent.Sdk.SecretMasking;
 using Microsoft.TeamFoundation.DistributedTask.Logging;
 using ISecretMasker = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
-using System;
 
 namespace Agent.Sdk.Util.SecretMasking;
 

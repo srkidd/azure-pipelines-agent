@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using Agent.Sdk.Util;
 
 namespace Agent.Sdk.SecretMasking;
 

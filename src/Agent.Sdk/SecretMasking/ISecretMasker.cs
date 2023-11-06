@@ -3,7 +3,6 @@
 using System;
 using ValueEncoder = Microsoft.TeamFoundation.DistributedTask.Logging.ValueEncoder;
 using ISecretMaskerVSO = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
-using System.Text.RegularExpressions;
 
 namespace Agent.Sdk.SecretMasking;
 public interface ISecretMasker : ISecretMaskerVSO

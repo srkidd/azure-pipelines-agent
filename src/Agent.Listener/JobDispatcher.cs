@@ -88,18 +88,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 }
             }
 
-            var service = HostContext.GetService<IFeatureFlagProvider>();
-            string ffState;
-            try
-            {
-                ffState = service.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.EnableAdditionalMaskingRegexes", Trace)?.Result?.EffectiveState;
-            }
-            catch (Exception)
-            {
-                ffState = "Off";
-            }
-            jobRequestMessage.Variables[Constants.Variables.Features.EnableAdditionalMaskingRegexes] = ffState;
-
             WorkerDispatcher newDispatch = new WorkerDispatcher(jobRequestMessage.JobId, jobRequestMessage.RequestId);
             if (runOnce)
             {
