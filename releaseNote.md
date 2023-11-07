@@ -1,3 +1,19 @@
+## Features
+ - Add `AllowWorkDirectoryRepositories` knob (#4423)
+ - Update process handler (#4425)
+ - Check task deprecation (#4458)
+ - Enable Domains for Pipeline Artifact (#4460)
+ - dedupStoreHttpClient honors redirect timeout from client settings and update ADO lib to 0.5.227-262a3469 (#4504)
+
+## Bugs
+ - Detect the OS and switch node runner if not supported for Node20 (#4470)
+ - Revert "Enable Domains for Pipeline Artifact" (#4477)
+ - Add capability to publish/download pipeline artifact in a different domain. (#4482)
+ - Mount Workspace (#4483)
+
+## Misc
+
+
 
 ## Agent Downloads
 
