@@ -337,8 +337,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
             var jobRequestCancellationToken = newJobDispatch.WorkerCancellationTokenSource.Token;
             var workerCancelTimeoutKillToken = newJobDispatch.WorkerCancelTimeoutKillTokenSource.Token;
-            var featureFlagProvider = HostContext.GetService<IFeatureFlagProvider>();
-            var newSecretMaskerFeaturFlagStatusAsync = featureFlagProvider.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.UseMaskingPerformanceEnhancements", Trace, jobRequestCancellationToken);
             var term = HostContext.GetService<ITerminal>();
             term.WriteLine(StringUtil.Loc("RunningJob", DateTime.UtcNow, message.JobDisplayName));
 
@@ -429,7 +427,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                     }
                                 }
                             };
-                            var newSecretMaskerFeaturFlagStatus = await newSecretMaskerFeaturFlagStatusAsync;
+                            var featureFlagProvider = HostContext.GetService<IFeatureFlagProvider>();
+                            var newSecretMaskerFeaturFlagStatus = await featureFlagProvider.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.UseMaskingPerformanceEnhancements", Trace, jobRequestCancellationToken);
                             var environment = new Dictionary<string, string>();
                             if(newSecretMaskerFeaturFlagStatus.EffectiveState =="On")
                             {
