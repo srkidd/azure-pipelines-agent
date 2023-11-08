@@ -74,11 +74,6 @@ namespace Microsoft.VisualStudio.Services.Agent
                   @"\b" // pre-match
                 + @"npm_[0-9A-Za-z]{36}" // match
                 + @"\b", // post-match
-
-                  // JWT Tokens
-                  @"\b" // pre-match
-                + @"eyJ[A-Za-z0-9-_]+\.eyJ[A-Za-z0-9-_]+\.[A-Za-z0-9-_.+\/]*" // match
-                + @"\b" // post-match 
             };
     }
 }
