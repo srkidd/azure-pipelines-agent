@@ -431,10 +431,15 @@ namespace Agent.Plugins
                     {
                         File.Delete(fileArtifactPath);
                     }
-                    catch
+                    // If file blocked by another process there are two different type exceptions.
+                    // If file in use by another process really the UnauthorizedAccessException;
+                    // If file in use by AV for scanning or monitoring the IOException appears.
+                    catch (Exception ex)
                     {
-                        context.Warning($"Unable to delete artifact files");
+                        context.Warning($"Unable to delete artifact files at {fileArtifactPath}, exception: {ex.GetType()}");
+                        context.Debug(ex.ToString());
                     }
+
                 }
             }
 

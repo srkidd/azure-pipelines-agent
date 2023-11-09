@@ -323,7 +323,7 @@ namespace Agent.Plugins.PipelineCache
                         }
                         catch
                         {
-                            ExecutionContext.Warning($"Unable to delete manifest file");
+                            context.Warning($"Unable to delete manifest file");
                         }
                     }
                 }
