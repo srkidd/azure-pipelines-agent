@@ -428,7 +428,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                 }
                             };
                             var featureFlagProvider = HostContext.GetService<IFeatureFlagProvider>();
-                            var newSecretMaskerFeaturFlagStatus = await featureFlagProvider.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.UseMaskingPerformanceEnhancements", Trace, jobRequestCancellationToken);
+                            var newSecretMaskerFeaturFlagStatus = await featureFlagProvider.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.UseMaskingPerformanceEnhancements", Trace);
                             var environment = new Dictionary<string, string>();
                             if(newSecretMaskerFeaturFlagStatus.EffectiveState =="On")
                             {
