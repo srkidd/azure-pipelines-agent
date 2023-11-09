@@ -393,12 +393,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 using (var processChannel = HostContext.CreateService<IProcessChannel>())
                 using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
                 {
+
+                    var featureFlagProvider = HostContext.GetService<IFeatureFlagProvider>();
+                    var newSecretMaskerFeaturFlagStatus = await featureFlagProvider.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.UseMaskingPerformanceEnhancements", Trace);
+                    var environment = new Dictionary<string, string>();
+                    if (newSecretMaskerFeaturFlagStatus?.EffectiveState == "On")
+                    {
+                        environment.Add("AZP_ENABLE_NEW_SECRET_MASKER", "true");
+                    }
                     // Start the process channel.
                     // It's OK if StartServer bubbles an execption after the worker process has already started.
                     // The worker will shutdown after 30 seconds if it hasn't received the job message.
                     processChannel.StartServer(
                         // Delegate to start the child process.
-                        startProcess: async (string pipeHandleOut, string pipeHandleIn) =>
+                        startProcess:  (string pipeHandleOut, string pipeHandleIn) =>
                         {
                             // Validate args.
                             ArgUtil.NotNullOrEmpty(pipeHandleOut, nameof(pipeHandleOut));
@@ -427,13 +435,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                                     }
                                 }
                             };
-                            var featureFlagProvider = HostContext.GetService<IFeatureFlagProvider>();
-                            var newSecretMaskerFeaturFlagStatus = await featureFlagProvider.GetFeatureFlagAsync(HostContext, "DistributedTask.Agent.UseMaskingPerformanceEnhancements", Trace);
-                            var environment = new Dictionary<string, string>();
-                            if(newSecretMaskerFeaturFlagStatus.EffectiveState =="On")
-                            {
-                                environment.Add("AZP_ENABLE_NEW_SECRET_MASKER", "true");
-                            }
                             
 
                             // Start the child process.
