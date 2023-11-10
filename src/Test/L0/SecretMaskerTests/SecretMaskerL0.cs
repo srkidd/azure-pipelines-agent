@@ -50,7 +50,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var testSecretMasker = initSecretMasker();
 
             Assert.Equal(
-               "https://user:***@example.com",
+               "https://user:+++@example.com",
                testSecretMasker.MaskSecrets("https://user:pass@example.com"));
         }
 
@@ -62,7 +62,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var testSecretMasker = initSecretMasker();
 
             Assert.Equal(
-               "https://user:***@example.com",
+               "https://user:+++@example.com",
                testSecretMasker.MaskSecrets(@"https://user:pass4';.!&*()=,$-+~@example.com"));
         }
 
@@ -74,7 +74,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var testSecretMasker = initSecretMasker();
 
             Assert.Equal(
-               "https://username123:***@example.com",
+               "https://username123:+++@example.com",
                testSecretMasker.MaskSecrets(@"https://username123:password@example.com"));
         }
 
@@ -86,7 +86,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var testSecretMasker = initSecretMasker();
 
             Assert.Equal(
-               "https://username_loooooooooooooooooooooooooooooooooooooooooong:***@example.com",
+               "https://username_loooooooooooooooooooooooooooooooooooooooooong:+++@example.com",
                testSecretMasker.MaskSecrets(@"https://username_loooooooooooooooooooooooooooooooooooooooooong:password_looooooooooooooooooooooooooooooooooooooooooooooooong@example.com"));
         }
 
@@ -98,7 +98,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var testSecretMasker = initSecretMasker();
 
             Assert.Equal(
-               "https://username%10%A3%F6:***@example.com",
+               "https://username%10%A3%F6:+++@example.com",
                testSecretMasker.MaskSecrets(@"https://username%10%A3%F6:password123@example.com"));
         }
 
@@ -110,7 +110,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             var testSecretMasker = initSecretMasker();
 
             Assert.Equal(
-               "https://username%AZP2510%AZP25A3%AZP25F6:***@example.com",
+               "https://username%AZP2510%AZP25A3%AZP25F6:+++@example.com",
                testSecretMasker.MaskSecrets(@"https://username%AZP2510%AZP25A3%AZP25F6:password123@example.com"));
         }
         
@@ -140,9 +140,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             secretMasker1.AddValueEncoder(x => x.Replace("_", "_masker-1-encoder-3"));
 
             // Assert masker 1 values.
-            Assert.Equal("***", secretMasker1.MaskSecrets("masker-1-regex-1___")); // original regex
-            Assert.Equal("***", secretMasker1.MaskSecrets("masker-1-regex-2___")); // original regex
-            Assert.Equal("***", secretMasker1.MaskSecrets("masker-1-regex-3___")); // new regex
+            Assert.Equal("+++", secretMasker1.MaskSecrets("masker-1-regex-1___")); // original regex
+            Assert.Equal("+++", secretMasker1.MaskSecrets("masker-1-regex-2___")); // original regex
+            Assert.Equal("+++", secretMasker1.MaskSecrets("masker-1-regex-3___")); // new regex
             Assert.Equal("***", secretMasker1.MaskSecrets("masker-1-value-1_")); // original value
             Assert.Equal("***", secretMasker1.MaskSecrets("masker-1-value-2_")); // original value
             Assert.Equal("***", secretMasker1.MaskSecrets("masker-1-value-3_")); // new value
@@ -157,9 +157,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             Assert.Equal("***masker-2-encoder-1", secretMasker1.MaskSecrets("masker-1-value-1_masker-2-encoder-1")); // separate encoder storage from copy
 
             // Assert masker 2 values.
-            Assert.Equal("***", secretMasker2.MaskSecrets("masker-1-regex-1___")); // copied regex
-            Assert.Equal("***", secretMasker2.MaskSecrets("masker-1-regex-2___")); // copied regex
-            Assert.Equal("***", secretMasker2.MaskSecrets("masker-2-regex-1___")); // new regex
+            Assert.Equal("+++", secretMasker2.MaskSecrets("masker-1-regex-1___")); // copied regex
+            Assert.Equal("+++", secretMasker2.MaskSecrets("masker-1-regex-2___")); // copied regex
+            Assert.Equal("+++", secretMasker2.MaskSecrets("masker-2-regex-1___")); // new regex
             Assert.Equal("***", secretMasker2.MaskSecrets("masker-1-value-1_")); // copied value
             Assert.Equal("***", secretMasker2.MaskSecrets("masker-1-value-2_")); // copied value
             Assert.Equal("***", secretMasker2.MaskSecrets("masker-2-value-1_")); // new value
@@ -184,19 +184,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             secretMasker.AddValueEncoder(x => x.Replace("-", " "));
             secretMasker.AddValue("value-1");
             secretMasker.AddValue("value-2");
-            Assert.Equal("***", secretMasker.MaskSecrets("value-1"));
-            Assert.Equal("***", secretMasker.MaskSecrets("value_1"));
-            Assert.Equal("***", secretMasker.MaskSecrets("value 1"));
-            Assert.Equal("***", secretMasker.MaskSecrets("value-2"));
-            Assert.Equal("***", secretMasker.MaskSecrets("value_2"));
-            Assert.Equal("***", secretMasker.MaskSecrets("value 2"));
+            Assert.Equal("+++", secretMasker.MaskSecrets("value-1"));
+            Assert.Equal("+++", secretMasker.MaskSecrets("value_1"));
+            Assert.Equal("+++", secretMasker.MaskSecrets("value 1"));
+            Assert.Equal("+++", secretMasker.MaskSecrets("value-2"));
+            Assert.Equal("+++", secretMasker.MaskSecrets("value_2"));
+            Assert.Equal("+++", secretMasker.MaskSecrets("value 2"));
             Assert.Equal("value-3", secretMasker.MaskSecrets("value-3"));
 
             // Add values after encoders.
             secretMasker.AddValue("value-3");
-            Assert.Equal("***", secretMasker.MaskSecrets("value-3"));
-            Assert.Equal("***", secretMasker.MaskSecrets("value_3"));
-            Assert.Equal("***", secretMasker.MaskSecrets("value 3"));
+            Assert.Equal("+++", secretMasker.MaskSecrets("value-3"));
+            Assert.Equal("+++", secretMasker.MaskSecrets("value_3"));
+            Assert.Equal("+++", secretMasker.MaskSecrets("value 3"));
         }
         
         [Fact]
@@ -207,8 +207,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              using var secretMasker = new SecretMasker();
              secretMasker.AddValueEncoder(ValueEncoders.JsonStringEscape);
              secretMasker.AddValue("carriage-return\r_newline\n_tab\t_backslash\\_double-quote\"");
-             Assert.Equal("***", secretMasker.MaskSecrets("carriage-return\r_newline\n_tab\t_backslash\\_double-quote\""));
-             Assert.Equal("***", secretMasker.MaskSecrets("carriage-return\\r_newline\\n_tab\\t_backslash\\\\_double-quote\\\""));
+             Assert.Equal("+++", secretMasker.MaskSecrets("carriage-return\r_newline\n_tab\t_backslash\\_double-quote\""));
+             Assert.Equal("+++", secretMasker.MaskSecrets("carriage-return\\r_newline\\n_tab\\t_backslash\\\\_double-quote\\\""));
          }
 
         [Fact]
@@ -219,8 +219,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              using var secretMasker = new SecretMasker();
              secretMasker.AddValueEncoder(ValueEncoders.BackslashEscape);
              secretMasker.AddValue(@"abc\\def\'\""ghi\t");
-             Assert.Equal("***", secretMasker.MaskSecrets(@"abc\\def\'\""ghi\t"));
-             Assert.Equal("***", secretMasker.MaskSecrets(@"abc\def'""ghi" + "\t"));
+             Assert.Equal("+++", secretMasker.MaskSecrets(@"abc\\def\'\""ghi\t"));
+             Assert.Equal("+++", secretMasker.MaskSecrets(@"abc\def'""ghi" + "\t"));
          }
 
          [Fact]
@@ -231,8 +231,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              using var secretMasker = new SecretMasker();
              secretMasker.AddValueEncoder(ValueEncoders.UriDataEscape);
              secretMasker.AddValue("hello world");
-             Assert.Equal("***", secretMasker.MaskSecrets("hello world"));
-             Assert.Equal("***", secretMasker.MaskSecrets("hello%20world"));
+             Assert.Equal("+++", secretMasker.MaskSecrets("hello world"));
+             Assert.Equal("+++", secretMasker.MaskSecrets("hello%20world"));
          }
 
          [Fact]
@@ -250,8 +250,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = String.Empty.PadRight(1, ' ');
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
-                 Assert.Equal("***", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
              }
 
              using (var secretMasker = new SecretMasker())
@@ -259,8 +259,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = String.Empty.PadRight(2, ' ');
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
-                 Assert.Equal("***", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
              }
              
              using (var secretMasker = new SecretMasker())
@@ -268,8 +268,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = String.Empty.PadRight(3, ' ');
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
-                 Assert.Equal("***", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
              }
              
              using (var secretMasker = new SecretMasker())
@@ -277,8 +277,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = String.Empty.PadRight(4, ' ');
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
-                 Assert.Equal("***", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
              }
              
              using (var secretMasker = new SecretMasker())
@@ -286,8 +286,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = String.Empty.PadRight(5, ' ');
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
-                 Assert.Equal("***", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
              }
              
              using (var secretMasker = new SecretMasker())
@@ -295,8 +295,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = String.Empty.PadRight(5, ' ');
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
-                 Assert.Equal("***", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
              }
              
              using (var secretMasker = new SecretMasker())
@@ -304,8 +304,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = String.Empty.PadRight(6, ' ');
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
-                 Assert.Equal("***", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
              }
              
              
@@ -314,8 +314,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = String.Empty.PadRight(7, ' ');
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
-                 Assert.Equal("***", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value.Replace(" ", "%20")));
              }
              
              using (var secretMasker = new SecretMasker())
@@ -323,7 +323,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = "𐐷𐐷𐐷𐐷"; // surrogate pair
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
              }
              
              using (var secretMasker = new SecretMasker())
@@ -331,7 +331,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                  secretMasker.AddValueEncoder(encoder);
                  var value = " 𐐷𐐷𐐷𐐷"; // shift by one non-surrogate character to ensure surrogate across segment boundary handled correctly
                  secretMasker.AddValue(value);
-                 Assert.Equal("***", secretMasker.MaskSecrets(value));
+                 Assert.Equal("+++", secretMasker.MaskSecrets(value));
              }
          }
 
@@ -372,7 +372,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "abcdefg";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("abc***g", result);
+             Assert.Equal("abc+++g", result);
          }
 
          [Fact]
@@ -386,7 +386,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "abcdefgdef";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("abc***g***", result);
+             Assert.Equal("abc+++g+++", result);
          }
 
          [Fact]
@@ -400,7 +400,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "abcabcdef";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("***def", result);
+             Assert.Equal("+++def", result);
          }
 
          [Fact]
@@ -415,7 +415,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "abcdefghi";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("a***e***i", result);
+             Assert.Equal("a+++e+++i", result);
          }
 
          [Fact]
@@ -430,10 +430,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "abcdefg";
              var result = secretMasker.MaskSecrets(input);
 
-             // a naive replacement would replace "def" first, and never find "bcd", resulting in "abc***g"
-             // or it would replace "bcd" first, and never find "def", resulting in "a***efg"
+             // a naive replacement would replace "def" first, and never find "bcd", resulting in "abc+++g"
+             // or it would replace "bcd" first, and never find "def", resulting in "a+++efg"
 
-             Assert.Equal("a***g", result);
+             Assert.Equal("a+++g", result);
          }
 
          [Fact]
@@ -450,7 +450,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
 
              // two adjacent secrets are basically one big secret
 
-             Assert.Equal("a***h", result);
+             Assert.Equal("a+++h", result);
          }
 
          [Fact]
@@ -517,7 +517,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "abcdefgh";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("a***h", result);
+             Assert.Equal("a+++h", result);
          }
 
          [Fact]
@@ -532,7 +532,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "abcdefgh";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("a***h", result);
+             Assert.Equal("a+++h", result);
 
              secretMasker.MinSecretLength = 4;
              secretMasker.RemoveShortSecretsFromDictionary();
@@ -555,14 +555,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "abcdefgh123";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("a***3", result);
+             Assert.Equal("a+++3", result);
 
              secretMasker.MinSecretLength = 3;
              secretMasker.RemoveShortSecretsFromDictionary();
 
              var result2 = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("abc***3", result2);
+             Assert.Equal("abc+++3", result2);
          }
 
          [Fact]
@@ -581,7 +581,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "abcdefgh123";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("abc***3", result);
+             Assert.Equal("abc+++3", result);
          }
 
          [Fact]
@@ -603,7 +603,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "123456789";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("***45***", result);
+             Assert.Equal("+++45+++", result);
          }
 
          [Fact]
@@ -620,7 +620,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
              var input = "ab123cd345";
              var result = secretMasker.MaskSecrets(input);
 
-             Assert.Equal("ab***cd***", result);
+             Assert.Equal("ab+++cd+++", result);
          }
     }
 }

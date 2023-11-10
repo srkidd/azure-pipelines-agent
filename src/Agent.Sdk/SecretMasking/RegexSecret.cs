@@ -35,7 +35,7 @@ internal sealed class RegexSecret : ISecret
             if (match.Success)
             {
                 startIndex = match.Index + 1;
-                yield return new Replacement(match.Index, match.Length);
+                yield return new Replacement(match.Index, match.Length, "+++");
             }
             else
             {

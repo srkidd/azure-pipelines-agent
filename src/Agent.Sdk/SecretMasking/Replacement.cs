@@ -13,6 +13,7 @@ internal sealed class Replacement
 
     public Replacement(Replacement copy)
     {
+        Token = copy.Token;
         Start = copy.Start;
         Length = copy.Length;
     }

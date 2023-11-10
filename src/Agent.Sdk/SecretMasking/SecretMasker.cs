@@ -309,7 +309,7 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
          foreach (var replacement in replacementPositions)
          {
              stringBuilder.Append(input.Substring(startIndex, replacement.Start - startIndex));
-             stringBuilder.Append("***");
+             stringBuilder.Append(replacement.Token);
              startIndex = replacement.Start + replacement.Length;
          }
 
