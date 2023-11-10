@@ -26,7 +26,7 @@ internal sealed class RegexSecret : ISecret
 
     public override int GetHashCode() => m_pattern.GetHashCode();
 
-    public IEnumerable<ReplacementPosition> GetPositions(String input)
+    public IEnumerable<Replacement> GetPositions(String input)
     {
         Int32 startIndex = 0;
         while (startIndex < input.Length)
@@ -35,7 +35,7 @@ internal sealed class RegexSecret : ISecret
             if (match.Success)
             {
                 startIndex = match.Index + 1;
-                yield return new ReplacementPosition(match.Index, match.Length);
+                yield return new Replacement(match.Index, match.Length);
             }
             else
             {

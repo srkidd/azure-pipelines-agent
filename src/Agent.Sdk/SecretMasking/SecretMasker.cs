@@ -245,7 +245,7 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
              return String.Empty;
          }
 
-         var secretPositions = new List<ReplacementPosition>();
+         var secretPositions = new List<Replacement>();
 
          // Read section.
          try
@@ -278,13 +278,13 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
          }
 
          // Merge positions into ranges of characters to replace.
-         List<ReplacementPosition> replacementPositions = new List<ReplacementPosition>();
-         ReplacementPosition currentReplacement = null;
-         foreach (ReplacementPosition secretPosition in secretPositions.OrderBy(x => x.Start))
+         List<Replacement> replacementPositions = new List<Replacement>();
+         Replacement currentReplacement = null;
+         foreach (Replacement secretPosition in secretPositions.OrderBy(x => x.Start))
          {
              if (currentReplacement == null)
              {
-                 currentReplacement = new ReplacementPosition(copy: secretPosition);
+                 currentReplacement = new Replacement(copy: secretPosition);
                  replacementPositions.Add(currentReplacement);
              }
              else
@@ -297,7 +297,7 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
                  else
                  {
                      // No overlap
-                     currentReplacement = new ReplacementPosition(copy: secretPosition);
+                     currentReplacement = new Replacement(copy: secretPosition);
                      replacementPositions.Add(currentReplacement);
                  }
              }
