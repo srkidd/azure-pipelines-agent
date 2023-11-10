@@ -10,9 +10,11 @@ namespace Agent.Sdk
 {
     public class ProcessInvokerParams
     {
-        public string WorkingDirectory { get; init; } = string.Empty;
+        // We always must have a file name to execute.
+        public string FileName { get; init; }
 
-        public string FileName { get; init; } = string.Empty;
+        // Default value of Process.StartInfo.WorkingDirectory is an empty string.
+        public string WorkingDirectory { get; init; } = string.Empty;
 
         public string Arguments { get; init; } = string.Empty;
 
