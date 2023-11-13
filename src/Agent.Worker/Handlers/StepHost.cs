@@ -196,8 +196,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     workingDirectoryParam = $" -w /home/{Container.CurrentUserName}";
                 }
             }
+            
 
             string containerExecutionArgs = $"exec -i {userArgs} {workingDirectoryParam} {Container.ContainerId} {node} {entryScript}";
+
+            Trace.Warning($"Node path ${node}");
 
             using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
             {
