@@ -807,7 +807,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         if(container.NeedsNode16Redirect)
                         {
-                            container.CustomNodePath = container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node16", "bin", $"node{IOUtil.ExeExtension}"));
+                            container.CustomNodePath = container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), NodeHandler.Node16Folder, "bin", $"node{IOUtil.ExeExtension}"));
                         }
                     }
                 }
