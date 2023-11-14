@@ -60,25 +60,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         private const string useNodeKnobLtsKey = "LTS";
         private const string useNodeKnobUpgradeKey = "UPGRADE";
         private string[] possibleNodeFolders = { nodeFolder, node10Folder, node16Folder, node20_1Folder };
-        private static Regex _vstsTaskLibVersionNeedsFix = new Regex("^[0-2]\\.[0-9]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static string[] _extensionsNode6 ={
-            "if (process.versions.node && process.versions.node.match(/^5\\./)) {",
-            "   String.prototype.startsWith = function (str) {",
-            "       return this.slice(0, str.length) == str;",
-            "   };",
-            "   String.prototype.endsWith = function (str) {",
-            "       return this.slice(-str.length) == str;",
-            "   };",
-            "};",
-            "String.prototype.isEqual = function (ignoreCase, str) {",
-            "   var str1 = this;",
-            "   if (ignoreCase) {",
-            "       str1 = str1.toLowerCase();",
-            "       str = str.toLowerCase();",
-            "       }",
-            "   return str1 === str;",
-            "};"
-        };
 
         public NodeHandler()
         {
