@@ -771,7 +771,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                     if(!useNode20InUnsupportedSystem)
                     {
-                        var node20 = container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), NodeHandler.Node20Folder, "bin", $"node{IOUtil.ExeExtension}"));
+                        var node20 = container.TranslateToContainerPath(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), NodeHandler.Node20_1Folder, "bin", $"node{IOUtil.ExeExtension}"));
 
                         string node20TestCmd = $"bash -c \"{node20} -v\"";
                         List<string> nodeInfo = await DockerExec(executionContext, container.ContainerId, node20TestCmd, noExceptionOnError: true);
