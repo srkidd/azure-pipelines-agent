@@ -101,8 +101,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             ArgUtil.NotNull(Inputs, nameof(Inputs));
             ArgUtil.Directory(TaskDirectory, nameof(TaskDirectory));
 
-
-
             // Update the env dictionary.
             AddInputsToEnvironment();
             AddEndpointsToEnvironment();
