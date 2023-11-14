@@ -55,11 +55,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         private const string nodeFolder = "node";
         private const string node10Folder = "node10";
         private const string node16Folder = "node16";
-        private const string node20Folder = "node20";
+        internal static readonly string Node20Folder = "node20";
         private const string nodeLTS = node16Folder;
         private const string useNodeKnobLtsKey = "LTS";
         private const string useNodeKnobUpgradeKey = "UPGRADE";
-        private string[] possibleNodeFolders = { nodeFolder, node10Folder, node16Folder, node20Folder };
+        private string[] possibleNodeFolders = { nodeFolder, node10Folder, node16Folder, Node20Folder };
         private static Regex _vstsTaskLibVersionNeedsFix = new Regex("^[0-2]\\.[0-9]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static string[] _extensionsNode6 ={
             "if (process.versions.node && process.versions.node.match(/^5\\./)) {",
@@ -243,7 +243,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             else if (taskHasNode20Data)
             {
                 Trace.Info($"Task.json has node20 handler data: {taskHasNode20Data}");
-                nodeFolder = NodeHandler.node20Folder;
+                nodeFolder = NodeHandler.Node20Folder;
             }
             else if (taskHasNode16Data)
             {
@@ -270,7 +270,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             } 
             else if (useNode20) {
                 Trace.Info($"Found UseNode20 knob, using node20 for node tasks {useNode20}");
-                nodeFolder = NodeHandler.node20Folder;
+                nodeFolder = NodeHandler.Node20Folder;
             }
 
             if (useNode16)
