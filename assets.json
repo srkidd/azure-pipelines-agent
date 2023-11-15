@@ -76,11 +76,5 @@
         "platform": "linux-musl-x64",
         "version": "<AGENT_VERSION>",
         "downloadUrl": "https://vstsagentpackage.azureedge.net/agent/<AGENT_VERSION>/vsts-agent-linux-musl-x64-<AGENT_VERSION>.tar.gz"
-    },
-    {
-        "name": "pipelines-agent-linux-musl-x64-<AGENT_VERSION>.tar.gz",
-        "platform": "linux-musl-x64",
-        "version": "<AGENT_VERSION>",
-        "downloadUrl": "https://vstsagentpackage.azureedge.net/agent/<AGENT_VERSION>/pipelines-agent-linux-musl-x64-<AGENT_VERSION>.tar.gz"
     }
 ]
