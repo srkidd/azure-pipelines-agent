@@ -61,7 +61,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         private const string useNodeKnobUpgradeKey = "UPGRADE";
         private string[] possibleNodeFolders = { nodeFolder, node10Folder, node16Folder, node20_1Folder };
 
-
         public NodeHandler()
         {
             this.nodeHandlerHelper = new NodeHandlerHelper();
