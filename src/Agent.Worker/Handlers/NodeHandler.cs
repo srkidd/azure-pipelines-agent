@@ -18,7 +18,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
     [ServiceLocator(Default = typeof(NodeHandler))]
     public interface INodeHandler : IHandler
     {
-        // Data can be of these four types: NodeHandlerData, Node10HandlerData, Node16HandlerData and Node20HandlerData
+        // Data can be of these four types: NodeHandlerData, Node10HandlerData, Node16HandlerData and Node20_1HandlerData
         BaseNodeHandlerData Data { get; set; }
     }
 
@@ -55,31 +55,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         private readonly INodeHandlerHelper nodeHandlerHelper;
         private const string nodeFolder = "node";
         private const string node10Folder = "node10";
-        private const string node16Folder = "node16";
-        private const string node20Folder = "node20";
-        private const string nodeLTS = node16Folder;
+        internal static readonly string Node16Folder = "node16";
+        internal static readonly string Node20_1Folder = "node20_1";
+        private static readonly string nodeLTS = Node16Folder;
         private const string useNodeKnobLtsKey = "LTS";
         private const string useNodeKnobUpgradeKey = "UPGRADE";
-        private string[] possibleNodeFolders = { nodeFolder, node10Folder, node16Folder, node20Folder };
-        private static Regex _vstsTaskLibVersionNeedsFix = new Regex("^[0-2]\\.[0-9]+", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static string[] _extensionsNode6 ={
-            "if (process.versions.node && process.versions.node.match(/^5\\./)) {",
-            "   String.prototype.startsWith = function (str) {",
-            "       return this.slice(0, str.length) == str;",
-            "   };",
-            "   String.prototype.endsWith = function (str) {",
-            "       return this.slice(-str.length) == str;",
-            "   };",
-            "};",
-            "String.prototype.isEqual = function (ignoreCase, str) {",
-            "   var str1 = this;",
-            "   if (ignoreCase) {",
-            "       str1 = str1.toLowerCase();",
-            "       str = str.toLowerCase();",
-            "       }",
-            "   return str1 === str;",
-            "};"
-        };
+        private string[] possibleNodeFolders = { nodeFolder, node10Folder, Node16Folder, Node20_1Folder };
 
         public NodeHandler()
         {
@@ -101,19 +82,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             ArgUtil.NotNull(ExecutionContext, nameof(ExecutionContext));
             ArgUtil.NotNull(Inputs, nameof(Inputs));
             ArgUtil.Directory(TaskDirectory, nameof(TaskDirectory));
-
-            if (!PlatformUtil.RunningOnWindows && !AgentKnobs.IgnoreVSTSTaskLib.GetValue(ExecutionContext).AsBoolean())
-            {
-                // Ensure compat vso-task-lib exist at the root of _work folder
-                // This will make vsts-agent work against 2015 RTM/QU1 TFS, since tasks in those version doesn't package with task lib
-                // Put the 0.5.5 version vso-task-lib into the root of _work/node_modules folder, so tasks are able to find those lib.
-                if (!File.Exists(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), "node_modules", "vso-task-lib", "package.json")))
-                {
-                    string vsoTaskLibFromExternal = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "vso-task-lib");
-                    string compatVsoTaskLibInWork = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), "node_modules", "vso-task-lib");
-                    IOUtil.CopyDirectory(vsoTaskLibFromExternal, compatVsoTaskLibInWork, ExecutionContext.CancellationToken);
-                }
-            }
 
             // Update the env dictionary.
             AddInputsToEnvironment();
@@ -138,23 +106,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 {
                     workingDirectory = HostContext.GetDirectory(WellKnownDirectory.Work);
                 }
-            }
-
-            // fix vsts-task-lib for node 6.x
-            // vsts-task-lib 0.6/0.7/0.8/0.9/2.0-preview implemented String.prototype.startsWith and String.prototype.endsWith since Node 5.x doesn't have them.
-            // however the implementation is added in node 6.x, the implementation in vsts-task-lib is different.
-            // node 6.x's implementation takes 2 parameters str.endsWith(searchString[, length]) / str.startsWith(searchString[, length])
-            // the implementation vsts-task-lib had only takes one parameter str.endsWith(searchString) / str.startsWith(searchString).
-            // as long as vsts-task-lib be loaded into memory, it will overwrite the implementation node 6.x has,
-            // so any script that use the second parameter (length) will encounter unexpected result.
-            // to avoid customer hit this error, we will modify the file (extensions.js) under vsts-task-lib module folder when customer choose to use Node 6.x
-            if (!AgentKnobs.IgnoreVSTSTaskLib.GetValue(ExecutionContext).AsBoolean())
-            {
-                Trace.Info("Inspect node_modules folder, make sure vsts-task-lib doesn't overwrite String.startsWith/endsWith.");
-                FixVstsTaskLibModule();
-            } else
-            {
-                Trace.Info("AZP_AGENT_IGNORE_VSTSTASKLIB enabled, ignoring fix");
             }
 
             StepHost.OutputDataReceived += OnDataReceived;
@@ -224,32 +175,32 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         {
             bool useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsBoolean();
             bool useNode16 = AgentKnobs.UseNode16.GetValue(ExecutionContext).AsBoolean();
-            bool useNode20 = AgentKnobs.UseNode20.GetValue(ExecutionContext).AsBoolean();
+            bool useNode20_1 = AgentKnobs.UseNode20_1.GetValue(ExecutionContext).AsBoolean();
             bool UseNode20InUnsupportedSystem = AgentKnobs.UseNode20InUnsupportedSystem.GetValue(ExecutionContext).AsBoolean();
             bool taskHasNode10Data = Data is Node10HandlerData;
             bool taskHasNode16Data = Data is Node16HandlerData;
-            bool taskHasNode20Data = Data is Node20HandlerData;
+            bool taskHasNode20_1Data = Data is Node20_1HandlerData;
             string useNodeKnob = AgentKnobs.UseNode.GetValue(ExecutionContext).AsString();
 
             string nodeFolder = NodeHandler.nodeFolder;
 
-            if (taskHasNode20Data && !IsNode20SupportedSystems() && !UseNode20InUnsupportedSystem)
+            if (taskHasNode20_1Data && !IsNode20SupportedSystems() && !UseNode20InUnsupportedSystem)
             {
                 ExecutionContext.Warning($"The operating system the agent is running on doesn't support Node20. Using node16 runner instead. " +
                              "Please upgrade the operating system of this host to ensure compatibility with Node20 tasks: " +
                              "https://github.com/nodesource/distributions");
-                Trace.Info($"Task.json has node20 handler data: {taskHasNode20Data}, but it's running in a unsupported system version. Using node16 for node tasks.");
-                nodeFolder = NodeHandler.node16Folder;
+                Trace.Info($"Task.json has node20_1 handler data: {taskHasNode20_1Data}, but it's running in a unsupported system version. Using node16 for node tasks.");
+                nodeFolder = NodeHandler.Node16Folder;
             }
-            else if (taskHasNode20Data)
+            else if (taskHasNode20_1Data)
             {
-                Trace.Info($"Task.json has node20 handler data: {taskHasNode20Data}");
-                nodeFolder = NodeHandler.node20Folder;
+                Trace.Info($"Task.json has node20_1 handler data: {taskHasNode20_1Data}");
+                nodeFolder = NodeHandler.Node20_1Folder;
             }
             else if (taskHasNode16Data)
             {
                 Trace.Info($"Task.json has node16 handler data: {taskHasNode16Data}");
-                nodeFolder = NodeHandler.node16Folder;
+                nodeFolder = NodeHandler.Node16Folder;
             }
             else if (taskHasNode10Data)
             {
@@ -262,22 +213,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 nodeFolder = NodeHandler.node10Folder;
             }
 
-            if (useNode20 && !IsNode20SupportedSystems() && !UseNode20InUnsupportedSystem) {
+            if (useNode20_1 && !IsNode20SupportedSystems() && !UseNode20InUnsupportedSystem) {
                 ExecutionContext.Warning($"The operating system the agent is running on doesn't support Node20. Using node16 runner instead. " +
                              "Please upgrade the operating system of this host to ensure compatibility with Node20 tasks: " +
                              "https://github.com/nodesource/distributions");
-                Trace.Info($"Found UseNode20 knob, but it's running in a unsupported system version. Using node16 for node tasks.");
-                nodeFolder = NodeHandler.node16Folder;
+                Trace.Info($"Found UseNode20_1 knob, but it's running in a unsupported system version. Using node16 for node tasks.");
+                nodeFolder = NodeHandler.Node16Folder;
             } 
-            else if (useNode20) {
-                Trace.Info($"Found UseNode20 knob, using node20 for node tasks {useNode20}");
-                nodeFolder = NodeHandler.node20Folder;
+            else if (useNode20_1) {
+                Trace.Info($"Found UseNode20_1 knob, using node20_1 for node tasks {useNode20_1}");
+                nodeFolder = NodeHandler.Node20_1Folder;
             }
 
             if (useNode16)
             {
                 Trace.Info($"Found UseNode16 knob, using node16 for node tasks {useNode16}");
-                nodeFolder = NodeHandler.node16Folder;
+                nodeFolder = NodeHandler.Node16Folder;
             }
 
             if (useNode10)
@@ -377,56 +328,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 return false;
             }
             return true;
-        }
-
-        private void FixVstsTaskLibModule()
-        {
-            // to avoid modify node_module all the time, we write a .node6 file to indicate we finsihed scan and modify.
-            // the current task is good for node 6.x
-            if (File.Exists(TaskDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + ".node6"))
-            {
-                Trace.Info("This task has already been scanned and corrected, no more operation needed.");
-            }
-            else
-            {
-                Trace.Info("Scan node_modules folder, looking for vsts-task-lib\\extensions.js");
-                try
-                {
-                    foreach (var file in new DirectoryInfo(TaskDirectory).EnumerateFiles("extensions.js", SearchOption.AllDirectories))
-                    {
-                        if (string.Equals(file.Directory.Name, "vsts-task-lib", StringComparison.OrdinalIgnoreCase) ||
-                            string.Equals(file.Directory.Name, "vso-task-lib", StringComparison.OrdinalIgnoreCase))
-                        {
-                            if (File.Exists(Path.Combine(file.DirectoryName, "package.json")))
-                            {
-                                // read package.json, we only do the fix for 0.x->2.x
-                                JObject packageJson = JObject.Parse(File.ReadAllText(Path.Combine(file.DirectoryName, "package.json")));
-
-                                JToken versionToken;
-                                if (packageJson.TryGetValue("version", StringComparison.OrdinalIgnoreCase, out versionToken))
-                                {
-                                    if (_vstsTaskLibVersionNeedsFix.IsMatch(versionToken.ToString()))
-                                    {
-                                        Trace.Info($"Fix extensions.js file at '{file.FullName}'. The vsts-task-lib version is '{versionToken.ToString()}'");
-
-                                        // take backup of the original file
-                                        File.Copy(file.FullName, Path.Combine(file.DirectoryName, "extensions.js.vstsnode5"));
-                                        File.WriteAllLines(file.FullName, _extensionsNode6);
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    File.WriteAllText(TaskDirectory.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + ".node6", string.Empty);
-                    Trace.Info("Finished scan and correct extensions.js under vsts-task-lib");
-                }
-                catch (Exception ex)
-                {
-                    Trace.Error("Unable to scan and correct potential bug in extensions.js of vsts-task-lib.");
-                    Trace.Error(ex);
-                }
-            }
         }
     }
 }
