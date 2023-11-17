@@ -1,21 +1,30 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Agent.Sdk;
-using Agent.Sdk.Knob;
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
-using Microsoft.VisualStudio.Services.Agent.Util;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Agent.Sdk;
+using Agent.Sdk.Knob;
+using Agent.Sdk.Util;
+
+using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using Microsoft.VisualStudio.Services.Agent.Util;
+using Microsoft.VisualStudio.Services.Agent.Worker.Handlers;
+using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
 using Microsoft.VisualStudio.Services.Common;
+
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -23,7 +32,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     public interface ITaskManager : IAgentService
     {
         Task DownloadAsync(IExecutionContext executionContext, IEnumerable<Pipelines.JobStep> steps);
-
+        Task DownloadNodeRunnerAsync(IExecutionContext executionContext, IEnumerable<Pipelines.JobStep> steps);
+        Task RemoveNodeRunner(IExecutionContext executionContext);
         Definition Load(Pipelines.TaskStep task);
 
         /// <summary>
@@ -83,6 +93,61 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
         }
+        public async Task RemoveNodeRunner(IExecutionContext executionContext)
+        {
+            var nodeHelper = new NodeHandlerHelper();
+
+            if (!nodeHelper.IsNodeFolderExist(NodeHandler.NodeFolder, HostContext))
+            {
+                executionContext.Debug($"Node 6 runner doesn't exist.");
+                return;
+            }
+
+            try
+            {
+                IOUtil.DeleteDirectory(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), NodeHandler.NodeFolder), executionContext.CancellationToken);
+            }
+            catch (Exception ex)
+            {
+                Trace.Error($"Failed to delete Node 6 runner package folder. Exception: {ex}");
+            }
+        }
+        public async Task DownloadNodeRunnerAsync(IExecutionContext executionContext, IEnumerable<Pipelines.JobStep> steps)
+        {
+            ArgUtil.NotNull(executionContext, nameof(executionContext));
+            ArgUtil.NotNull(steps, nameof(steps));
+
+            executionContext.Output(StringUtil.Loc("EnsureNodeRunnerExist"));
+
+            IEnumerable<Pipelines.TaskStep> tasks = steps.OfType<Pipelines.TaskStep>();
+
+            //Download Node 6 runner if needed
+            foreach (var task in tasks)
+            {
+                // Skip checkout task
+                if (task.Id == Pipelines.PipelineConstants.CheckoutTask.Id && task.Reference.Version == Pipelines.PipelineConstants.CheckoutTask.Version)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    var definition = GetTaskDefiniton(task);
+                    if (definition.Data.Execution.All.Any(a => a is NodeHandlerData))
+                    {
+                        await InstallNode6Runner(executionContext);
+                        return;
+                    }
+                }
+                catch (Exception)
+                {
+                    executionContext.Debug($"Unable to load task defintion for task:{task.Name}, id: {task.Id}");
+                    continue;
+                }
+
+            }
+            await InstallNode6Runner(executionContext);
+        }
 
         public virtual Definition Load(Pipelines.TaskStep task)
         {
@@ -110,14 +175,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 return checkoutTask;
             }
 
-            // Initialize the definition wrapper object.
-            var definition = new Definition() { Directory = GetDirectory(task.Reference), ZipPath = GetTaskZipPath(task.Reference) };
-
-            // Deserialize the JSON.
-            string file = Path.Combine(definition.Directory, Constants.Path.TaskJsonFile);
-            Trace.Info($"Loading task definition '{file}'.");
-            string json = File.ReadAllText(file);
-            definition.Data = JsonConvert.DeserializeObject<DefinitionData>(json);
+            var definition = GetTaskDefiniton(task);
 
             // Replace the macros within the handler data sections.
             foreach (HandlerData handlerData in (definition.Data?.Execution?.All as IEnumerable<HandlerData> ?? new HandlerData[0]))
@@ -380,6 +438,156 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return Path.Combine(
                 HostContext.GetDirectory(WellKnownDirectory.TaskZips),
                 $"{task.Name}_{task.Id}_{task.Version}.zip"); // TODO: Move to shared string.
+        }
+
+        private Definition GetTaskDefiniton(Pipelines.TaskStep task)
+        {
+            // Initialize the definition wrapper object.
+            var definition = new Definition() { Directory = GetDirectory(task.Reference), ZipPath = GetTaskZipPath(task.Reference) };
+
+            // Deserialize the JSON.
+            string file = Path.Combine(definition.Directory, Constants.Path.TaskJsonFile);
+            Trace.Info($"Loading task definition '{file}'.");
+            string json = File.ReadAllText(file);
+            definition.Data = JsonConvert.DeserializeObject<DefinitionData>(json);
+
+            return definition;
+        }
+
+        private async Task InstallNode6Runner(IExecutionContext executionContext)
+        {
+            var nodeHelper = new NodeHandlerHelper();
+
+            if (nodeHelper.IsNodeFolderExist(NodeHandler.NodeFolder, HostContext))
+            {
+                executionContext.Debug($"Node 6 runner already exist.");
+                return;
+            }
+
+
+            string downloadUrl;
+            string urlFileName;
+
+            if (PlatformUtil.RunningOnWindows)
+            {
+                urlFileName = $"node-v6-latest-win-{VarUtil.OSArchitecture}";
+            }
+            else
+            {
+                urlFileName = $"node-v6-latest-{VarUtil.OS}-{VarUtil.OSArchitecture}";
+            }
+
+            if (PlatformUtil.HostOS == PlatformUtil.OS.OSX && PlatformUtil.HostArchitecture == System.Runtime.InteropServices.Architecture.X86)
+            {
+                urlFileName = $"node-v6-latest-linux-x86";
+            }
+
+            downloadUrl = $"https://vstsagenttools.blob.core.windows.net/tools/nodejs/deprecated/{urlFileName}.zip".ToLower();
+
+            Trace.Info($"Downloading Node 6 runner from: {downloadUrl}");
+
+            using var client = new HttpClient();
+            var response = await client.GetAsync(downloadUrl);
+            string filePath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Work), "node" + DateTime.Now.ToFileTime());
+            string nodeFolder = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals));
+
+            var timeoutSeconds = 600;
+
+            var node6Installed = false;
+
+            using (var downloadTimeout = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds)))
+            {
+                try
+                {
+                    Trace.Info($"Download Node 6 runner: begin download");
+
+                    //open zip stream in async mode
+                    using (var handler = HostContext.CreateHttpClientHandler())
+                    using (var httpClient = new HttpClient(handler))
+                    using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
+                    using (var result = await httpClient.GetStreamAsync(downloadUrl))
+                    {
+                        //81920 is the default used by System.IO.Stream.CopyTo and is under the large object heap threshold (85k).
+                        await result.CopyToAsync(fs, 81920, downloadTimeout.Token);
+                        await fs.FlushAsync(downloadTimeout.Token);
+                    }
+
+                    Trace.Info($"Download Node 6 runner: finished download");
+
+                    Trace.Info($"Extracting downloaded archive into externals folder");
+
+                    ZipFile.ExtractToDirectory(filePath, nodeFolder);
+
+                    node6Installed = true;
+
+                    Trace.Info($"Finished getting Node 6 runner at: {nodeFolder}.");
+
+
+                }
+                catch (OperationCanceledException) when (downloadTimeout.IsCancellationRequested)
+                {
+                    Trace.Info($"Node 6 runner download has been canceled.");
+                    throw;
+                }
+                catch (SocketException ex)
+                {
+                    ExceptionsUtil.HandleSocketException(ex, downloadUrl, Trace.Warning);
+                }
+                catch (Exception ex)
+                {
+                    if (downloadTimeout.Token.IsCancellationRequested)
+                    {
+                        Trace.Warning($"Node 6 runner download has timed out after {timeoutSeconds} seconds");
+                    }
+
+                    Trace.Warning($"Failed to get package '{filePath}' from '{downloadUrl}'. Exception {ex}");
+                }
+
+                finally
+                {
+                    try
+                    {
+                        // delete .zip file
+                        if (!string.IsNullOrEmpty(filePath) && File.Exists(filePath))
+                        {
+                            Trace.Verbose("Deleting Node 6 runner package zip: {0}", filePath);
+                            IOUtil.DeleteFile(filePath);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //it is not critical if we fail to delete the .zip file
+                        Trace.Warning("Failed to delete Node 6 runner package zip '{0}'. Exception: {1}", filePath, ex);
+                    }
+
+                    try
+                    {
+                        Dictionary<string, string> telemetryData = new Dictionary<string, string>
+                        {
+                            { "OS", PlatformUtil.GetSystemId() ?? "" },
+                            { "OSGroup",VarUtil.OS },
+                            { "OSArch", VarUtil.OSArchitecture},
+                            { "Node6DownloadUrl",downloadUrl},
+                            { "Node6DownloadResult",node6Installed.ToString()},
+                        };
+                        var cmd = new Command("telemetry", "publish")
+                        {
+                            Data = JsonConvert.SerializeObject(telemetryData, Formatting.None)
+                        };
+                        cmd.Properties.Add("area", "PipelinesTasks");
+                        cmd.Properties.Add("feature", "TaskManager");
+
+                        var publishTelemetryCmd = new TelemetryCommandExtension();
+                        publishTelemetryCmd.Initialize(HostContext);
+                        publishTelemetryCmd.ProcessCommand(executionContext, cmd);
+                    }
+                    catch (Exception ex)
+                    {
+                        Trace.Warning($"Unable to publish telemetry data'. Exception {ex}");
+                    }
+
+                }
+            }
         }
     }
 

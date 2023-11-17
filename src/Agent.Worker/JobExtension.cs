@@ -167,6 +167,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     var taskManager = HostContext.GetService<ITaskManager>();
                     await taskManager.DownloadAsync(context, message.Steps);
 
+                    if (!AgentKnobs.DisableNode6Tasks.GetValue(context).AsBoolean())
+                    {
+                        await taskManager.DownloadNodeRunnerAsync(context, message.Steps);
+                    } 
+                    else
+                    {
+                        await taskManager.RemoveNodeRunner(context);
+                    }
+
                     // Parse all Task conditions.
                     Trace.Info("Parsing all task's condition inputs.");
                     var expression = HostContext.GetService<IExpressionManager>();
