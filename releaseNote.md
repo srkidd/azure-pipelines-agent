@@ -1,3 +1,13 @@
+## Features
+
+
+## Bugs
+
+
+## Misc
+ - For node20 fallback on host, check for glibc instead of OS version check (#4524)
+ - Revert "Remove VSTS-task-lib from agent" (#4526)
+
 
 ## Agent Downloads
 
