@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.Services.PipelineCache.WebApi;
 using Microsoft.VisualStudio.Services.WebApi;
 using JsonSerializer = Microsoft.VisualStudio.Services.Content.Common.JsonSerializer;
 using Microsoft.VisualStudio.Services.BlobStore.Common;
+using Microsoft.VisualStudio.Services.Agent.Util;
 
 namespace Agent.Plugins.PipelineCache
 {
@@ -106,11 +107,11 @@ namespace Agent.Plugins.PipelineCache
                         {
                             try
                             {
-                                File.Delete(uploadPath);
+                                IOUtil.DeleteFileWithRetry(uploadPath, cancellationToken);
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                context.Warning($"Unable to delete pipeline cache file");
+                                tracer.Warn($"Unable to delete pipeline cache file, ex:{ex.GetType()}");
                             }
                         }
                     }
@@ -319,11 +320,11 @@ namespace Agent.Plugins.PipelineCache
                     {
                         try
                         {
-                            File.Delete(manifestPath);
+                            IOUtil.DeleteFileWithRetry(manifestPath, cancellationToken);
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            context.Warning($"Unable to delete manifest file");
+                            tracer.Warn($"Unable to delete manifest file, ex:{ex.GetType()}");
                         }
                     }
                 }

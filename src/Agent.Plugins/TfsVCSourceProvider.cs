@@ -422,11 +422,12 @@ namespace Agent.Plugins.Repository
                         {
                             try
                             {
-                                File.Delete(commentFile);
+                                IOUtil.DeleteFileWithRetry(commentFile, cancellationToken);
                             }
-                            catch
+                            catch (Exception ex)
                             {
-                                executionContext.Warning($"Unable to delete comment file");
+                                executionContext.Warning($"Unable to delete comment file, ex:{ex.GetType()}");
+                                executionContext.Debug(ex.ToString());
                             }
                         }
                     }

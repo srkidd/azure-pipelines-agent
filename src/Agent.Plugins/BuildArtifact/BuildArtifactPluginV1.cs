@@ -319,7 +319,7 @@ namespace Agent.Plugins.BuildArtifacts
             string fullPath = this.CreateDirectoryIfDoesntExist(targetPath);
             if (cleanDestinationFolderBool)
             {
-                CleanDirectory(context, fullPath);
+                CleanDirectory(context, fullPath, token);
             }
             var downloadOption = downloadType == "single" ? DownloadOptions.SingleDownload : DownloadOptions.MultiDownload;
 
@@ -349,7 +349,7 @@ namespace Agent.Plugins.BuildArtifacts
             return fullPath;
         }
 
-        private void CleanDirectory(AgentTaskPluginExecutionContext context, string directoryPath)
+        private void CleanDirectory(AgentTaskPluginExecutionContext context, string directoryPath, CancellationToken cancellationToken)
         {
             FileAttributes dirAttributes;
             context.Output(StringUtil.Loc("CleaningDestinationFolder", directoryPath));
@@ -379,11 +379,11 @@ namespace Agent.Plugins.BuildArtifacts
                 {
                     try
                     {
-                        file.Delete();
+                        IOUtil.DeleteFileWithRetry(file.FullName, cancellationToken);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        context.Warning($"Unable to delete build artifact file");
+                        tracer.Warn($"Unable to delete build artifact file, ex:{ex.GetType()}");
                     }
                 }
 
@@ -391,11 +391,11 @@ namespace Agent.Plugins.BuildArtifacts
                 {
                     try
                     {
-                        subDirectory.Delete(true);
+                        IOUtil.DeleteDirectoryWithRetry(subDirectory.FullName, cancellationToken);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        context.Warning($"Unable to delete build subdirecotry");
+                        tracer.Warn($"Unable to delete build subdirecotry, ex:{ex.GetType()}");
                     }
                 }
             }
@@ -404,11 +404,11 @@ namespace Agent.Plugins.BuildArtifacts
                 try
                 {
                     // specified folder is not a directory. Delete it.
-                    File.Delete(directoryPath);
+                    IOUtil.DeleteDirectoryWithRetry(directoryPath, cancellationToken);
                 }
-                catch
+                catch (Exception ex)
                 {
-                    context.Warning($"Unable to delete build artifact data");
+                    tracer.Warn($"Unable to delete build artifact data, ex:{ex.GetType()}");
                 }
             }
         }

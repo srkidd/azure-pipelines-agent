@@ -156,11 +156,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 {
                     try
                     {
-                        File.Delete(Path.Combine(this.SourcesDirectory, temporaryFileWithCommand));
+                        IOUtil.DeleteFileWithRetry(Path.Combine(this.SourcesDirectory, temporaryFileWithCommand), CancellationToken);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        ExecutionContext.Warning("Unable to delete command via file");
+                        Trace.Warning($"Unable to delete command via file, ex:{ex.GetType()}");
+                        Trace.Verbose(ex.ToString());
                     }
                 }
             }

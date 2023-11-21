@@ -284,11 +284,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.CodeCoverage
                     // duplicating frame-summary.html to index.html and renaming index.html to newindex.html
                     try
                     {
-                        File.Delete(newIndexHtml);
+                        IOUtil.DeleteFileWithRetry(newIndexHtml, executionContext.CancellationToken);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        executionContext.Warning("Unable to delete old tracking folder");
+                        executionContext.GetTraceWriter()?.Info($"Unable to delete old tracking folder, ex:{ex.GetType()}");
+                        executionContext.GetTraceWriter()?.Verbose(ex.ToString());
                     }
                     File.Move(indexHtml, newIndexHtml);
                     File.Copy(nonFrameHtml, indexHtml, overwrite: true);

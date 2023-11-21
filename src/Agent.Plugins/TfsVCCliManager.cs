@@ -174,11 +174,12 @@ namespace Agent.Plugins.Repository
                 {
                     try
                     {
-                        File.Delete(Path.Combine(this.SourcesDirectory, temporaryFileWithCommand));
+                        IOUtil.DeleteFileWithRetry(Path.Combine(this.SourcesDirectory, temporaryFileWithCommand), CancellationToken);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        ExecutionContext.Warning($"Unable to delete command file which is used to pass data");
+                        ExecutionContext.Warning($"Unable to delete command file which is used to pass data, ex:{ex.GetType()}");
+                        ExecutionContext.Debug($"{ex.ToString()}");
                     }
                 }
 

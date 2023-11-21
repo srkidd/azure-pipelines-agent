@@ -223,6 +223,41 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
+        public static void DeleteDirectoryWithRetry(string path, CancellationToken cancellationToken, int retryCount=3)
+        {
+           for (int i=0;  i<retryCount; i++)
+            {
+                try
+                {
+                    DeleteDirectory(path, cancellationToken);
+                }
+                catch
+                {
+                    if (!cancellationToken.IsCancellationRequested || retryCount < 3)
+                        continue;
+                    throw;
+                }
+            }
+
+            
+        }
+        public static void DeleteFileWithRetry(string path, CancellationToken cancellationToken, int retryCount = 3)
+        {
+            for (int i = 0; i < retryCount; i++)
+            {
+                try
+                {
+                    DeleteFile(path);
+                }
+                catch
+                {
+                    if (!cancellationToken.IsCancellationRequested || retryCount < 3)
+                        continue;
+
+                    throw;
+                }
+            }
+        }
         public static void MoveDirectory(string sourceDir, string targetDir, string stagingDir, CancellationToken token)
         {
             ArgUtil.Directory(sourceDir, nameof(sourceDir));
