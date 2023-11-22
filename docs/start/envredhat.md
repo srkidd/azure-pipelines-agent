@@ -49,7 +49,7 @@ But, if you are using TfsVc, install Oracle Java 1.8+ as TEE uses Java.
 ## RHEL Universal Base Images (UBI) packages
 
 ```bash
-yum install -y git unzip libicu glibc-langpack-en
+yum install -y git unzip libicu
 ```
 
 UBI 8 will require `glibc-langpack-en` to be installed:
