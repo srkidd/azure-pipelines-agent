@@ -232,7 +232,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 {
                     DeleteDirectory(path, cancellationToken);
                 }
-                catch
+                // There is no reason to retry on DirectoryNotFoundException, SecruityException and UnauthorizedAccessException
+                catch (IOException)
                 {
                     if (!cancellationToken.IsCancellationRequested || retryCount < 3)
                     {
@@ -252,7 +253,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 {
                     DeleteFile(path);
                 }
-                catch
+                // There is not reason to retry on SecruityException and UnauthorizedAccessException
+                catch (IOException)
                 {
                     if (!cancellationToken.IsCancellationRequested || retryCount < 3)
                     {
