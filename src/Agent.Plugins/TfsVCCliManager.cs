@@ -297,11 +297,12 @@ namespace Agent.Plugins.Repository
                     CleanupTfsVCOutput(ref result, formattedArguments);
                     try
                     {
-                        File.Delete(Path.Combine(this.SourcesDirectory, cmdFileName));
+                        IOUtil.DeleteFileWithRetry(Path.Combine(this.SourcesDirectory, cmdFileName), CancellationToken);
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        ExecutionContext.Warning($"Unable to delete command file");
+                        ExecutionContext.Warning($"Unable to delete command file, ex:{ex.GetType}");
+                        ExecutionContext.Verbose(ex.ToString());
                     }
                 }
 

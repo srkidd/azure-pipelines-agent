@@ -1,8 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Agent.Sdk;
-using Agent.Sdk.Knob;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -11,6 +9,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+
+using Agent.Sdk;
+using Agent.Sdk.Knob;
 
 namespace Microsoft.VisualStudio.Services.Agent.Util
 {
@@ -223,9 +224,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
-        public static void DeleteDirectoryWithRetry(string path, CancellationToken cancellationToken, int retryCount=3)
+        public static void DeleteDirectoryWithRetry(string path, CancellationToken cancellationToken, int retryCount = 3)
         {
-           for (int i=0;  i<retryCount; i++)
+            for (int i = 0; i < retryCount; i++)
             {
                 try
                 {
@@ -234,12 +235,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 catch
                 {
                     if (!cancellationToken.IsCancellationRequested || retryCount < 3)
+                    {
+                        // Pause execution briefly to allow the file to become accessible, but limit the wait to no more than 5 seconds
+                        Thread.Sleep(Math.Max(retryCount * 1000, 5));
                         continue;
+                    }
                     throw;
                 }
             }
-
-            
         }
         public static void DeleteFileWithRetry(string path, CancellationToken cancellationToken, int retryCount = 3)
         {
@@ -252,7 +255,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 catch
                 {
                     if (!cancellationToken.IsCancellationRequested || retryCount < 3)
+                    {
+                        // Pause execution briefly to allow the file to become accessible, but limit the wait to no more than 5 seconds
+                        Thread.Sleep(Math.Max(retryCount * 1000, 5));
                         continue;
+                    }
 
                     throw;
                 }
