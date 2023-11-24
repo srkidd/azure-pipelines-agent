@@ -547,12 +547,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             {
                 try
                 {
-                    IOUtil.DeleteFileWithRetry(oldLocation, executionContext.CancellationToken);
+                    IOUtil.DeleteFileWithRetry(oldLocation, executionContext.CancellationToken).Wait();
                 }
                 catch (Exception ex)
                 {
                     Trace.Warning($"Unable to delete old tracking folder, ex:{ex.GetType()}");
-                    Trace.Verbose(ex.ToString());
+                    throw;
                 }
             }
 

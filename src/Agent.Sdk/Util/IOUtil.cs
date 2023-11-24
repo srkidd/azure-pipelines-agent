@@ -9,6 +9,7 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 using Agent.Sdk;
 using Agent.Sdk.Knob;
@@ -224,7 +225,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
-        public static void DeleteDirectoryWithRetry(string path, CancellationToken cancellationToken, int retryCount = 3)
+        public static  async Task DeleteDirectoryWithRetry(string path, CancellationToken cancellationToken, int retryCount = 3)
         {
             for (int i = 0; i < retryCount; i++)
             {
@@ -238,14 +239,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     if (!cancellationToken.IsCancellationRequested || retryCount < 3)
                     {
                         // Pause execution briefly to allow the file to become accessible, but limit the wait to no more than 5 seconds
-                        Thread.Sleep(Math.Max(retryCount * 1000, 5));
+                        await Task.Delay(Math.Max(retryCount, 5)*1000);
                         continue;
                     }
                     throw;
                 }
             }
         }
-        public static void DeleteFileWithRetry(string path, CancellationToken cancellationToken, int retryCount = 3)
+        public static async Task DeleteFileWithRetry(string path, CancellationToken cancellationToken, int retryCount = 3)
         {
             for (int i = 0; i < retryCount; i++)
             {
@@ -259,7 +260,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     if (!cancellationToken.IsCancellationRequested || retryCount < 3)
                     {
                         // Pause execution briefly to allow the file to become accessible, but limit the wait to no more than 5 seconds
-                        Thread.Sleep(Math.Max(retryCount * 1000, 5));
+                        await Task.Delay(Math.Max(retryCount, 5)*1000);
                         continue;
                     }
 

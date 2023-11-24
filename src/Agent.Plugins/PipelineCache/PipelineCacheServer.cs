@@ -107,11 +107,12 @@ namespace Agent.Plugins.PipelineCache
                         {
                             try
                             {
-                                IOUtil.DeleteFileWithRetry(uploadPath, cancellationToken);
+                                await IOUtil.DeleteFileWithRetry(uploadPath, cancellationToken);
                             }
                             catch (Exception ex)
                             {
                                 tracer.Warn($"Unable to delete pipeline cache file, ex:{ex.GetType()}");
+                                throw;
                             }
                         }
                     }
@@ -325,6 +326,7 @@ namespace Agent.Plugins.PipelineCache
                         catch (Exception ex)
                         {
                             tracer.Warn($"Unable to delete manifest file, ex:{ex.GetType()}");
+                            throw;
                         }
                     }
                 }

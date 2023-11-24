@@ -410,12 +410,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                         {
                             try
                             {
-                                IOUtil.DeleteFileWithRetry(commentFile, cancellationToken);
+                               await IOUtil.DeleteFileWithRetry(commentFile, cancellationToken);
                             }
                             catch (Exception ex)
                             {
                                 Trace.Warning($"Unable to delete comment file, ex:{ex.GetType()}");
-                                Trace.Verbose(ex.ToString());
+                                Trace.Error(ex);
                             }
                         }
                     }

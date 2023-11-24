@@ -110,12 +110,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release
             {
                 try
                 {
-                    IOUtil.DeleteFileWithRetry(filePath, cancellationToken);
+                    IOUtil.DeleteFileWithRetry(filePath, cancellationToken).Wait();
                 }
                 catch (Exception ex)
                 {
                     Trace.Warning($"Unable to delete {filePath}, ex:{ex.GetType()}");
-                    Trace.Verbose(ex.ToString());
+                    throw;
                 }
             }
         }

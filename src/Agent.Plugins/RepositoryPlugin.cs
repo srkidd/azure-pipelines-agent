@@ -209,12 +209,12 @@ namespace Agent.Plugins.Repository
 
                     try
                     {
-                        IOUtil.DeleteDirectoryWithRetry(expectRepoPath, CancellationToken.None);
+                        await IOUtil.DeleteDirectoryWithRetry(expectRepoPath, CancellationToken.None);
                     }
                     catch (Exception ioEx)
                     {
-                        executionContext.Warning($"Unable to delete existing repository on required location: {ioEx.GetType()}");
-                        executionContext.Debug(ioEx.ToString());
+                        executionContext.Output($"Unable to delete existing repository on required location: {ioEx.GetType()}");
+                        throw;
                     }
                 }
 
@@ -260,8 +260,8 @@ namespace Agent.Plugins.Repository
                 }
                 catch (Exception ex)
                 {
-                    executionContext.Warning($"Unable to delete existing repository on required location. ex:{ex.GetType}");
-                    executionContext.Debug(ex.ToString());
+                    executionContext.Output($"Unable to delete existing repository on required location. ex:{ex.GetType}");
+                    throw;
                 }
             }
         }

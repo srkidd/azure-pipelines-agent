@@ -174,12 +174,13 @@ namespace Agent.Plugins.Repository
                 {
                     try
                     {
-                        IOUtil.DeleteFileWithRetry(Path.Combine(this.SourcesDirectory, temporaryFileWithCommand), CancellationToken);
+                        await IOUtil.DeleteFileWithRetry(Path.Combine(this.SourcesDirectory, temporaryFileWithCommand), CancellationToken);
                     }
                     catch (Exception ex)
                     {
-                        ExecutionContext.Warning($"Unable to delete command file which is used to pass data, ex:{ex.GetType()}");
-                        ExecutionContext.Debug($"{ex.ToString()}");
+                        ExecutionContext.Output($"Unable to delete command file which is used to pass data, ex:{ex.GetType()}");
+                        throw;
+
                     }
                 }
 
@@ -297,12 +298,12 @@ namespace Agent.Plugins.Repository
                     CleanupTfsVCOutput(ref result, formattedArguments);
                     try
                     {
-                        IOUtil.DeleteFileWithRetry(Path.Combine(this.SourcesDirectory, cmdFileName), CancellationToken);
+                        await IOUtil.DeleteFileWithRetry(Path.Combine(this.SourcesDirectory, cmdFileName), CancellationToken);
                     }
                     catch (Exception ex)
                     {
-                        ExecutionContext.Warning($"Unable to delete command file, ex:{ex.GetType}");
-                        ExecutionContext.Verbose(ex.ToString());
+                        ExecutionContext.Output($"Unable to delete command file, ex:{ex.GetType}");
+                        throw;
                     }
                 }
 

@@ -429,7 +429,7 @@ namespace Agent.Plugins
 
                     try
                     {
-                        IOUtil.DeleteFileWithRetry(fileArtifactPath, cancellationToken);
+                        IOUtil.DeleteFileWithRetry(fileArtifactPath, cancellationToken).Wait();
                     }
                     // If file blocked by another process there are two different type exceptions.
                     // If file in use by another process really the UnauthorizedAccessException;
@@ -438,6 +438,7 @@ namespace Agent.Plugins
                     {
                         tracer.Warn($"Unable to delete artifact files at {fileArtifactPath}, exception: {ex.GetType()}");
                         tracer.Verbose(ex.ToString());
+                        throw;
                     }
 
                 }
