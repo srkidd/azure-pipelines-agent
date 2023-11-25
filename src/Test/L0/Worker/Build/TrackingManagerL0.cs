@@ -103,7 +103,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 
                 // Act.
                 var newConfig = _trackingManager.Create(_ec.Object, new[] { _repository }, false);
-                _trackingManager.UpdateTrackingConfig(_ec.Object, newConfig).Result;
+                _trackingManager.UpdateTrackingConfig(_ec.Object, newConfig);
 
                 // Assert.
                 TrackingConfig config = _trackingManager.LoadExistingTrackingConfig(_ec.Object) as TrackingConfig;
@@ -582,12 +582,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             {
                 // Arrange.
                 var firstConfig = _trackingManager.Create(_ec.Object, new[] { _repository }, false);
-                _trackingManager.UpdateTrackingConfig(_ec.Object, firstConfig).Result;
+                _trackingManager.UpdateTrackingConfig(_ec.Object, firstConfig);
                 DateTimeOffset testStartOn = DateTimeOffset.Now;
 
                 // Act.
                 var secondConfig = _trackingManager.Create(_ec.Object, new[] { _repository }, false);
-                _trackingManager.UpdateTrackingConfig(_ec.Object, secondConfig).Result;
+                _trackingManager.UpdateTrackingConfig(_ec.Object, secondConfig);
 
                 // Assert.
                 string topLevelFile = Path.Combine(
@@ -617,7 +617,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
                 string trackingFile = Path.Combine(_workFolder, "trackingconfig.json");
 
                 // Act.
-                _trackingManager.UpdateTrackingConfig(_ec.Object, config).Result;
+                _trackingManager.UpdateTrackingConfig(_ec.Object, config);
 
                 // Assert.
                 config = _trackingManager.LoadExistingTrackingConfig(_ec.Object) as TrackingConfig;
