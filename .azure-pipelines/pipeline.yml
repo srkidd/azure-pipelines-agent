@@ -206,7 +206,7 @@ stages:
         displayName: Alpine (x64)
         pool:
           vmImage: ubuntu-latest
-        container: alpine
+        #container: alpine
         os: linux-musl
         arch: x64
         branch: ${{ parameters.branch }}
