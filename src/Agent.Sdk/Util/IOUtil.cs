@@ -18,6 +18,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 {
     public static class IOUtil
     {
+        const int MAX_RETRY_DELETION = 3;
+
         private static UtilKnobValueContext _knobContext = UtilKnobValueContext.Instance();
 
         public static string ExeExtension
@@ -225,42 +227,44 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
-        public static  async Task DeleteDirectoryWithRetry(string path, CancellationToken cancellationToken, int retryCount = 3)
+        public static async Task DeleteDirectoryWithRetry(string path, CancellationToken cancellationToken)
         {
-            for (int i = 0; i < retryCount; i++)
+            for (int i = 0; i < MAX_RETRY_DELETION; i++)
             {
                 try
                 {
                     DeleteDirectory(path, cancellationToken);
+                    return;
                 }
                 // There is no reason to retry on DirectoryNotFoundException, SecruityException and UnauthorizedAccessException
                 catch (IOException)
                 {
-                    if (!cancellationToken.IsCancellationRequested || retryCount < 3)
+                    if (!cancellationToken.IsCancellationRequested)
                     {
-                        // Pause execution briefly to allow the file to become accessible, but limit the wait to no more than 5 seconds
-                        await Task.Delay(Math.Max(retryCount, 5)*1000);
+                        // Pause execution briefly to allow the file to become accessible
+                        await Task.Delay(i * 1000, cancellationToken);
                         continue;
                     }
                     throw;
                 }
             }
         }
-        public static async Task DeleteFileWithRetry(string path, CancellationToken cancellationToken, int retryCount = 3)
+        public static async Task DeleteFileWithRetry(string path, CancellationToken cancellationToken)
         {
-            for (int i = 0; i < retryCount; i++)
+            for (int i = 0; i < MAX_RETRY_DELETION; i++)
             {
                 try
                 {
                     DeleteFile(path);
+                    return;
                 }
                 // There is not reason to retry on SecruityException and UnauthorizedAccessException
                 catch (IOException)
                 {
-                    if (!cancellationToken.IsCancellationRequested || retryCount < 3)
+                    if (!cancellationToken.IsCancellationRequested)
                     {
-                        // Pause execution briefly to allow the file to become accessible, but limit the wait to no more than 5 seconds
-                        await Task.Delay(Math.Max(retryCount, 5)*1000);
+                        // Pause execution briefly to allow the file to become accessible
+                        await Task.Delay(i * 1000, cancellationToken);
                         continue;
                     }
 
