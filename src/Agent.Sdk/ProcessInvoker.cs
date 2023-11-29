@@ -242,6 +242,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             _proc.StartInfo.RedirectStandardError = true;
             _proc.StartInfo.RedirectStandardOutput = true;
 
+            Trace.Info("Instantiated a process");
+
             // Ensure we process STDERR even the process exit event happen before we start read STDERR stream.
             if (_proc.StartInfo.RedirectStandardError)
             {
@@ -268,14 +270,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             {
                 _proc.StartInfo.StandardErrorEncoding = outputEncoding;
                 _proc.StartInfo.StandardOutputEncoding = outputEncoding;
+                Trace.Info($"Assigned output encoding: {outputEncoding.EncodingName}");
             }
 
             // Copy the environment variables.
             if (environment != null && environment.Count > 0)
             {
+                Trace.Info($"Copying environment variables...");
+
                 foreach (KeyValuePair<string, string> kvp in environment)
                 {
                     _proc.StartInfo.Environment[kvp.Key] = kvp.Value;
+                    Trace.Info($"Copied environment variable: {kvp.Key} = {kvp.Value}");
                 }
             }
 
@@ -287,12 +293,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             _proc.Exited += ProcessExitedHandler;
 
             // Start the process.
+            Trace.Info($"Starting stopwatch...");
             _stopWatch = Stopwatch.StartNew();
+            Trace.Info($"Starting a new process...");
             _proc.Start();
+
+            Trace.Info($"The process started successfully");
 
             // Decrease invoked process priority, in platform specifc way, relative to parent
             if (!highPriorityProcess)
             {
+                Trace.Info($"Decreasing process priority...");
+
                 DecreaseProcessPriority(_proc);
             }
 
