@@ -248,12 +248,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             if (_proc.StartInfo.RedirectStandardError)
             {
                 Interlocked.Increment(ref _asyncStreamReaderCount);
+                Trace.Info($"Incremented counter (STDERR): {_asyncStreamReaderCount}");
             }
 
             // Ensure we process STDOUT even the process exit event happen before we start read STDOUT stream.
             if (_proc.StartInfo.RedirectStandardOutput)
             {
                 Interlocked.Increment(ref _asyncStreamReaderCount);
+                Trace.Info($"Incremented counter (STDOUT): {_asyncStreamReaderCount}");
             }
 
             // If StandardErrorEncoding or StandardOutputEncoding is not specified the on the
