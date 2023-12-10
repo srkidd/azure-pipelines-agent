@@ -69,27 +69,30 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 {
                     Tracer.Info($"Download Node 6 runner: begin download");
 
-                    using (var httpClient = new HttpClient())
-                    using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
-                    using (var result = await httpClient.GetStreamAsync(downloadUrl))
+                    using (var handler = new HttpClientHandler())
                     {
-                        //81920 is the default used by System.IO.Stream.CopyTo and is under the large object heap threshold (85k).
-                        await result.CopyToAsync(fs, 81920, downloadTimeout.Token);
-                        await fs.FlushAsync(downloadTimeout.Token);
+                        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+                        using (var httpClient = new HttpClient(handler))
+                        using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
+                        using (var result = await httpClient.GetStreamAsync(downloadUrl))
+                        {
+                            //81920 is the default used by System.IO.Stream.CopyTo and is under the large object heap threshold (85k).
+                            await result.CopyToAsync(fs, 81920, downloadTimeout.Token);
+                            await fs.FlushAsync(downloadTimeout.Token);
+                        }
+
+                        Tracer.Info($"Download Node 6 runner: finished download");
+
+                        Tracer.Info($"Extracting downloaded archive into externals folder");
+
+                        ZipFile.ExtractToDirectory(filePath, externalsFolder);
+
+                        Tracer.Info($"Move node binary into relevant folder");
+
+                        Directory.Move(Path.Combine(externalsFolder, urlFileName, "node"), Path.Combine(externalsFolder, "node"));
+
+                        Tracer.Info($"Finished getting Node 6 runner at: {externalsFolder}.");
                     }
-
-                    Tracer.Info($"Download Node 6 runner: finished download");
-
-                    Tracer.Info($"Extracting downloaded archive into externals folder");
-
-                    ZipFile.ExtractToDirectory(filePath, externalsFolder);
-
-                    Tracer.Info($"Move node binary into relevant folder");
-
-                    Directory.Move(Path.Combine(externalsFolder, urlFileName, "node"), Path.Combine(externalsFolder, "node"));
-
-                    Tracer.Info($"Finished getting Node 6 runner at: {externalsFolder}.");
-
                 }
                 catch (OperationCanceledException) when (downloadTimeout.IsCancellationRequested)
                 {
