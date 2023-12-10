@@ -201,9 +201,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                             }
                         });
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
-                    
                     tokenSource.Cancel();
                     throw;
                 }
@@ -241,7 +240,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 }
                 // There is no reason to retry on DirectoryNotFoundException, SecruityException and UnauthorizedAccessException
                 // DeleteDirectory is parallel execution so returned exception is AggregateException (with InnerExeptions) rather than IOException
-                catch (AggregateException aex) when (i < MAX_RETRY_DELETION && aex.InnerExceptions.Any(ex=>ex is IOException))
+                catch (AggregateException aex) when (i < MAX_RETRY_DELETION && aex.InnerExceptions.Any(ex => ex is IOException))
                 {
                     // Pause execution briefly to allow the file to become accessible
                     await Task.Delay(i * 1000, cancellationToken);
