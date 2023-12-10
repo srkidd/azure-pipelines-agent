@@ -1,24 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Agent.Sdk;
-using Agent.Sdk.Util;
-using Microsoft.TeamFoundation.DistributedTask.WebApi;
-using Microsoft.VisualStudio.Services.Agent.Listener.Configuration;
-using Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics;
-using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Microsoft.VisualStudio.Services.WebApi;
-using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.CompilerServices;
-using Microsoft.TeamFoundation.TestClient.PublishTestResults.Telemetry;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Agent.Listener.Configuration;
+using Agent.Sdk;
+using Agent.Sdk.Util;
+
+using Microsoft.TeamFoundation.DistributedTask.WebApi;
+using Microsoft.VisualStudio.Services.Agent.Listener.Configuration;
+using Microsoft.VisualStudio.Services.Agent.Listener.Diagnostics;
 using Microsoft.VisualStudio.Services.Agent.Listener.Telemetry;
-using System.Collections.Generic;
+using Microsoft.VisualStudio.Services.Agent.Util;
+using Microsoft.VisualStudio.Services.WebApi;
+
 using Newtonsoft.Json;
+
+using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener
 {
@@ -334,6 +339,26 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
 
                 HostContext.WritePerfCounter("SessionCreated");
                 _term.WriteLine(StringUtil.Loc("ListenForJobs", DateTime.UtcNow));
+
+                CancellationTokenSource nodeInstallationToken = CancellationTokenSource.CreateLinkedTokenSource(HostContext.AgentShutdownToken);
+                try
+                {
+                    var setProvider = HostContext.GetService<IOrgSettingsProvider>();
+                    var isNode6TasksDisabled = await setProvider.GetPipelineOrgSettingsByNameAsync(HostContext, "disableNode6TasksVar", Trace);
+                    if (isNode6TasksDisabled == false)
+                    {
+                        var nodeUtil = new NodeJsUtil(HostContext);
+                        await nodeUtil.DownloadNodeRunnerAsync(nodeInstallationToken.Token);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Trace.Warning($"Unable to install Node 6 runner. ex:{ex.Message}");
+                }
+                finally
+                {
+                    nodeInstallationToken.Dispose();
+                }
 
                 IJobDispatcher jobDispatcher = null;
                 CancellationTokenSource messageQueueLoopTokenSource = CancellationTokenSource.CreateLinkedTokenSource(HostContext.AgentShutdownToken);
