@@ -168,12 +168,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Trace.Info("Downloading task definitions.");
                     var taskManager = HostContext.GetService<ITaskManager>();
                     await taskManager.DownloadAsync(context, message.Steps);
-
-                    if (!AgentKnobs.DisableNode6Tasks.GetValue(context).AsBoolean())
-                    {
-                        var nodeUtil = new NodeJsUtil(HostContext);
-                        await nodeUtil.DownloadNodeRunnerAsync(register.Token);
-                    } 
           
                     // Parse all Task conditions.
                     Trace.Info("Parsing all task's condition inputs.");
