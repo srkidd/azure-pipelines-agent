@@ -69,9 +69,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 {
                     Tracer.Info($"Download Node 6 runner: begin download");
 
-                    using (var handler = new HttpClientHandler())
+                    using (var handler = HostContext.CreateHttpClientHandler())
                     {
-                        handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => { return true; };
+                        handler.CheckCertificateRevocationList = true;
                         using (var httpClient = new HttpClient(handler))
                         using (var fs = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.None, bufferSize: 4096, useAsync: true))
                         using (var result = await httpClient.GetStreamAsync(downloadUrl))
