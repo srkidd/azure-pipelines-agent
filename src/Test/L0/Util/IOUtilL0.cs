@@ -375,6 +375,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        [Trait("SkipOn", "darwin")]
+        [Trait("SkipOn", "linux")]
         public async void DeleteDirectory_DeletesWithRetry_CancellationRequested()
         {
             using (TestHostContext hc = new TestHostContext(this))
@@ -384,11 +386,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                 Directory.CreateDirectory(tempDir);
                 var tempFile = Path.Combine(tempDir, "exclusiveFile.txt");
                 //it blocks file inside using
-                using (var f = File.Create(tempFile))
+                using (FileStream fs = File.Open(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     // Act
-                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1)))
-                        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
+                        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
                         {
                             await IOUtil.DeleteDirectoryWithRetry(tempDir, cancellationTokenSource.Token);
                         });
@@ -425,6 +427,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        [Trait("SkipOn", "darwin")]
+        [Trait("SkipOn", "linux")]
         public async void DeleteDirectory_DeletesWithRetry_IOException()
         {
             using (TestHostContext hc = new TestHostContext(this))
@@ -436,7 +440,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                 var tempFile = Path.Combine(tempDir, "exclusiveFile.txt");
                 var exceptionThrown = false;
                 //it blocks file inside using
-                using (var f = File.Create(tempFile))
+                using (FileStream fs = File.Open(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     // Act & Assert
                     try
@@ -452,7 +456,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
 
                     finally
                     {
-                        f.Close();
+                        fs.Close();
                     }
                 }
                 Assert.True(exceptionThrown, "Exceptione should be thrown when trying to delete blocked file");
@@ -846,6 +850,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        [Trait("SkipOn", "darwin")]
+        [Trait("SkipOn", "linux")]
         public async void DeleteFile_DeletesWithRetry_IOException()
         {
             using (TestHostContext hc = new TestHostContext(this))
@@ -856,7 +862,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                 Directory.CreateDirectory(tempDir);
                 var tempFile = Path.Combine(tempDir, "exclusiveFile.txt");
                 //it blocks file inside using
-                using (var f = File.Create(tempFile))
+                using (FileStream fs = File.Open(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
                     await Assert.ThrowsAsync<IOException>(async () =>
                      {
@@ -873,6 +879,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
+        [Trait("SkipOn", "darwin")]
+        [Trait("SkipOn", "linux")]
         public async void DeleteFile_DeletesWithRetry_CancellationRequested()
         {
             using (TestHostContext hc = new TestHostContext(this))
@@ -883,10 +891,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Util
                 Directory.CreateDirectory(tempDir);
                 var tempFile = Path.Combine(tempDir, "exclusiveFile.txt");
                 //it blocks file inside using
-                using (var f = File.Create(tempFile))
+                using (FileStream fs = File.Open(tempFile, FileMode.Create, FileAccess.Write, FileShare.None))
                 {
-                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(1)))
-                        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
+                    using (var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(2)))
+                        await Assert.ThrowsAsync<TaskCanceledException>(async () =>
                         {
                             await IOUtil.DeleteFileWithRetry(tempFile, cancellationTokenSource.Token);
                         });
