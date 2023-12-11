@@ -152,13 +152,6 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AGENT_USE_NODE10"),
             new BuiltInDefaultKnobSource("false"));
 
-        public static readonly Knob UseNode16 = new Knob(
-            nameof(UseNode16),
-            "Forces the agent to use Node 16 handler for all Node-based tasks",
-            new RuntimeKnobSource("AGENT_USE_NODE16"),
-            new EnvironmentKnobSource("AGENT_USE_NODE16"),
-            new BuiltInDefaultKnobSource("false"));
-
         public static readonly Knob UseNode20_1 = new Knob(
             nameof(UseNode20_1),
             "Forces the agent to use Node 20 handler for all Node-based tasks",
@@ -505,6 +498,13 @@ namespace Agent.Sdk.Knob
             nameof(EnableFetchingNet6List),
             "Forces the agent to fetch list of .NET 6 supporting systems from server",
             new EnvironmentKnobSource("AGENT_ENABLE_FETCHING_NET6_LIST"),
+            new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob EnableResourceUtilizationWarnings = new Knob(
+            nameof(EnableResourceUtilizationWarnings),
+            "If true, the agent will throw the resource utilization warnings",
+            new RuntimeKnobSource("AZP_ENABLE_RESOURCE_UTILIZATION_WARNINGS"),
+            new EnvironmentKnobSource("AZP_ENABLE_RESOURCE_UTILIZATION_WARNINGS"),
             new BuiltInDefaultKnobSource("false"));
 
         public static readonly Knob ForceCreateTasksDirectory = new Knob(
