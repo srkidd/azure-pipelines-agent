@@ -2,21 +2,21 @@ parameters:
 - name: testProxyAgent
   type: boolean
   displayName: Test Proxy Agent
-  default: false
+  default: true
 
 # Targets
 - name: win_x64
   type: boolean
   displayName: Windows (x64)
-  default: true
+  default: false
 - name: win_x86
   type: boolean
   displayName: Windows (x86)
-  default: true
+  default: false
 - name: linux_x64
   type: boolean
   displayName: Linux (x64)
-  default: true
+  default: false
 - name: linux_arm
   type: boolean
   displayName: Linux (ARM)
@@ -28,15 +28,15 @@ parameters:
 - name: alpine_x64
   type: boolean
   displayName: Alpine (x64)
-  default: true
+  default: false
 - name: macOS_x64
   type: boolean
   displayName: macOS (x64)
-  default: true
+  default: false
 - name: macOS_arm64
   type: boolean
   displayName: macOS (ARM64)
-  default: true
+  default: false
 
 pr:
   branches:
