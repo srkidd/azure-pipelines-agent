@@ -81,7 +81,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Telemetry
 
                 using var vsConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, Trace, agentCertManager.SkipServerCertificateValidation);
                 _ciService.Initialize(vsConnection);
-                await PublishEventsAsync(context, ciEvent);
+                /// This endpoint is not accepting data on some old Azure DevOps OnPremise versions
+                try
+                {
+                    await PublishEventsAsync(context, ciEvent);
+                } catch (VssUnauthorizedException)
+                {
+                    Trace.Warning("Unable to publish telemetry data");
+                }
+                
 
             }
             // We never want to break pipelines in case of telemetry failure.
