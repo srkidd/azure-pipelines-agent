@@ -101,7 +101,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Telemetry
 
         private async Task PublishEventsAsync(IHostContext context, CustomerIntelligenceEvent ciEvent)
         {
-            await _ciService.PublishEventsAsync(new CustomerIntelligenceEvent[] { ciEvent });
+            try
+            {
+                await _ciService.PublishEventsAsync(new CustomerIntelligenceEvent[] { ciEvent });
+            } catch (VssUnauthorizedException) {
+                Trace.Warning("Unable to publish telemetry data");
+            }
         }
     }
     internal static class WellKnownEventTrackProperties
