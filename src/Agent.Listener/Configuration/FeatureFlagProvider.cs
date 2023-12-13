@@ -55,9 +55,8 @@ namespace Agent.Listener.Configuration
             } catch (VssServiceException e) {
                 Trace.Warning("Unable to retrieve feature flag status: " + e.ToString());
                 return new FeatureFlag(featureFlagName, "", "", "Off", "Off");
-            } catch (VssUnauthorizedException exception)
-            {
-                Trace.Warning("Unable to retrieve feature flag with following exception: " + exception.ToString());
+            } catch (VssUnauthorizedException e) {
+                Trace.Warning("Unable to retrieve feature flag with following exception: " + e.ToString());
                 return new FeatureFlag(featureFlagName, "", "", "Off", "Off");
             }
         }
