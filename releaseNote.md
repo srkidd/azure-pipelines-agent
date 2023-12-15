@@ -1,3 +1,26 @@
+## Features
+ - Handle delete exception to avoid agent hang (#4508)
+ - Prevent telemetry publishing for customer's tasks. (#4522)
+ - Fail Job When Agent dies (#4536)
+
+## Bugs
+ - Fix skipsslvertificate option (#4533)
+ - [AgentWorker.PageLogger] - Ignore endgroup tag when counting lines (#4549)
+ - Add proper exception handling for Telemetery/FeatureFlag enpoints (#4568)
+
+## Misc
+ - Update Node 20 version to the latest LTS (20.9.0) by @mmajcica  (#4494)
+ - For node20 fallback on host, check for glibc instead of OS version check (#4524)
+ - Added release notifications (#4525)
+ - Revert "Remove VSTS-task-lib from agent" (#4526)
+ - Fix OSArchitecture for osx-arm64 (#4528)
+ - Add topic about RHEL UBI in Red Hat doc (#4538)
+ - remove extra nuget feed sources (#4540)
+ - Localization update (#4552)
+ - Fix release notifications (#4574)
+ - Added check for existing agent versions in scheduled releases (#4575)
+ - Added retry for Install unzip step (#4578)
+
 
 ## Agent Downloads
 
