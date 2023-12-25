@@ -351,6 +351,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
 
                 executionContext.Warning(deprecationMessage);
+
+                var tailoredDeprecationMessage = taskJson["tailoredDeprecationMessage"];
+
+                if (tailoredDeprecationMessage != null)
+                {
+                    executionContext.Warning(tailoredDeprecationMessage.ToString());
+                }
             }
         }
 
