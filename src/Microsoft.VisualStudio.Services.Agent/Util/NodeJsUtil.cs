@@ -44,9 +44,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 urlFileName = $"node-v6-latest-{VarUtil.OS}-{VarUtil.OSArchitecture}";
             }
 
-            if (PlatformUtil.HostOS == PlatformUtil.OS.OSX && PlatformUtil.HostArchitecture == System.Runtime.InteropServices.Architecture.X86)
+            if (PlatformUtil.HostOS == PlatformUtil.OS.OSX && PlatformUtil.HostArchitecture == System.Runtime.InteropServices.Architecture.Arm64)
             {
-                urlFileName = $"node-v6-latest-linux-x86";
+                urlFileName = $"node-v6-latest-darwin-x64";
             }
 
             urlFileName = urlFileName.ToLower();
