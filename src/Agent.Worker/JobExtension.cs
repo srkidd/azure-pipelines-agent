@@ -168,9 +168,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Trace.Info("Downloading task definitions.");
                     var taskManager = HostContext.GetService<ITaskManager>();
                     await taskManager.DownloadAsync(context, message.Steps);
-
                     if (!AgentKnobs.DisableNode6Tasks.GetValue(context).AsBoolean())
                     {
+                        Trace.Info("Downloading Node 6 runner.");
                         var nodeUtil = new NodeJsUtil(HostContext);
                         await nodeUtil.DownloadNodeRunnerAsync(register.Token);
                     } 

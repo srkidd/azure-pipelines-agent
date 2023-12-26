@@ -81,15 +81,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                             await fs.FlushAsync(downloadTimeout.Token);
                         }
 
-                        Tracer.Info($"Download Node 6 runner: finished download");
-
                         Tracer.Info($"Extracting downloaded archive into externals folder");
 
-                        ZipFile.ExtractToDirectory(filePath, externalsFolder);
+                        var tempFolder = Path.Combine(externalsFolder, Path.GetFileNameWithoutExtension(filePath));
+
+                        ZipFile.ExtractToDirectory(filePath, tempFolder);
 
                         Tracer.Info($"Move node binary into relevant folder");
 
-                        Directory.Move(Path.Combine(externalsFolder, urlFileName, "node"), Path.Combine(externalsFolder, "node"));
+                        var sourceFolder = Path.Combine(tempFolder, Directory.GetDirectories(tempFolder)[0], PlatformUtil.RunningOnWindows ? "node" : "");
+                        var destFolder = Path.Combine(externalsFolder,"node");
+
+                        Directory.Move(sourceFolder,destFolder);
 
                         Tracer.Info($"Finished getting Node 6 runner at: {externalsFolder}.");
                     }
@@ -123,6 +126,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         {
                             Tracer.Verbose("Deleting Node 6 runner package zip: {0}", filePath);
                             IOUtil.DeleteFile(filePath);
+                            IOUtil.DeleteDirectory(Path.Combine(externalsFolder,Path.GetFileNameWithoutExtension(filePath)), cancellationToken);
                         }
                     }
                     catch (Exception ex)
