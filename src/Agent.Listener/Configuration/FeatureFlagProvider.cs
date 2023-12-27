@@ -42,18 +42,22 @@ namespace Agent.Listener.Configuration
 
             var credMgr = context.GetService<ICredentialManager>();
             var configManager = context.GetService<IConfigurationManager>();
+            var agentCertManager = context.GetService<IAgentCertificateManager>();
 
             VssCredentials creds = credMgr.LoadCredentials();
             ArgUtil.NotNull(creds, nameof(creds));
 
             AgentSettings settings = configManager.LoadSettings();
-            using var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, traceWriter);
+            using var vssConnection = VssUtil.CreateConnection(new Uri(settings.ServerUrl), creds, traceWriter, agentCertManager.SkipServerCertificateValidation);
             var client = vssConnection.GetClient<FeatureAvailabilityHttpClient>();
             try
             {
                 return await client.GetFeatureFlagByNameAsync(featureFlagName, checkFeatureExists: false);
             } catch (VssServiceException e) {
                 Trace.Warning("Unable to retrieve feature flag status: " + e.ToString());
+                return new FeatureFlag(featureFlagName, "", "", "Off", "Off");
+            } catch (VssUnauthorizedException e) {
+                Trace.Warning("Unable to retrieve feature flag with following exception: " + e.ToString());
                 return new FeatureFlag(featureFlagName, "", "", "Off", "Off");
             }
         }
