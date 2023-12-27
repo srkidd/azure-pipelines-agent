@@ -72,7 +72,6 @@ namespace Microsoft.VisualStudio.Services.Agent
         private static int[] _vssHttpCredentialEventIds = new int[] { 11, 13, 14, 15, 16, 17, 18, 20, 21, 22, 27, 29 };
         private readonly ConcurrentDictionary<Type, object> _serviceInstances = new ConcurrentDictionary<Type, object>();
         protected readonly ConcurrentDictionary<Type, Type> ServiceTypes = new ConcurrentDictionary<Type, Type>();
-        private ILoggedSecretMasker _secretMasker;
         private readonly ProductInfoHeaderValue _userAgent = new ProductInfoHeaderValue($"VstsAgentCore-{BuildConstants.AgentPackage.PackageName}", BuildConstants.AgentPackage.Version);
         private CancellationTokenSource _agentShutdownTokenSource = new CancellationTokenSource();
         private object _perfLock = new object();
@@ -83,21 +82,27 @@ namespace Microsoft.VisualStudio.Services.Agent
         private AssemblyLoadContext _loadContext;
         private IDisposable _httpTraceSubscription;
         private IDisposable _diagListenerSubscription;
-        private LegacySecretMasker _legacySecretMasker = new LegacySecretMasker();
-        private SecretMasker _newSecretMasker = new SecretMasker();
+        private IDisposable _disposableSecretMasker;
+        private ILoggedSecretMasker _loggedSecretMasker;
         private StartupType _startupType;
         private string _perfFile;
         private HostType _hostType;
         public event EventHandler Unloading;
         public CancellationToken AgentShutdownToken => _agentShutdownTokenSource.Token;
         public ShutdownReason AgentShutdownReason { get; private set; }
-        public ILoggedSecretMasker SecretMasker => _secretMasker;
+        public ILoggedSecretMasker SecretMasker => _loggedSecretMasker;
         public ProductInfoHeaderValue UserAgent => _userAgent;
 
         public HostContext(HostType hostType, string logFile = null)
         {
-            var useNewSecretMasker =  AgentKnobs.EnableNewSecretMasker.GetValue(this).AsBoolean();
-            _secretMasker = useNewSecretMasker ? new LoggedSecretMasker(_newSecretMasker) : new LegacyLoggedSecretMasker(_legacySecretMasker);
+            var useNewSecretMasker = AgentKnobs.EnableNewSecretMasker.GetValue(this).AsBoolean();
+
+            _disposableSecretMasker = useNewSecretMasker ? new LoggedSecretMasker() : new LegacySecretMasker();
+
+            _loggedSecretMasker = useNewSecretMasker 
+                ? (LoggedSecretMasker)_disposableSecretMasker
+                : new LegacyLoggedSecretMasker((LegacySecretMasker)_disposableSecretMasker);
+            
             // Validate args.
             if (hostType == HostType.Undefined)
             {
@@ -111,7 +116,9 @@ namespace Microsoft.VisualStudio.Services.Agent
             this.SecretMasker.AddValueEncoder(ValueEncoders.JsonStringEscape, $"HostContext_{WellKnownSecretAliases.JsonStringEscape}");
             this.SecretMasker.AddValueEncoder(ValueEncoders.UriDataEscape, $"HostContext_{WellKnownSecretAliases.UriDataEscape}");
             this.SecretMasker.AddValueEncoder(ValueEncoders.BackslashEscape, $"HostContext_{WellKnownSecretAliases.UriDataEscape}");
-            this.SecretMasker.AddRegex(AdditionalMaskingRegexes.UrlSecretPattern, $"HostContext_{WellKnownSecretAliases.UrlSecretPattern}");
+
+            this.SecretMasker.AddRegex(AdditionalMaskingPatterns.UrlSecretPattern,
+                                       $"HostContext_{WellKnownSecretAliases.UrlSecretPattern}");
 
             // Create the trace manager.
             if (string.IsNullOrEmpty(logFile))
@@ -130,7 +137,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                     logRetentionDays = _defaultLogRetentionDays;
                 }
 
-                // this should give us _diag folder under agent root directory as default value for diagLogDirctory
+                // this should give us _diag folder under agent root directory as default value for diagLogDirectory
                 string diagLogPath = GetDiagDirectory(_hostType);
                 _traceManager = new TraceManager(new HostTraceListener(diagLogPath, hostType.ToString(), logPageSize, logRetentionDays), this.SecretMasker);
 
@@ -594,10 +601,8 @@ namespace Microsoft.VisualStudio.Services.Agent
                 _trace = null;
                 _httpTrace?.Dispose();
                 _httpTrace = null;
-                _legacySecretMasker?.Dispose();
-                _legacySecretMasker = null;
-                _newSecretMasker?.Dispose();
-                _newSecretMasker = null;
+                _disposableSecretMasker?.Dispose();
+                _disposableSecretMasker = null;
 
                 _agentShutdownTokenSource?.Dispose();
                 _agentShutdownTokenSource = null;
@@ -746,9 +751,12 @@ namespace Microsoft.VisualStudio.Services.Agent
         public static void AddAdditionalMaskingRegexes(this IHostContext context)
         {
             ArgUtil.NotNull(context, nameof(context));
-            foreach (var pattern in AdditionalMaskingRegexes.CredScanPatterns)
+            foreach (var pattern in AdditionalMaskingPatterns.OneESPatterns)
             {
-                context.SecretMasker.AddRegex(pattern, $"HostContext_{WellKnownSecretAliases.CredScanPatterns}");
+                context.SecretMasker.AddRegex(pattern.Regex,
+                                              $"HostContext_{WellKnownSecretAliases.OneESScanPatterns}",
+                                              pattern.SniffLiterals,
+                                              pattern.RegexOptions);
             }
         }
     }

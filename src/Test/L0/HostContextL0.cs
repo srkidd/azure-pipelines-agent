@@ -115,7 +115,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             // Arrange.
             try
             {
-                Environment.SetEnvironmentVariable("AZP_USE_CREDSCAN_REGEXES", "true");
+                Environment.SetEnvironmentVariable("AZP_USE_1ES_REGEXES", "true");
 
                 using (var _hc = Setup())
                 {
@@ -128,7 +128,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
             }
             finally
             {
-                Environment.SetEnvironmentVariable("AZP_USE_CREDSCAN_REGEXES", null);
+                Environment.SetEnvironmentVariable("AZP_USE_1ES_REGEXES", null);
             }
         }
 

@@ -1,5 +1,9 @@
 ﻿using Agent.Sdk.SecretMasking;
 using Microsoft.TeamFoundation.DistributedTask.Logging;
+
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
+
 using ISecretMasker = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
 
 namespace Agent.Sdk.Util.SecretMasking;
@@ -60,7 +64,7 @@ public class LegacyLoggedSecretMasker : ILoggedSecretMasker
     /// </summary>
     /// <param name="pattern"></param>
     /// <param name="origin"></param>
-    public void AddRegex(string pattern, string origin)
+    public void AddRegex(string pattern, string origin, ISet<string> sniffLiterals = null, RegexOptions regexOptions = 0)
     {
         this.Trace($"Setting up regex for origin: {origin}.");
         if (pattern == null)
@@ -137,5 +141,10 @@ public class LegacyLoggedSecretMasker : ILoggedSecretMasker
     Sdk.SecretMasking.ISecretMasker Sdk.SecretMasking.ISecretMasker.Clone()
     {
         return new LegacyLoggedSecretMasker(this._secretMasker.Clone());
+    }
+
+    public void AddRegex(string pattern, ISet<string> sniffLiterals, RegexOptions regexOptions, string origin)
+    {
+        throw new System.NotImplementedException();
     }
 }

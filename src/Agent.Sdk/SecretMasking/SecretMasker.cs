@@ -8,12 +8,12 @@ using System.Threading;
 using ValueEncoder = Microsoft.TeamFoundation.DistributedTask.Logging.ValueEncoder;
 using ISecretMaskerVSO = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
 using System.Text.RegularExpressions;
+using System.Diagnostics;
 
 namespace Agent.Sdk.SecretMasking;
 
-public sealed class SecretMasker : ISecretMasker, IDisposable
+public class SecretMasker : ISecretMasker, IDisposable
  {
-
      public SecretMasker()
      {
          MinSecretLength = 0;
@@ -55,16 +55,26 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
          }
      }
 
-     /// <summary>
-     /// This property allows to set the minimum length of a secret for masking
-     /// </summary>
-     public int MinSecretLength { get; set; }
+    /// <summary>
+    /// Total time spent masking content for the lifetime of this secret masker instance.
+    /// </summary>
+    public TimeSpan ElapsedMaskingTime { get; private set; }
+
+    /// <summary>
+    /// This property allows to set the minimum length of a secret for masking
+    /// </summary>
+    virtual public int MinSecretLength { get; set; }
+
+    public void AddRegex(String pattern)
+    {
+        AddRegex(pattern, sniffLiterals: null, RegexOptions.Compiled | RegexOptions.ExplicitCapture);
+    }
 
     /// <summary>
     /// This implementation assumes no more than one thread is adding regexes, values, or encoders at any given time.
     /// </summary>
-    public void AddRegex(String pattern)
-     {
+    public void AddRegex(String pattern, ISet<string> sniffLiterals, RegexOptions regexOptions)
+    {
          // Test for empty.
          if (String.IsNullOrEmpty(pattern))
          {
@@ -82,7 +92,7 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
              m_lock.EnterWriteLock();
 
              // Add the value.
-             m_regexSecrets.Add(new RegexSecret(pattern));
+             m_regexSecrets.Add(new RegexSecret(pattern, sniffLiterals, regexOptions));
          }
          finally
          {
@@ -232,13 +242,23 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
 
      public ISecretMasker Clone() => new SecretMasker(this);
 
-     public void Dispose()
-     {
-         m_lock?.Dispose();
-         m_lock = null;
-     }
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
 
-     public String MaskSecrets(String input)
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing)
+        {
+            m_lock?.Dispose();
+            m_lock = null;
+        }
+    }
+
+
+    public String MaskSecrets(String input)
      {
          if (String.IsNullOrEmpty(input))
          {
@@ -252,6 +272,8 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
          {
              m_lock.EnterReadLock();
 
+            var stopwatch = Stopwatch.StartNew();
+
              // Get indexes and lengths of all substrings that will be replaced.
              foreach (RegexSecret regexSecret in m_regexSecrets)
              {
@@ -262,6 +284,8 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
              {
                  secretPositions.AddRange(valueSecret.GetPositions(input));
              }
+
+            ElapsedMaskingTime += stopwatch.Elapsed;
          }
          finally
          {
@@ -325,7 +349,7 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
      /// Removes secrets from the dictionary shorter than the MinSecretLength property.
      /// This implementation assumes no more than one thread is adding regexes, values, or encoders at any given time.
      /// </summary>
-     public void RemoveShortSecretsFromDictionary()
+     public virtual void RemoveShortSecretsFromDictionary()
      {
          var filteredValueSecrets = new HashSet<ValueSecret>();
          var filteredRegexSecrets = new HashSet<RegexSecret>();
@@ -385,37 +409,6 @@ public sealed class SecretMasker : ISecretMasker, IDisposable
              }
          }
      }
-
-    public void AddRegex(string pattern, RegexOptions options)
-    {
-        RegexSecret regexSecret = new RegexSecret(pattern);
-        // Test for empty.
-        if (String.IsNullOrEmpty(pattern))
-        {
-            return;
-        }
-
-        if (pattern.Length < MinSecretLength)
-        {
-            return;
-        }
-
-        // Write section.
-        try
-        {
-            m_lock.EnterWriteLock();
-
-            // Add the value.
-            m_regexSecrets.Add(regexSecret);
-        }
-        finally
-        {
-            if (m_lock.IsWriteLockHeld)
-            {
-                m_lock.ExitWriteLock();
-            }
-        }
-    }
 
     ISecretMaskerVSO ISecretMaskerVSO.Clone()
     {
