@@ -4,7 +4,7 @@ namespace Agent.Sdk.SecretMasking;
 
 internal sealed class Replacement
 {
-    public Replacement(Int32 start, Int32 length, string token = "***")
+    public Replacement(Int32 start, Int32 length, String token = "***")
     {
         Start = start;
         Length = length;
@@ -17,7 +17,7 @@ internal sealed class Replacement
         Start = copy.Start;
         Length = copy.Length;
     }
-    public string Token { get; private set; }
+    public String Token { get; private set; }
     public Int32 Start { get; set; }
     public Int32 Length { get; set; }
     public Int32 End

@@ -1,8 +1,11 @@
 ﻿using Agent.Sdk.SecretMasking;
 using Microsoft.TeamFoundation.DistributedTask.Logging;
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 using ISecretMasker = Microsoft.TeamFoundation.DistributedTask.Logging.ISecretMasker;
 
@@ -64,7 +67,7 @@ public class LegacyLoggedSecretMasker : ILoggedSecretMasker
     /// </summary>
     /// <param name="pattern"></param>
     /// <param name="origin"></param>
-    public void AddRegex(string pattern, string origin, ISet<string> sniffLiterals = null, RegexOptions regexOptions = 0)
+    public void AddRegex(string pattern, string origin, string moniker = null, ISet<string> sniffLiterals = null, RegexOptions regexOptions = 0)
     {
         this.Trace($"Setting up regex for origin: {origin}.");
         if (pattern == null)
@@ -133,14 +136,30 @@ public class LegacyLoggedSecretMasker : ILoggedSecretMasker
         return new LegacyLoggedSecretMasker(this._secretMasker.Clone());
     }
 
+    public double elapsedMaskingTime;
+
+
     public string MaskSecrets(string input)
     {
-        return this._secretMasker.MaskSecrets(input);
+        var stopwatch = Stopwatch.StartNew();
+        string result = this._secretMasker.MaskSecrets(input);
+        Interlocked.Exchange(ref elapsedMaskingTime, stopwatch.ElapsedTicks);
+        return result;
     }
 
     Sdk.SecretMasking.ISecretMasker Sdk.SecretMasking.ISecretMasker.Clone()
     {
         return new LegacyLoggedSecretMasker(this._secretMasker.Clone());
+    }
+
+    public IDictionary<string, string> GetTelemetry()
+    {
+        var result = new Dictionary<string, string>
+        {
+            { "ElapsedMaskingTime", elapsedMaskingTime.ToString() },
+        };
+
+        return result;
     }
 
     public void AddRegex(string pattern, ISet<string> sniffLiterals, RegexOptions regexOptions, string origin)

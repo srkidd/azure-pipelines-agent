@@ -48,7 +48,7 @@ namespace Agent.Sdk.SecretMasking
         /// </summary>
         /// <param name="pattern"></param>
         /// <param name="origin"></param>
-        public void AddRegex(string pattern, string origin, ISet<string> sniffLiterals, RegexOptions regexOptions)
+        public void AddRegex(string pattern, string origin, string moniker, ISet<string> sniffLiterals, RegexOptions regexOptions)
         {
             this.Trace($"Setting up regex for origin: {origin}.");
             if (pattern == null)
@@ -57,7 +57,7 @@ namespace Agent.Sdk.SecretMasking
                 return;
             }
 
-            AddRegex(pattern, sniffLiterals,regexOptions);
+            AddRegex(pattern, moniker, sniffLiterals, regexOptions);
         }
 
         // We don't allow to skip secrets longer than 5 characters.
@@ -108,5 +108,16 @@ namespace Agent.Sdk.SecretMasking
         }
 
         ISecretMaskerVSO ISecretMaskerVSO.Clone() => this.Clone();
+
+        public IDictionary<string, string> GetTelemetry()
+        {
+            var result = new Dictionary<string, string>
+            {
+                { nameof(ElapsedMaskingTime), ElapsedMaskingTime.ToString() },
+            };
+
+            result["Redactions"] = string.Join(',', ReplacementTokens);
+            return result;
+        }
     }
 }

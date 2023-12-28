@@ -11,6 +11,8 @@ namespace Microsoft.VisualStudio.Services.Agent
     {
         public string Regex { get; set; }
 
+        public string Moniker { get; set; }
+
         public ISet<string> SniffLiterals { get; set; }
 
         public RegexOptions RegexOptions { get; set; }

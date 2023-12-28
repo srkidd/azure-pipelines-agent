@@ -15,9 +15,10 @@ namespace Agent.Sdk.SecretMasking
     {
         static int MinSecretLengthLimit { get; }
 
-        void AddRegex(String pattern, string origin, ISet<string> sniffLiterals = null, RegexOptions regexOptions = 0);
+        void AddRegex(String pattern, string origin, string moniker = null, ISet<string> sniffLiterals = null, RegexOptions regexOptions = 0);
         void AddValue(String value, string origin);
         void AddValueEncoder(ValueEncoder encoder, string origin);
         void SetTrace(ITraceWriter trace);
+        IDictionary<string, string> GetTelemetry();
     }
 }

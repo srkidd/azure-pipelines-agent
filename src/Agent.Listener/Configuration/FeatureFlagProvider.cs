@@ -25,7 +25,6 @@ namespace Agent.Listener.Configuration
         /// <param name="featureFlagName">The name of the feature flag to get the status of.</param>
         /// <param name="traceWriter">Trace writer for output</param>
         /// <returns>The status of the feature flag.</returns>
-        /// <exception cref="VssUnauthorizedException">Thrown if token is not suitable for retrieving feature flag status</exception>
         /// <exception cref="InvalidOperationException">Thrown if agent is not configured</exception>
         public Task<FeatureFlag> GetFeatureFlagAsync(IHostContext context, string featureFlagName, ITraceWriter traceWriter, CancellationToken ctk = default);
 

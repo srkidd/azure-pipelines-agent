@@ -22,7 +22,6 @@ using Agent.Sdk.SecretMasking;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 using Agent.Sdk.Util;
 using Microsoft.TeamFoundation.DistributedTask.Logging;
-using SecretMasker = Agent.Sdk.SecretMasking.SecretMasker;
 using LegacySecretMasker = Microsoft.TeamFoundation.DistributedTask.Logging.SecretMasker;
 using Agent.Sdk.Util.SecretMasking;
 
@@ -755,6 +754,7 @@ namespace Microsoft.VisualStudio.Services.Agent
             {
                 context.SecretMasker.AddRegex(pattern.Regex,
                                               $"HostContext_{WellKnownSecretAliases.OneESScanPatterns}",
+                                              pattern.Moniker,
                                               pattern.SniffLiterals,
                                               pattern.RegexOptions);
             }

@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.Services.Agent.Util;
 
@@ -11,12 +13,14 @@ namespace Agent.Sdk.SecretMasking;
 internal sealed class RegexSecret : ISecret
 {
     public RegexSecret(String pattern,
+                       string moniker = null,
                        ISet<string> sniffLiterals = null,
                        RegexOptions regexOptions = RegexOptions.Compiled | RegexOptions.ExplicitCapture)
     {
         ArgUtil.NotNullOrEmpty(pattern, nameof(pattern));
 
-        m_pattern = pattern;
+        Pattern = pattern;
+        Moniker = moniker;
         m_regexOptions = regexOptions;
         m_sniffLiterals = sniffLiterals;
         m_regex = new Regex(pattern, regexOptions);
@@ -30,7 +34,8 @@ internal sealed class RegexSecret : ISecret
             return false;
         }
 
-        if (!String.Equals(m_pattern, item.m_pattern, StringComparison.Ordinal) ||
+        if (!String.Equals(Pattern, item.Pattern, StringComparison.Ordinal) ||
+            !String.Equals(Moniker, item.Moniker, StringComparison.Ordinal) ||
             m_regexOptions != item.m_regexOptions)
         {
             return false;
@@ -48,7 +53,7 @@ internal sealed class RegexSecret : ISecret
             return false; 
         }
 
-        foreach(string sniffLiteral in m_sniffLiterals) 
+        foreach (string sniffLiteral in m_sniffLiterals) 
         { 
             if (!item.m_sniffLiterals.Contains(sniffLiteral))
             {
@@ -64,7 +69,13 @@ internal sealed class RegexSecret : ISecret
         int result = 17;
         unchecked
         {
-            result = (result * 31) + m_pattern.GetHashCode();
+            result = (result * 31) + Pattern.GetHashCode();
+
+            if (Moniker != null)
+            {
+                result = (result * 31) + Moniker.GetHashCode();
+            }
+
             result = (result * 31) + m_regexOptions.GetHashCode();
 
             // Use xor for set values to be order-independent.
@@ -82,7 +93,7 @@ internal sealed class RegexSecret : ISecret
         return result;
     }
 
-    public IEnumerable<Replacement> GetPositions(String input)
+    public IEnumerable<Replacement> GetReplacements(String input)
     {
         bool runRegexes = m_sniffLiterals == null ? true : false;
 
@@ -107,7 +118,10 @@ internal sealed class RegexSecret : ISecret
                 if (match.Success)
                 {
                     startIndex = match.Index + 1;
-                    yield return new Replacement(match.Index, match.Length, "+++");
+                    string token = Moniker != null
+                        ? CreateTelemetryForMatch(Moniker, match.Value)
+                        : "+++";
+                    yield return new Replacement(match.Index, match.Length, token);
                 }
                 else
                 {
@@ -117,9 +131,30 @@ internal sealed class RegexSecret : ISecret
         }
     }
 
-    public string Pattern { get { return m_pattern; } }
+    private string CreateTelemetryForMatch(string moniker, string value)
+    {
+        using var sha = SHA256.Create();
+        byte[] byteHash = Encoding.UTF8.GetBytes(value);
+        byte[] checksum = sha.ComputeHash(byteHash);
+
+        string hashedValue = BitConverter.ToString(checksum).Replace("-", string.Empty, StringComparison.Ordinal);
+
+        return $"{moniker}:{hashedValue}";
+    }
+
+    internal static string HashString(string value)
+    {
+        byte[] byteHash = Encoding.UTF8.GetBytes(value);
+        byte[] checksum = s_sha256.ComputeHash(byteHash);
+        return BitConverter.ToString(checksum).Replace("-", string.Empty, StringComparison.Ordinal);
+    }
+
+    public string Pattern { get; private set; }
+    public string Moniker { get; private set; }
+
     private readonly ISet<string> m_sniffLiterals;
     private readonly RegexOptions m_regexOptions;
-    private readonly String m_pattern;
     private readonly Regex m_regex;
+
+    private static readonly SHA256 s_sha256 = SHA256.Create();
 }
