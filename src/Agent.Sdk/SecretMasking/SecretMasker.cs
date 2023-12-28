@@ -44,8 +44,8 @@ public class SecretMasker : ISecretMasker, IDisposable
             // Copy the hash sets.
             MinSecretLength = copy.MinSecretLength;
             m_originalValueSecrets = new HashSet<ValueSecret>(copy.m_originalValueSecrets);
-            m_valueEncoders = new HashSet<ValueEncoder>(copy.m_valueEncoders);
             m_regexSecrets = new HashSet<RegexSecret>(copy.m_regexSecrets);
+            m_valueEncoders = new HashSet<ValueEncoder>(copy.m_valueEncoders);
             m_valueSecrets = new HashSet<ValueSecret>(copy.m_valueSecrets);
             ReplacementTokens = copy.ReplacementTokens;
         }

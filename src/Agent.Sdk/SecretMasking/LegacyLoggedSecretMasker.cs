@@ -18,6 +18,7 @@ namespace Agent.Sdk.Util.SecretMasking;
 public class LegacyLoggedSecretMasker : ILoggedSecretMasker
 {
     private ISecretMasker _secretMasker;
+    private double elapsedMaskingTime;
     private ITraceWriter _trace;
 
     private void Trace(string msg)
@@ -136,8 +137,8 @@ public class LegacyLoggedSecretMasker : ILoggedSecretMasker
         return new LegacyLoggedSecretMasker(this._secretMasker.Clone());
     }
 
-    public double elapsedMaskingTime;
 
+    public double ElapsedMaskingTime => this.elapsedMaskingTime;
 
     public string MaskSecrets(string input)
     {
@@ -156,14 +157,9 @@ public class LegacyLoggedSecretMasker : ILoggedSecretMasker
     {
         var result = new Dictionary<string, string>
         {
-            { "ElapsedMaskingTime", elapsedMaskingTime.ToString() },
+            { nameof(ElapsedMaskingTime), elapsedMaskingTime.ToString() },
         };
 
         return result;
-    }
-
-    public void AddRegex(string pattern, ISet<string> sniffLiterals, RegexOptions regexOptions, string origin)
-    {
-        throw new System.NotImplementedException();
     }
 }
