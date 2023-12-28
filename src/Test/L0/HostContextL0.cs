@@ -113,22 +113,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         public void OtherSecretsAreMasked(string input, string expected)
         {
             // Arrange.
-            try
-            {
-                Environment.SetEnvironmentVariable("AZP_USE_1ES_REGEXES", "true");
 
-                using (var _hc = Setup())
-                {
-                    // Act.
-                    var result = _hc.SecretMasker.MaskSecrets(input);
-
-                    // Assert.
-                    Assert.Equal(expected, result);
-                }
-            }
-            finally
+            using (var _hc = Setup())
             {
-                Environment.SetEnvironmentVariable("AZP_USE_1ES_REGEXES", null);
+                // Act.
+                var result = _hc.SecretMasker.MaskSecrets(input);
+
+                // Assert.
+                Assert.Equal(expected, result);
             }
         }
 
