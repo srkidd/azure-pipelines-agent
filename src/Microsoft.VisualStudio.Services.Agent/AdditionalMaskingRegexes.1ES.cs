@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 new PatternDescriptor
                 {
                     Regex = @"\b[0-9A-Za-z+/]{33}(AIoT|\+(ASb|AEh|ARm))[A-P][0-9A-Za-z+/]{5}=(\b|$)",
-                    SniffLiterals = new HashSet<string>(new[]{ "AIoT", "+ASb", "+AEh", "+Rm" }),
+                    SniffLiterals = new HashSet<string>(new[]{ "AIoT", "+ASb", "+AEh", "+ARm" }),
                     Moniker = "SEC102/101.Unclassified32ByteBase64String",
                 },
 
@@ -33,7 +33,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 {
                     Regex = @"(\b|$)[0-9A-Za-z+/]{76}(APIM|ACDb|\+(ABa|AMC|ASt))[0-9A-Za-z+/]{5}[AQgw]==((\b|$)|$)",
                     SniffLiterals = new HashSet<string>(new[]{ "APIM", "ACDb", "+ABa", "+AMC", "+ASt", }),
-                    Moniker = "SEC102/102.Unclassified32ByteBase64String",
+                    Moniker = "SEC102/102.Unclassified64ByteBase64String",
                 },
                        
                 // Azure Function key.
