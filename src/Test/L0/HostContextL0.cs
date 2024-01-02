@@ -111,12 +111,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
         // Some secrets that the scanner should NOT suppress.
         [InlineData("SSdtIGEgY29tcGxldGVseSBpbm5vY3VvdXMgc3RyaW5nLg==", null)]
         [InlineData("The password is knock knock knock", null)]
-        public void OtherSecretsAreMasked(string input, string expected)
+        public void OtherSecretsAreMasked(string input, string expectedValue)
         {
             // Arrange.
 
             foreach (string knobValue in new[] { "true", null })
             {
+                string expected = expectedValue;
+
                 // A null value in expected means we expect the input pattern
                 // to be returned (as it is unmasked). When our knob is null,
                 // indicating use of the legacy masker, we always expect "***"
