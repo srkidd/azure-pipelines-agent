@@ -215,12 +215,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 outputEncoding = Encoding.UTF8;
             }
 
+            var enableResourceUtilizationWarnings = AgentKnobs.EnableResourceUtilizationWarnings.GetValue(ExecutionContext).AsBoolean();
+            int exitCode = 0;
+
             try
             {
                 // Execute the process. Exit code 0 should always be returned.
                 // A non-zero exit code indicates infrastructural failure.
                 // Task failure should be communicated over STDOUT using ## commands.
-                Task step = StepHost.ExecuteAsync(workingDirectory: StepHost.ResolvePathForStepHost(workingDirectory),
+                var step = StepHost.ExecuteAsync(workingDirectory: StepHost.ResolvePathForStepHost(workingDirectory),
                                                   fileName: StepHost.ResolvePathForStepHost(file),
                                                   arguments: arguments,
                                                   environment: Environment,
@@ -240,11 +243,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 }
                 else
                 {
-                    await step;
+                    exitCode = await step;
                 }
             }
             finally
             {
+                if (enableResourceUtilizationWarnings && exitCode == 127) 
+                {
+                    ExecutionContext.Error(StringUtil.Loc("AgentOutOfMemoryFailure"));
+                }
+
                 StepHost.OutputDataReceived -= OnDataReceived;
                 StepHost.ErrorDataReceived -= OnDataReceived;
             }
