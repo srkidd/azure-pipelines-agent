@@ -1,3 +1,14 @@
+## Features
+ - Remove the support matrix from the README.md (#4557)
+ - Remove Node 16 Knob from Agent (#4565)
+ - Enable publishing attachments for Junit test results (#4584)
+
+## Bugs
+
+
+## Misc
+ - Move agent release notifications to separate stage (#4580)
+
 
 ## Agent Downloads
 
