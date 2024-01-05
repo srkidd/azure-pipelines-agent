@@ -112,8 +112,6 @@ exports.calculatePackagesHash = function calculatePackagesHash() {
 
     try {
         const osArchFolders = fs.readdirSync(packagesDirPath);
-
-        // Filter out directories, leaving only files
         const files = osArchFolders.map(folder => fs.readdirSync(path.join(packagesDirPath, folder))
             .map(file => { return { filePath: path.join(folder, file), fileName: file } }))
             .flat()
@@ -126,7 +124,8 @@ exports.calculatePackagesHash = function calculatePackagesHash() {
             hashes[file.fileName] = sha256Hash;
         })
     } catch (error) {
-        throw error;
+        // throw error;
+        console.log('Error:', error.stack)
     }
 
     return hashes;
