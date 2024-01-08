@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -10,7 +10,12 @@ using System.Threading.Tasks;
 using Agent.Sdk;
 using Agent.Sdk.Util;
 
-namespace Microsoft.VisualStudio.Services.Agent.Util
+using Microsoft.VisualStudio.Services.Agent.Util;
+using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
+
+using Newtonsoft.Json;
+
+namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
     public class NodeJsUtil
     {
@@ -23,12 +28,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             Tracer = hostContext.GetTrace(this.GetType().Name);
             HostContext = hostContext;
         }
-        public async Task DownloadNodeRunnerAsync(CancellationToken cancellationToken)
+        public async Task DownloadNodeRunnerAsync(IExecutionContext context, CancellationToken cancellationToken)
         {
 
             if (File.Exists(Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "node", "bin", $"node{IOUtil.ExeExtension}")))
             {
                 Tracer.Info($"Node 6 runner already exist.");
+                PublishTelemetry(context, "", true, false);
                 return;
             }
 
@@ -60,6 +66,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
             var timeoutSeconds = 600;
 
+            var isInstalled = false;
+
             using (var downloadTimeout = CancellationTokenSource.CreateLinkedTokenSource(CancellationToken))
             {
                 // Set a timeout because sometimes stuff gets stuck.
@@ -90,11 +98,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         Tracer.Info($"Move node binary into relevant folder");
 
                         var sourceFolder = Path.Combine(tempFolder, Directory.GetDirectories(tempFolder)[0], PlatformUtil.RunningOnWindows ? "node" : "");
-                        var destFolder = Path.Combine(externalsFolder,"node");
+                        var destFolder = Path.Combine(externalsFolder, "node");
 
-                        Directory.Move(sourceFolder,destFolder);
+                        Directory.Move(sourceFolder, destFolder);
 
                         Tracer.Info($"Finished getting Node 6 runner at: {externalsFolder}.");
+
+                        isInstalled = true;
                     }
                 }
                 catch (OperationCanceledException) when (downloadTimeout.IsCancellationRequested)
@@ -126,7 +136,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         {
                             Tracer.Verbose("Deleting Node 6 runner package zip: {0}", filePath);
                             IOUtil.DeleteFile(filePath);
-                            IOUtil.DeleteDirectory(Path.Combine(externalsFolder,Path.GetFileNameWithoutExtension(filePath)), cancellationToken);
+                            IOUtil.DeleteDirectory(Path.Combine(externalsFolder, Path.GetFileNameWithoutExtension(filePath)), cancellationToken);
                         }
                     }
                     catch (Exception ex)
@@ -134,7 +144,39 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                         //it is not critical if we fail to delete the .zip file
                         Tracer.Warning("Failed to delete Node 6 runner package zip '{0}'. Exception: {1}", filePath, ex);
                     }
+
+                    PublishTelemetry(context, downloadUrl, false, isInstalled);
                 }
+            }
+        }
+
+        private void PublishTelemetry(IExecutionContext context, string binaryUrl, bool node6Exist, bool downloadResult)
+        {
+            try
+            {
+                var systemVersion = PlatformUtil.GetSystemVersion();
+
+                var telemetryData = new Dictionary<string, string>
+                {                
+                    { "OS", PlatformUtil.GetSystemId() ?? "" },
+                    { "OSVersion", systemVersion?.Name?.ToString() ?? "" },
+                    { "OSBuild", systemVersion?.Version?.ToString() ?? "" },
+                    { "Node6Exist", node6Exist.ToString()},
+                    { "Node6DownloadLink", binaryUrl},
+                    { "DownloadResult", downloadResult.ToString()}
+                };
+                var cmd = new Command("telemetry", "publish");
+                cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
+                cmd.Properties.Add("area", "PipelinesTasks");
+                cmd.Properties.Add("feature", "Node6Installer");
+
+                var publishTelemetryCmd = new TelemetryCommandExtension();
+                publishTelemetryCmd.Initialize(HostContext);
+                publishTelemetryCmd.ProcessCommand(context, cmd);
+            }
+            catch (Exception ex)
+            {
+                Tracer.Warning($"Unable to publish Node 6 installation telemetry data. Exception: {ex}");
             }
         }
     }
