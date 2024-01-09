@@ -258,8 +258,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public struct MemoryInfo
         {
-            public int TotalMemoryMB;
-            public int UsedMemoryMB;
+            public long TotalMemoryMB;
+            public long UsedMemoryMB;
         }
 
         public MemoryInfo GetMemoryInfo()
@@ -321,6 +321,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             if (PlatformUtil.RunningOnMacOS)
             {
+                // vm_stat allows to get the most detailed information about memory usage on MacOS
+                // but unfortunately it returns vaues in pages and has no built-in arguments for custom output
+                // so we need to parse and cast the output manually
+
                 processStartInfo.FileName = "vm_stat";
                 processStartInfo.RedirectStandardOutput = true;
 
@@ -343,8 +347,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 var freeMemory = (pagesFree + pagesInactive) * pageSize;
                 var usedMemory = (pagesActive + pagesSpeculative + pagesWiredDown + pagesOccupied) * pageSize;
 
-                memoryInfo.TotalMemoryMB = (int)((freeMemory + usedMemory) / 1048576);
-                memoryInfo.UsedMemoryMB = (int)(usedMemory / 1048576);
+                memoryInfo.TotalMemoryMB = (freeMemory + usedMemory) / 1048576;
+                memoryInfo.UsedMemoryMB = usedMemory / 1048576;
             }
 
             return memoryInfo;
