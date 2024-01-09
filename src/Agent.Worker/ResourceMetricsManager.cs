@@ -39,17 +39,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             //initial context
             ArgUtil.NotNull(context, nameof(context));
+
             _context = context;
 
-            try
-            {
-                _currentProcess = Process.GetCurrentProcess();
-            }
-            catch (Exception ex)
-            {
-                _context.Warning(StringUtil.Loc("ResourceMonitorProcessError", ex.Message));
-            }
+            _currentProcess = Process.GetCurrentProcess();
         }
+
         public void SetContext(IExecutionContext context)
         {
             ArgUtil.NotNull(context, nameof(context));
@@ -230,14 +225,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private Process _currentProcess;
 
         public double GetCpuInfo()
-        {
-            if (_currentProcess == null)
-            {
-                throw new Exception("Current process is unavailable");
-            }
-
+        {            
             TimeSpan totalCpuTime = _currentProcess.TotalProcessorTime;
             TimeSpan elapsedTime = DateTime.Now - _currentProcess.StartTime;
+
             double cpuUsage = (totalCpuTime.TotalMilliseconds / elapsedTime.TotalMilliseconds) * 100.0;
 
             return cpuUsage;
