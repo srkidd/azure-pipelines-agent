@@ -182,14 +182,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        public struct DiskInfo
+        private struct DiskInfo
         {
             public long TotalDiskSpaceMB;
             public long FreeDiskSpaceMB;
             public string VolumeLabel;
         }
 
-        public DiskInfo GetDiskInfo()
+        private DiskInfo GetDiskInfo()
         {
             DiskInfo diskInfo = new();
 
@@ -207,7 +207,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return diskInfo;
         }
 
-        public string GetDiskInfoString()
+        private string GetDiskInfoString()
         {
             try
             {
@@ -224,7 +224,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         private Process _currentProcess;
 
-        public double GetCpuInfo()
+        private double GetCpuInfo()
         {            
             TimeSpan totalCpuTime = _currentProcess.TotalProcessorTime;
             TimeSpan elapsedTime = DateTime.Now - _currentProcess.StartTime;
@@ -234,7 +234,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return cpuUsage;
         }
 
-        public string GetCpuInfoString()
+        private string GetCpuInfoString()
         {
             try
             {
@@ -262,7 +262,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             public long UsedMemoryMB;
         }
 
-        public MemoryInfo GetMemoryInfo()
+        private MemoryInfo GetMemoryInfo()
         {
             MemoryInfo memoryInfo = new();
 
@@ -332,7 +332,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     processStartInfoOutput = process.StandardOutput.ReadToEnd();
                 }
-
+                    
                 var processStartInfoOutputString = processStartInfoOutput.Split("\n");
 
                 var pageSize = Int32.Parse(processStartInfoOutputString[0].Split(" ", StringSplitOptions.RemoveEmptyEntries)[7]);
@@ -354,7 +354,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return memoryInfo;
         }
 
-        public string GetMemoryInfoString()
+        private string GetMemoryInfoString()
         {
             try
             {
