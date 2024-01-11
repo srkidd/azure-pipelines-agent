@@ -29,8 +29,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     {
         const int ACTIVE_MODE_INTERVAL = 5000;
         const int WARNING_MESSAGE_INTERVAL = 10000;
-        const int AVALIABLE_DISK_SPACE_PERCENAGE_THRESHOLD = 5;
-        const int AVALIABLE_MEMORY_PERCENTAGE_THRESHOLD = 5;
+        const int AVAILABLE_DISK_SPACE_PERCENTAGE_THRESHOLD = 5;
+        const int AVAILABLE_MEMORY_PERCENTAGE_THRESHOLD = 5;
         const int CPU_UTILIZATION_PERCENTAGE_THRESHOLD = 95;
 
         IExecutionContext _context;
@@ -100,9 +100,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     var freeDiskSpacePercentage = Math.Round(((diskInfo.FreeDiskSpaceMB / (double)diskInfo.TotalDiskSpaceMB) * 100.0), 2);
                     var usedDiskSpacePercentage = 100.0 - freeDiskSpacePercentage;
 
-                    if (freeDiskSpacePercentage <= AVALIABLE_DISK_SPACE_PERCENAGE_THRESHOLD)
+                    if (freeDiskSpacePercentage <= AVAILABLE_DISK_SPACE_PERCENTAGE_THRESHOLD)
                     {
-                        _context.Warning(StringUtil.Loc("ResourceMonitorFreeDiskSpaceIsLowerThanThreshold", diskInfo.VolumeLabel, AVALIABLE_DISK_SPACE_PERCENAGE_THRESHOLD, $"{usedDiskSpacePercentage:0.00}"));
+                        _context.Warning(StringUtil.Loc("ResourceMonitorFreeDiskSpaceIsLowerThanThreshold", diskInfo.VolumeLabel, AVAILABLE_DISK_SPACE_PERCENTAGE_THRESHOLD, $"{usedDiskSpacePercentage:0.00}"));
                         
                         break;
                     }
@@ -129,9 +129,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     var usedMemoryPercentage = Math.Round(((memoryInfo.UsedMemoryMB / (double)memoryInfo.TotalMemoryMB) * 100.0), 2);
                     var freeMemoryPercentage = 100.0 - usedMemoryPercentage;
 
-                    if (freeMemoryPercentage <= AVALIABLE_MEMORY_PERCENTAGE_THRESHOLD)
+                    if (freeMemoryPercentage <= AVAILABLE_MEMORY_PERCENTAGE_THRESHOLD)
                     {
-                        _context.Warning(StringUtil.Loc("ResourceMonitorMemorySpaceIsLowerThanThreshold", AVALIABLE_MEMORY_PERCENTAGE_THRESHOLD, $"{usedMemoryPercentage:0.00}"));
+                        _context.Warning(StringUtil.Loc("ResourceMonitorMemorySpaceIsLowerThanThreshold", AVAILABLE_MEMORY_PERCENTAGE_THRESHOLD, $"{usedMemoryPercentage:0.00}"));
                         
                         break;
                     }
@@ -310,7 +310,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             if (PlatformUtil.RunningOnMacOS)
             {
                 // vm_stat allows to get the most detailed information about memory usage on MacOS
-                // but unfortunately it returns vaues in pages and has no built-in arguments for custom output
+                // but unfortunately it returns values in pages and has no built-in arguments for custom output
                 // so we need to parse and cast the output manually
 
                 processStartInfo.FileName = "vm_stat";
