@@ -275,6 +275,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             if (PlatformUtil.RunningOnLinux)
             {
+                // Some compact Linux distributions like UBI may not have "free" utility installed, or it may have a custom output
+                // We don't want to break currently existing pipelines with ADO warnings
+                // so related errors thrown here will be sent to the trace or debug logs by caller methods
+
                 try
                 {
                     processStartInfo.FileName = "free";
