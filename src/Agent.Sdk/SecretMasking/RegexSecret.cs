@@ -46,8 +46,6 @@ internal sealed class RegexSecret : ISecret
             return true;
         }
 
-        m_sniffLiterals.Equals(item.m_sniffLiterals);
-
         if (m_sniffLiterals.Count !=  item.m_sniffLiterals.Count)
         {
             return false; 
