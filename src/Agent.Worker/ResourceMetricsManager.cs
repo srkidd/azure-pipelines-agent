@@ -85,7 +85,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
             catch (Exception ex)
             {
-                Trace.Warning($"Unable to publish resource utilization telemetry data. Exception: {ex}");
+                Trace.Warning($"Unable to publish resource utilization telemetry data. Exception: {ex.Message}");
             }
         }
 
@@ -109,7 +109,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
                 catch (Exception ex)
                 {
-                    _context.Warning(StringUtil.Loc("ResourceMonitorDiskInfoError", ex.Message));
+                    Trace.Warning($"Unable to get disk info. Exception: {ex.Message}");
 
                     break;
                 }
@@ -136,15 +136,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         break;
                     }
                 }
-                catch (MemoryMonitoringUtilityIsNotAvaliableException ex)
-                {
-                    Trace.Warning($"Unable to get memory info using \"free\" utility; {ex.Message}");
-
-                    break;
-                }
                 catch (Exception ex)
                 {
-                    _context.Warning(StringUtil.Loc("ResourceMonitorMemoryInfoError", ex.Message));
+                    Trace.Warning($"Unable to get memory info. Exception: {ex.Message}");
 
                     break;
                 }
@@ -173,7 +167,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
                 catch (Exception ex)
                 {
-                    Trace.Warning($"Unable to get CPU info; {ex.Message}");
+                    Trace.Warning($"Unable to get CPU info. Exception: {ex.Message}");
 
                     break;
                 }
@@ -246,16 +240,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        // Some compact Linux distributives like UBI may not have "free" utility installed,
-        // but we don't want to break currently existing pipelines, so ADO warning should be mitigated to the trace warning
-        public class MemoryMonitoringUtilityIsNotAvaliableException : Exception
-        {
-            public MemoryMonitoringUtilityIsNotAvaliableException(string message)
-                : base(message)
-            {
-            }
-        }
-
         public struct MemoryInfo
         {
             public long TotalMemoryMB;
@@ -307,15 +291,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                     if (memoryInfoString.Length != 7)
                     {
-                        throw new MemoryMonitoringUtilityIsNotAvaliableException("Utility has non-default output");
+                        throw new Exception("\"free\" utility has non-default output");
                     }
 
                     memoryInfo.TotalMemoryMB = Int32.Parse(memoryInfoString[1]);
                     memoryInfo.UsedMemoryMB = Int32.Parse(memoryInfoString[2]);
                 }
-                catch (Win32Exception e)
+                catch (Win32Exception ex)
                 {
-                    throw new MemoryMonitoringUtilityIsNotAvaliableException(e.Message);
+                    throw new Exception($"\"free\" utility is unavailable. Exception: {ex.Message}");
                 }
             }
 
