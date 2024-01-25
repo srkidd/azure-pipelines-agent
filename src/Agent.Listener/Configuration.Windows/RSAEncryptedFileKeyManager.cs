@@ -28,14 +28,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
         private RSACryptoServiceProvider CreateKeyStoreKeyInNamedContainer()
         {
-            // https://stackoverflow.com/questions/2274596/how-to-store-a-public-key-in-a-machine-level-rsa-key-container
-            // https://social.msdn.microsoft.com/Forums/en-US/e3902420-3a82-42cf-a4a3-de230ebcea56/how-to-store-a-public-key-in-a-machinelevel-rsa-key-container?forum=netfxbcl
-            // https://security.stackexchange.com/questions/234477/windows-certificates-where-is-private-key-located
             RSACryptoServiceProvider rsa;
             if (!File.Exists(_keyFile))
             {
                 Trace.Info("Creating new RSA key using 2048-bit key length");
-#pragma warning disable CA1416 // Validate platform compatibility
 
                 CspParameters Params = new CspParameters();
                 Params.KeyContainerName = "AgentKeyContainer" + Guid.NewGuid().ToString();
@@ -62,10 +58,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 Params.KeyContainerName = result.containerName;
                 Params.Flags |= CspProviderFlags.UseNonExportableKey | CspProviderFlags.UseMachineKeyStore;
                 rsa = new RSACryptoServiceProvider(Params);
-#pragma warning restore CA1416 // Validate platform compatibility
             }
 
             return rsa;
+
+            // References:
+            // https://stackoverflow.com/questions/2274596/how-to-store-a-public-key-in-a-machine-level-rsa-key-container
+            // https://social.msdn.microsoft.com/Forums/en-US/e3902420-3a82-42cf-a4a3-de230ebcea56/how-to-store-a-public-key-in-a-machinelevel-rsa-key-container?forum=netfxbcl
+            // https://security.stackexchange.com/questions/234477/windows-certificates-where-is-private-key-located
         }
 
         private RSACryptoServiceProvider CreateKeyStoreKeyInFile()
@@ -139,7 +139,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
             CspParameters Params = new CspParameters();
             Params.KeyContainerName = result.containerName;
-
             Params.Flags |= CspProviderFlags.UseNonExportableKey | CspProviderFlags.UseMachineKeyStore;
             var rsa = new RSACryptoServiceProvider(Params);
             return rsa;
