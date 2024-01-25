@@ -20,7 +20,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener
 {
-    public sealed class MessageListenerL0
+    public sealed class MessageListenerL0 : IDisposable
     {
         private AgentSettings _settings;
         private Mock<IConfigurationManager> _config;
@@ -29,6 +29,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener
         private Mock<ICapabilitiesManager> _capabilitiesManager;
         private Mock<IFeatureFlagProvider> _featureFlagProvider;
         private Mock<IRSAKeyManager> _rsaKeyManager;
+        private readonly RSACryptoServiceProvider rsa;
 
         public MessageListenerL0()
         {
@@ -43,8 +44,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener
 
             _featureFlagProvider.Setup(x => x.GetFeatureFlagAsync(It.IsAny<IHostContext>(), It.IsAny<string>(), It.IsAny<ITraceWriter>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FeatureAvailability.FeatureFlag("", "", "", "Off", "Off")));
             _featureFlagProvider.Setup(x => x.GetFeatureFlagWithCred(It.IsAny<IHostContext>(), It.IsAny<string>(), It.IsAny<ITraceWriter>(), It.IsAny<AgentSettings>(), It.IsAny<VssCredentials>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FeatureAvailability.FeatureFlag("", "", "", "Off", "Off")));
-            
-            var rsa = new RSACryptoServiceProvider(2048);
+
+            rsa = new RSACryptoServiceProvider(2048);
             _rsaKeyManager.Setup(x => x.CreateKey(It.IsAny<bool>())).Returns(rsa);
         }
 
@@ -226,6 +227,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Listener
                     .Verify(x => x.GetAgentMessageAsync(
                         _settings.PoolId, expectedSession.SessionId, It.IsAny<long?>(), tokenSource.Token), Times.Exactly(arMessages.Length));
             }
+        }
+
+        public void Dispose()
+        {
+            rsa.Dispose();
         }
     }
 }
