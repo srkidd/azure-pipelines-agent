@@ -64,7 +64,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 return _expanded.Values
                     .Where(x => !x.Secret)
-                    .Select(x => new Variable(x.Name, DefaultStringTranslator(x.Value), x.Secret, x.ReadOnly, x.PreserveCase));
+                    .Select(x => new Variable(x.Name, StringTranslator(x.Value), x.Secret, x.ReadOnly, x.PreserveCase));
             }
         }
 
@@ -74,7 +74,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 return _expanded.Values
                     .Where(x => x.Secret)
-                    .Select(x => new Variable(x.Name, DefaultStringTranslator(x.Value), x.Secret, x.ReadOnly, x.PreserveCase));
+                    .Select(x => new Variable(x.Name, StringTranslator(x.Value), x.Secret, x.ReadOnly, x.PreserveCase));
             }
         }
 
