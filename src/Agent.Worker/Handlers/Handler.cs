@@ -185,20 +185,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
             // Add the public variables.
             var names = new List<string>();
-            foreach (KeyValuePair<string, string> pair in RuntimeVariables.Public)
+            foreach (Variable variable in RuntimeVariables.Public)
             {
                 // Add "agent.jobstatus" using the unformatted name and formatted name.
-                if (string.Equals(pair.Key, Constants.Variables.Agent.JobStatus, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(variable.Name, Constants.Variables.Agent.JobStatus, StringComparison.OrdinalIgnoreCase))
                 {
-                    AddEnvironmentVariable(pair.Key, pair.Value);
+                    AddEnvironmentVariable(variable.Name, variable.Value);
                 }
 
                 // Add the variable using the formatted name.
-                string formattedKey = VarUtil.ConvertToEnvVariableFormat(pair.Key);
-                AddEnvironmentVariable(formattedKey, pair.Value);
+                string formattedName = VarUtil.ConvertToEnvVariableFormat(variable.Name, variable.PreserveCase);
+                AddEnvironmentVariable(formattedName, variable.Value);
 
                 // Store the name.
-                names.Add(pair.Key ?? string.Empty);
+                names.Add(variable.Name ?? string.Empty);
             }
 
             // Add the public variable names.
@@ -211,14 +211,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 // Add the secret variables.
                 var secretNames = new List<string>();
-                foreach (KeyValuePair<string, string> pair in RuntimeVariables.Private)
+                foreach (Variable variable in RuntimeVariables.Private)
                 {
                     // Add the variable using the formatted name.
-                    string formattedKey = VarUtil.ConvertToEnvVariableFormat(pair.Key);
-                    AddEnvironmentVariable($"SECRET_{formattedKey}", pair.Value);
+                    string formattedName = VarUtil.ConvertToEnvVariableFormat(variable.Name, variable.PreserveCase);
+                    AddEnvironmentVariable($"SECRET_{formattedName}", variable.Value);
 
                     // Store the name.
-                    secretNames.Add(pair.Key ?? string.Empty);
+                    secretNames.Add(variable.Name ?? string.Empty);
                 }
 
                 // Add the secret variable names.
@@ -248,18 +248,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             Trace.Entering();
             ArgUtil.NotNull(ExecutionContext.TaskVariables, nameof(ExecutionContext.TaskVariables));
 
-            foreach (KeyValuePair<string, string> pair in ExecutionContext.TaskVariables.Public)
+            foreach (Variable variable in ExecutionContext.TaskVariables.Public)
             {
                 // Add the variable using the formatted name.
-                string formattedKey = VarUtil.ConvertToEnvVariableFormat(pair.Key);
-                AddEnvironmentVariable($"VSTS_TASKVARIABLE_{formattedKey}", pair.Value);
+                string formattedKey = VarUtil.ConvertToEnvVariableFormat(variable.Name, variable.PreserveCase);
+                AddEnvironmentVariable($"VSTS_TASKVARIABLE_{formattedKey}", variable.Value);
             }
 
-            foreach (KeyValuePair<string, string> pair in ExecutionContext.TaskVariables.Private)
+            foreach (Variable variable in ExecutionContext.TaskVariables.Private)
             {
                 // Add the variable using the formatted name.
-                string formattedKey = VarUtil.ConvertToEnvVariableFormat(pair.Key);
-                AddEnvironmentVariable($"VSTS_TASKVARIABLE_{formattedKey}", pair.Value);
+                string formattedKey = VarUtil.ConvertToEnvVariableFormat(variable.Name, variable.PreserveCase);
+                AddEnvironmentVariable($"VSTS_TASKVARIABLE_{formattedKey}", variable.Value);
             }
         }
 
