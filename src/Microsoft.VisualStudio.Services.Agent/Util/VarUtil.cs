@@ -72,7 +72,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         /// <param name="value"></param>
         /// <param name="preserveCase"></param>
         /// <returns></returns>
-        public static string ConvertToEnvVariableFormat(string value, bool preserveCase = false)
+        public static string ConvertToEnvVariableFormat(string value, bool preserveCase)
         {
             string envVar = value?.Replace('.', '_').Replace(' ', '_') ?? string.Empty;
             return preserveCase ? envVar : envVar.ToUpperInvariant();
