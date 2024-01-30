@@ -77,6 +77,38 @@ namespace Agent.Plugins.Repository
             return gitLfsVersion >= requiredVersion;
         }
 
+        public Tuple<string, string> GetInternalGitPaths(AgentTaskPluginExecutionContext context, bool useNewGitVersion)
+        {
+            string agentHomeDir = context.Variables.GetValueOrDefault("agent.homedirectory")?.Value;
+            ArgUtil.NotNullOrEmpty(agentHomeDir, nameof(agentHomeDir));
+
+            string gitPath;
+
+            if (useNewGitVersion)
+            {
+                gitPath = Path.Combine(agentHomeDir, "externals", "ff_git", "cmd", $"git.exe");
+            }
+            else
+            {
+                gitPath = Path.Combine(agentHomeDir, "externals", "git", "cmd", $"git.exe");
+            }
+
+            context.Debug($@"The useNewGitVersion property is set to ""{useNewGitVersion}"" so the Git path is ""{gitPath}""");
+
+            string gitLfsPath;
+
+            if (PlatformUtil.BuiltOnX86)
+            {
+                gitLfsPath = Path.Combine(agentHomeDir, "externals", "git", "mingw32", "bin", "git-lfs.exe");
+            }
+            else
+            {
+                gitLfsPath = Path.Combine(agentHomeDir, "externals", "git", "mingw64", "bin", "git-lfs.exe");
+            }
+
+            return Tuple.Create(gitPath, gitLfsPath);
+        }
+
         public virtual async Task LoadGitExecutionInfo(AgentTaskPluginExecutionContext context, bool useBuiltInGit)
         {
             // There is no built-in git for OSX/Linux
@@ -85,19 +117,11 @@ namespace Agent.Plugins.Repository
             // Resolve the location of git.
             if (useBuiltInGit && PlatformUtil.RunningOnWindows)
             {
-                string agentHomeDir = context.Variables.GetValueOrDefault("agent.homedirectory")?.Value;
-                ArgUtil.NotNullOrEmpty(agentHomeDir, nameof(agentHomeDir));
+                context.Debug("Git paths are resolving from internal dependencies");
 
-                if (AgentKnobs.UseNewGitVersion.GetValue(context).AsBoolean())
-                {
-                    gitPath = Path.Combine(agentHomeDir, "externals", "ff_git", "cmd", $"git.exe");
-                }
-                else
-                {
-                    gitPath = Path.Combine(agentHomeDir, "externals", "git", "cmd", $"git.exe");
-                }
-
-                gitLfsPath = Path.Combine(agentHomeDir, "externals", "git", PlatformUtil.BuiltOnX86 ? "mingw32" : "mingw64", "bin", "git-lfs.exe");
+                var localGitPaths = GetInternalGitPaths(context, AgentKnobs.UseNewGitVersion.GetValue(context).AsBoolean());
+                var gitPath = localGitPaths.Item1;
+                var gitLfsPath = localGitPaths.Item2;
 
                 // Prepend the PATH.
                 context.Output(StringUtil.Loc("Prepending0WithDirectoryContaining1", "Path", Path.GetFileName(gitPath)));
