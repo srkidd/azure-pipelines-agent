@@ -7,10 +7,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 {
     [ServiceLocator(Default = typeof(AutoLogonRegistryManager))]
+    [SupportedOSPlatform("windows")]
     public interface IAutoLogonRegistryManager : IAgentService
     {
         void GetAutoLogonUserDetails(out string domainName, out string userName);
@@ -20,6 +22,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
         void DumpAutoLogonRegistrySettings();
     }
 
+    [SupportedOSPlatform("windows")]
     public class AutoLogonRegistryManager : AgentService, IAutoLogonRegistryManager
     {
         private IWindowsRegistryManager _registryManager;
@@ -31,7 +34,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             ArgUtil.NotNull(hostContext, nameof(hostContext));
             base.Initialize(hostContext);
             _registryManager = hostContext.GetService<IWindowsRegistryManager>();
-            _windowsServiceHelper = hostContext.GetService<INativeWindowsServiceHelper>();
+        _windowsServiceHelper = hostContext.GetService<INativeWindowsServiceHelper>();
             _terminal = HostContext.GetService<ITerminal>();
         }
 

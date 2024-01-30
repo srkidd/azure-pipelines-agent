@@ -4,11 +4,13 @@
 using Microsoft.VisualStudio.Services.Agent.Util;
 using System;
 using System.IO;
+using System.Runtime.Versioning;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 {
+    [SupportedOSPlatform("windows")]
     public class RSAEncryptedFileKeyManager : AgentService, IRSAKeyManager
     {
         private string _keyFile;

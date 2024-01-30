@@ -973,29 +973,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         private static void ThrowIfAlreadyInContainer()
         {
-            if (PlatformUtil.RunningOnWindows)
+            if (PlatformUtil.DetectDockerContainer())
             {
-                // service CExecSvc is Container Execution Agent.
-                ServiceController[] scServices = ServiceController.GetServices();
-                if (scServices.Any(x => String.Equals(x.ServiceName, "cexecsvc", StringComparison.OrdinalIgnoreCase) && x.Status == ServiceControllerStatus.Running))
-                {
-                    throw new NotSupportedException(StringUtil.Loc("AgentAlreadyInsideContainer"));
-                }
-            }
-            else
-            {
-                try
-                {
-                    var initProcessCgroup = File.ReadLines("/proc/1/cgroup");
-                    if (initProcessCgroup.Any(x => x.IndexOf(":/docker/", StringComparison.OrdinalIgnoreCase) >= 0))
-                    {
-                        throw new NotSupportedException(StringUtil.Loc("AgentAlreadyInsideContainer"));
-                    }
-                }
-                catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
-                {
-                    // if /proc/1/cgroup doesn't exist, we are not inside a container
-                }
+                throw new NotSupportedException(StringUtil.Loc("AgentAlreadyInsideContainer"));
             }
         }
 
@@ -1032,8 +1012,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private void PublishTelemetry(
             IExecutionContext executionContext,
             object telemetryData,
-            string feature = nameof(ContainerOperationProvider)
-)
+            string feature = nameof(ContainerOperationProvider))
         {
             var cmd = new Command("telemetry", "publish")
             {
