@@ -88,7 +88,7 @@ namespace Agent.Plugins.Repository
                 string agentHomeDir = context.Variables.GetValueOrDefault("agent.homedirectory")?.Value;
                 ArgUtil.NotNullOrEmpty(agentHomeDir, nameof(agentHomeDir));
 
-                if (AgentKnobs.FixPossibleGitOutOfMemoryProblem.GetValue(context).AsBoolean())
+                if (AgentKnobs.UseNewGitVersion.GetValue(context).AsBoolean())
                 {
                     gitPath = Path.Combine(agentHomeDir, "externals", "ff_git", "cmd", $"git.exe");
                 }

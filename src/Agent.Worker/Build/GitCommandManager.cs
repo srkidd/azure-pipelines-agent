@@ -181,7 +181,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 // The Windows agent ships a copy of Git
                 if (PlatformUtil.RunningOnWindows)
                 {
-                    _gitPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "git", "cmd", $"git{IOUtil.ExeExtension}");
+                    if (AgentKnobs.UseNewGitVersion.GetValue(context).AsBoolean())
+                    {
+                        _gitPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "ff_git", "cmd", $"git{IOUtil.ExeExtension}");
+                    }
+                    else
+                    {
+                        _gitPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "git", "cmd", $"git{IOUtil.ExeExtension}");
+                    }
+
                     _gitLfsPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "git", PlatformUtil.BuiltOnX86 ? "mingw32" : "mingw64", "bin", "git-lfs.exe");
 
                     // Prepend the PATH.

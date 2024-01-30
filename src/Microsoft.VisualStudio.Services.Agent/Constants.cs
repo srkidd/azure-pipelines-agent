@@ -351,6 +351,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 public static readonly string SslSkipCertValidation = "agent.skipcertvalidation";
                 public static readonly string TempDirectory = "agent.TempDirectory";
                 public static readonly string ToolsDirectory = "agent.ToolsDirectory";
+                public static readonly string UseNewGitVersion = "USE_NEW_GIT_VERSION";
                 public static readonly string Version = "agent.version";
                 public static readonly string WorkFolder = "agent.workfolder";
                 public static readonly string WorkingDirectory = "agent.WorkingDirectory";
