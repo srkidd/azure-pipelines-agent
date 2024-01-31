@@ -1,17 +1,11 @@
 ## Features
- - Remove the support matrix from the README.md (#4557)
- - Remove Node 16 Knob from Agent (#4565)
- - Enable publishing attachments for Junit test results (#4584)
- - Add the tailored deprecation message in addition to the common deprecation message (#4585)
 
 ## Bugs
- - Add core.longpaths to git provider (#4598)
 
 ## Misc
- - Move agent release notifications to separate stage (#4580)
+ - Update to support artifact storage improvements.
 
 ## Bugs
- - Paths limit has been extended for Git.
 
 ## Agent Downloads
 
