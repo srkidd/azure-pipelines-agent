@@ -12,8 +12,8 @@ namespace Test.L0.Plugin.TestGitCliManager
 {
     public class TestGitCliManagerL0
     {
-        private readonly string gitPath = Path.Combine("agenthomedirectory", "externals", "git", "cmd", $"git.exe");
-        private readonly string ffGitPath = Path.Combine("agenthomedirectory", "externals", "ff_git", "cmd", $"git.exe");
+        private readonly string gitPath = Path.Combine("agenthomedirectory", "externals", "git", "cmd", "git.exe");
+        private readonly string ffGitPath = Path.Combine("agenthomedirectory", "externals", "ff_git", "cmd", "git.exe");
 
         private Tuple<Mock<ArgUtilInstanced>, MockAgentTaskPluginExecutionContext> setupMocksForGitLfsFetchTests(TestHostContext hostContext)
         {
@@ -22,8 +22,8 @@ namespace Test.L0.Plugin.TestGitCliManager
                 CallBase = true
             };
 
-            argUtilInstanced.Setup(x => x.File(gitPath, "gitPath"));
-            argUtilInstanced.Setup(x => x.File(ffGitPath, "gitPath"));
+            argUtilInstanced.Setup(x => x.File(gitPath, "gitPath")).Callback(() => { });
+            argUtilInstanced.Setup(x => x.File(ffGitPath, "gitPath")).Callback(() => { });
             argUtilInstanced.Setup(x => x.Directory("agentworkfolder", "agent.workfolder"));
 
             var context = new MockAgentTaskPluginExecutionContext(hostContext.GetTrace());
@@ -72,41 +72,39 @@ namespace Test.L0.Plugin.TestGitCliManager
         [Trait("Category", "Plugin")]
         public async Task TestGitLfsFetchLfsConfigDoesNotExist()
         {
-            using (var hostContext = new TestHostContext(this))
+            using var hostContext = new TestHostContext(this);
+            // Setup
+            var originalArgUtilInstance = ArgUtil.ArgUtilInstance;
+            var mocks = setupMocksForGitLfsFetchTests(hostContext);
+            var argUtilInstanced = mocks.Item1;
+            var mockAgentTaskPluginExecutionContext = mocks.Item2;
+
+            try
             {
-                // Setup
-                var originalArgUtilInstance = ArgUtil.ArgUtilInstance;
-                var mocks = setupMocksForGitLfsFetchTests(hostContext);
-                var argUtilInstanced = mocks.Item1;
-                var mockAgentTaskPluginExecutionContext = mocks.Item2;
+                ArgUtil.ArgUtilInstance = argUtilInstanced.Object;
 
-                try
+                var gitCliManagerMock = new MockGitCliManager()
                 {
-                    ArgUtil.ArgUtilInstance = argUtilInstanced.Object;
+                    IsLfsConfigExistsing = false
+                };
 
-                    var gitCliManagerMock = new MockGitCliManager()
-                    {
-                        IsLfsConfigExistsing = false
-                    };
+                await gitCliManagerMock.LoadGitExecutionInfo(mockAgentTaskPluginExecutionContext, true);
 
-                    await gitCliManagerMock.LoadGitExecutionInfo(mockAgentTaskPluginExecutionContext, true);
+                ArgUtil.NotNull(gitCliManagerMock, "");
 
-                    ArgUtil.NotNull(gitCliManagerMock, "");
+                // Action
+                await gitCliManagerMock.GitLFSFetch(mockAgentTaskPluginExecutionContext, "repositoryPath", "remoteName", "refSpec", "additionalCmdLine", CancellationToken.None);
 
-                    // Action
-                    await gitCliManagerMock.GitLFSFetch(mockAgentTaskPluginExecutionContext, "repositoryPath", "remoteName", "refSpec", "additionalCmdLine", CancellationToken.None);
+                // Assert
+                Assert.Equal(2, gitCliManagerMock.GitCommandCallsOptions.Count);
 
-                    // Assert
-                    Assert.Equal(2, gitCliManagerMock.GitCommandCallsOptions.Count);
+                Assert.True(gitCliManagerMock.GitCommandCallsOptions.Contains("repositoryPath,checkout,refSpec -- .lfsconfig,additionalCmdLine"), "ExecuteGitCommandAsync should pass arguments properly to 'git checkout .lfsconfig' command");
+                Assert.True(gitCliManagerMock.GitCommandCallsOptions.Contains("repositoryPath,lfs,fetch origin refSpec,additionalCmdLine"), "ExecuteGitCommandAsync should pass arguments properly to 'git lfs fetch' command");
 
-                    Assert.True(gitCliManagerMock.GitCommandCallsOptions.Contains("repositoryPath,checkout,refSpec -- .lfsconfig,additionalCmdLine"), "ExecuteGitCommandAsync should pass arguments properly to 'git checkout .lfsconfig' command");
-                    Assert.True(gitCliManagerMock.GitCommandCallsOptions.Contains("repositoryPath,lfs,fetch origin refSpec,additionalCmdLine"), "ExecuteGitCommandAsync should pass arguments properly to 'git lfs fetch' command");
-
-                }
-                finally
-                {
-                    ArgUtil.ArgUtilInstance = originalArgUtilInstance;
-                }
+            }
+            finally
+            {
+                ArgUtil.ArgUtilInstance = originalArgUtilInstance;
             }
         }
     }

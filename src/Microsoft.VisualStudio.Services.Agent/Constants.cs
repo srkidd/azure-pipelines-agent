@@ -551,6 +551,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Agent.SslSkipCertValidation,
                 Agent.TempDirectory,
                 Agent.ToolsDirectory,
+                Agent.UseNewGitVersion,
                 Agent.Version,
                 Agent.WorkFolder,
                 Agent.WorkingDirectory,
