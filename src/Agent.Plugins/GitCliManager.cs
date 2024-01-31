@@ -113,6 +113,7 @@ namespace Agent.Plugins.Repository
         {
             // There is no built-in git for OSX/Linux
             gitPath = null;
+            gitLfsPath = null;
 
             // Resolve the location of git.
             if (useBuiltInGit && PlatformUtil.RunningOnWindows)
@@ -120,8 +121,9 @@ namespace Agent.Plugins.Repository
                 context.Debug("Git paths are resolving from internal dependencies");
 
                 var localGitPaths = GetInternalGitPaths(context, AgentKnobs.UseNewGitVersion.GetValue(context).AsBoolean());
-                var gitPath = localGitPaths.Item1;
-                var gitLfsPath = localGitPaths.Item2;
+
+                gitPath = localGitPaths.Item1;
+                gitLfsPath = localGitPaths.Item2;
 
                 // Prepend the PATH.
                 context.Output(StringUtil.Loc("Prepending0WithDirectoryContaining1", "Path", Path.GetFileName(gitPath)));
