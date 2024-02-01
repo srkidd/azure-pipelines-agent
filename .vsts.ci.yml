@@ -46,6 +46,10 @@ pr:
     exclude:
     - 'docs/*'
 
+variables:
+- name: Diagnostics
+  value: 'msbuild'
+
 extends:
   template: .azure-pipelines/pipeline.yml
   parameters:
