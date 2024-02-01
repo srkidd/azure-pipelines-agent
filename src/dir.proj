@@ -72,7 +72,7 @@
              Projects="@(ProjectFiles)"
              SkipNonExistentProjects="false"
              StopOnFirstFailure="true"
-             Properties="Configuration=$(BUILDCONFIG);PackageRuntime=$(PackageRuntime);Version=$(AgentVersion);RuntimeIdentifier=$(PackageRuntime);SelfContained=true;PublishDir=$(LayoutRoot)/bin" />
+             Properties="Configuration=$(BUILDCONFIG);PackageRuntime=$(PackageRuntime);Version=$(AgentVersion);RuntimeIdentifier=$(PackageRuntime);PublishDir=$(LayoutRoot)/bin" />
     <Exec Command="%22$(DesktopMSBuild)%22 Agent.Service/Windows/AgentService.csproj /p:Configuration=$(BUILDCONFIG) /p:OutputPath=%22$(LayoutRoot)/bin%22" ConsoleToMSBuild="true" Condition="'$(PackageRuntime)' == 'win-x64' Or '$(PackageRuntime)' == 'win-x86'" />
   </Target>
 
@@ -97,9 +97,9 @@
              Projects="@(ProjectFiles)"
              SkipNonExistentProjects="false"
              StopOnFirstFailure="true"
-             Properties="Configuration=$(BUILDCONFIG);PackageRuntime=$(PackageRuntime);Version=1.0.0.0;RuntimeIdentifier=$(PackageRuntime);SelfContained=true;PublishDir=$(L1Root)/bin" />
+             Properties="Configuration=$(BUILDCONFIG);PackageRuntime=$(PackageRuntime);Version=1.0.0.0;RuntimeIdentifier=$(PackageRuntime);PublishDir=$(L1Root)/bin" />
 
-    <Exec Command="dotnet build Test/Test.csproj -c $(BUILDCONFIG) /p:PackageRuntime=$(PackageRuntime) -o $(L1Root)/bin" ConsoleToMSBuild="true" />
+    <Exec Command="dotnet build Test/Test.csproj -c $(BUILDCONFIG) /p:PackageRuntime=$(PackageRuntime) /p:SelfContained=false -o $(L1Root)/bin" ConsoleToMSBuild="true" />
     <Exec Command="dotnet build Test/Test.csproj /t:CopyFilesL1" Condition="'$(PackageRuntime)' == 'win-x86'"/>
     <Exec Command="dotnet test Test/Test.csproj -o $(L1Root)/bin --no-build --logger:trx --verbosity=detailed --filter &quot;$(TestFilters)&quot;" ConsoleToMSBuild="true" />
   </Target>
