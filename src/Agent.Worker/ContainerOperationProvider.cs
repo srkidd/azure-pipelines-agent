@@ -973,9 +973,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         private static void ThrowIfAlreadyInContainer()
         {
-            if (PlatformUtil.DetectDockerContainer())
+            if (PlatformUtil.RunningOnWindows)
             {
-                throw new NotSupportedException(StringUtil.Loc("AgentAlreadyInsideContainer"));
+                #pragma warning disable CA1416 // SupportedOSPlatform checks not respected in lambda usage
+                // service CExecSvc is Container Execution Agent.
+                ServiceController[] scServices = ServiceController.GetServices();
+                if (scServices.Any(x => String.Equals(x.ServiceName, "cexecsvc", StringComparison.OrdinalIgnoreCase) && x.Status == ServiceControllerStatus.Running))
+                {
+                    throw new NotSupportedException(StringUtil.Loc("AgentAlreadyInsideContainer"));
+                }
+                #pragma warning restore CA1416
+            }
+            else
+            {
+                try
+                {
+                    var initProcessCgroup = File.ReadLines("/proc/1/cgroup");
+                    if (initProcessCgroup.Any(x => x.IndexOf(":/docker/", StringComparison.OrdinalIgnoreCase) >= 0))
+                    {
+                        throw new NotSupportedException(StringUtil.Loc("AgentAlreadyInsideContainer"));
+                    }
+                }
+                catch (Exception ex) when (ex is FileNotFoundException || ex is DirectoryNotFoundException)
+                {
+                    // if /proc/1/cgroup doesn't exist, we are not inside a container
+                }
             }
         }
 
