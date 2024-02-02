@@ -93,12 +93,12 @@ function make_build (){
 
     if  [[ "$ADO_ENABLE_LOGISSUE" == "true" ]]; then
 
-        dotnet msbuild -t:"${TARGET}" -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:CodeAnalysis="true" \
+        dotnet build -t:"${TARGET}" -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:CodeAnalysis="true" \
          | sed -e "/\: warning /s/^/${DOTNET_WARNING_PREFIX} /;" \
          | sed -e "/\: error /s/^/${DOTNET_ERROR_PREFIX} /;" \
          || failed build
     else
-        dotnet msbuild -t:"${TARGET}" -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:CodeAnalysis="true" \
+        dotnet build -t:"${TARGET}" -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:CodeAnalysis="true" \
          || failed build
     fi
 
@@ -145,13 +145,13 @@ function cmd_test_l0 ()
         TestFilters="$TestFilters&$DEV_TEST_FILTERS"
     fi
 
-    dotnet msbuild -t:testl0 -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:TestFilters="${TestFilters}" "${DEV_ARGS[@]}" || failed "failed tests"
+    dotnet build -t:testl0 -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:TestFilters="${TestFilters}" "${DEV_ARGS[@]}" || failed "failed tests"
 }
 
 function cmd_test_l1 ()
 {
     heading "Clean"
-    dotnet msbuild -t:cleanl1 -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" || failed build
+    dotnet build -t:cleanl1 -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" || failed build
 
     heading "Setup externals folder for $RUNTIME_ID agent's layout"
     bash ./Misc/externals.sh $RUNTIME_ID "" "_l1" "true" || checkRC externals.sh
@@ -167,7 +167,7 @@ function cmd_test_l1 ()
         TestFilters="$TestFilters&$DEV_TEST_FILTERS"
     fi
 
-    dotnet msbuild -t:testl1 -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:TestFilters="${TestFilters}" "${DEV_ARGS[@]}" || failed "failed tests"
+    dotnet build -t:testl1 -p:PackageRuntime="${RUNTIME_ID}" -p:PackageType="${PACKAGE_TYPE}" -p:BUILDCONFIG="${BUILD_CONFIG}" -p:AgentVersion="${AGENT_VERSION}" -p:LayoutRoot="${LAYOUT_DIR}" -p:TestFilters="${TestFilters}" "${DEV_ARGS[@]}" || failed "failed tests"
 }
 
 function cmd_test ()
@@ -368,7 +368,7 @@ if [[ "$CURRENT_PLATFORM" == 'windows' ]]; then
         msbuild_location="$vs_location""\MSBuild\Current\Bin\msbuild.exe"
 
         if [[ ! -e "${msbuild_location}" ]]; then
-            failed "Can not find msbuild location, failing build"
+            msbuild_location="C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\amd64\MSBuild.exe"
         fi
     fi
 
