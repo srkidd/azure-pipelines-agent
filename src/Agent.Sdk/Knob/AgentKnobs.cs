@@ -152,18 +152,11 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AGENT_USE_NODE10"),
             new BuiltInDefaultKnobSource("false"));
 
-        public static readonly Knob UseNode16 = new Knob(
-            nameof(UseNode16),
-            "Forces the agent to use Node 16 handler for all Node-based tasks",
-            new RuntimeKnobSource("AGENT_USE_NODE16"),
-            new EnvironmentKnobSource("AGENT_USE_NODE16"),
-            new BuiltInDefaultKnobSource("false"));
-
-        public static readonly Knob UseNode20 = new Knob(
-            nameof(UseNode20),
+        public static readonly Knob UseNode20_1 = new Knob(
+            nameof(UseNode20_1),
             "Forces the agent to use Node 20 handler for all Node-based tasks",
-            new RuntimeKnobSource("AGENT_USE_NODE20"),
-            new EnvironmentKnobSource("AGENT_USE_NODE20"),
+            new RuntimeKnobSource("AGENT_USE_NODE20_1"),
+            new EnvironmentKnobSource("AGENT_USE_NODE20_1"),
             new BuiltInDefaultKnobSource("false"));
 
         public static readonly Knob UseNode20InUnsupportedSystem = new Knob(
@@ -381,6 +374,18 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("DISABLE_BUILD_ARTIFACTS_TO_BLOB"),
             new EnvironmentKnobSource("DISABLE_BUILD_ARTIFACTS_TO_BLOB"),
             new BuiltInDefaultKnobSource("false"));
+        public static readonly Knob SendBuildArtifactsToBlobstoreDomain = new Knob(
+            nameof(SendBuildArtifactsToBlobstoreDomain),
+            "When set, defines the domain to use to send Build artifacts to.",
+            new RuntimeKnobSource("SEND_BUILD_ARTIFACTS_TO_BLOBSTORE_DOMAIN"),
+            new EnvironmentKnobSource("SEND_BUILD_ARTIFACT_ARTIFACTS_TO_BLOBSTORE_DOMAIN"),
+            new BuiltInDefaultKnobSource(string.Empty));
+        public static readonly Knob SendPipelineArtifactsToBlobstoreDomain = new Knob(
+            nameof(SendPipelineArtifactsToBlobstoreDomain),
+            "When set, defines the domain to use to send Pipeline artifacts to.",
+            new RuntimeKnobSource("SEND_PIPELINE_ARTIFACTS_TO_BLOBSTORE_DOMAIN"),
+            new EnvironmentKnobSource("SEND_PIPELINE_ARTIFACT_ARTIFACTS_TO_BLOBSTORE_DOMAIN"),
+            new BuiltInDefaultKnobSource(string.Empty));
 
         public static readonly Knob EnableIncompatibleBuildArtifactsPathResolution = new Knob(
             nameof(EnableIncompatibleBuildArtifactsPathResolution),
@@ -422,6 +427,13 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("DISABLE_NODE6_DEPRECATION_WARNING"),
             new BuiltInDefaultKnobSource("true"));
 
+        public static readonly Knob DisableNode6Tasks = new Knob(
+            nameof(DisableNode6Tasks),
+            "Disables Node 6 tasks and Node 6 runner.",
+            new RuntimeKnobSource("AGENT_DISABLE_NODE6_TASKS"),
+            new EnvironmentKnobSource("AGENT_DISABLE_NODE6_TASKS"),
+            new BuiltInDefaultKnobSource("false"));
+       
         public static readonly Knob DisableTeePluginRemoval = new Knob(
             nameof(DisableTeePluginRemoval),
             "Disables removing TEE plugin after using it during checkout.",
@@ -507,6 +519,13 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AGENT_ENABLE_FETCHING_NET6_LIST"),
             new BuiltInDefaultKnobSource("false"));
 
+        public static readonly Knob EnableResourceUtilizationWarnings = new Knob(
+            nameof(EnableResourceUtilizationWarnings),
+            "If true, the agent will throw the resource utilization warnings",
+            new RuntimeKnobSource("AZP_ENABLE_RESOURCE_UTILIZATION_WARNINGS"),
+            new EnvironmentKnobSource("AZP_ENABLE_RESOURCE_UTILIZATION_WARNINGS"),
+            new BuiltInDefaultKnobSource("false"));
+
         public static readonly Knob ForceCreateTasksDirectory = new Knob(
             nameof(ForceCreateTasksDirectory),
             "Forces the agent to create _tasks folder for tasks.",
@@ -534,6 +553,13 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("AZP_AGENT_IGNORE_VSTSTASKLIB"),
             new BuiltInDefaultKnobSource("false"));
 
+        public static readonly Knob FailJobWhenAgentDies = new Knob(
+            nameof(FailJobWhenAgentDies),
+            "Mark the Job as Failed instead of Canceled when the Agent dies due to User Cancellation or Shutdown",
+            new RuntimeKnobSource("FAIL_JOB_WHEN_AGENT_DIES"),
+            new EnvironmentKnobSource("FAIL_JOB_WHEN_AGENT_DIES"),
+            new BuiltInDefaultKnobSource("false"));
+
         public static readonly Knob AllowWorkDirectoryRepositories = new Knob(
             nameof(AllowWorkDirectoryRepositories),
             "Allows repositories to be checked out below work directory level on self hosted agents.",
@@ -544,7 +570,7 @@ namespace Agent.Sdk.Knob
         public static readonly Knob CheckForTaskDeprecation = new Knob(
             nameof(CheckForTaskDeprecation),
             "If true, the agent will check in the 'Initialize job' step each task used in the job for task deprecation.",
-            new EnvironmentKnobSource("AZP_AGENT_CHECK_FOR_TASK_DEPRECATION"),
+            new RuntimeKnobSource("AZP_AGENT_CHECK_FOR_TASK_DEPRECATION"),
             new BuiltInDefaultKnobSource("false"));
 
         public static readonly Knob MountWorkspace = new Knob(
@@ -553,12 +579,24 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AZP_AGENT_MOUNT_WORKSPACE"),
             new EnvironmentKnobSource("AZP_AGENT_MOUNT_WORKSPACE"),
             new BuiltInDefaultKnobSource("false"));
+      
+        public static readonly Knob EnableNewSecretMasker = new Knob(
+            nameof(EnableNewSecretMasker),
+            "If true, the agent will use new SecretMasker with additional filters & performance enhancements",
+            new EnvironmentKnobSource("AZP_ENABLE_NEW_SECRET_MASKER"),
+            new BuiltInDefaultKnobSource("false"));
 
         public static readonly Knob AddDockerInitOption = new Knob(
             nameof(AddDockerInitOption),
             "If true, the agent will create docker container with the --init option.",
             new RuntimeKnobSource("AZP_AGENT_DOCKER_INIT_OPTION"),
             new EnvironmentKnobSource("AZP_AGENT_DOCKER_INIT_OPTION"),
+            new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob StoreAgentKeyInCSPContainer = new Knob(
+            nameof(StoreAgentKeyInCSPContainer),
+            "Store agent key in named container (Windows).",
+            new EnvironmentKnobSource("STORE_AGENT_KEY_IN_CSP_CONTAINER"),
             new BuiltInDefaultKnobSource("false"));
     }
 }
