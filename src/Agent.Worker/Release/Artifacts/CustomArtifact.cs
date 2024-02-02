@@ -169,7 +169,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Release.Artifacts
 
         private static HttpWebResponse GetWebResponse(IExecutionContext executionContext, string url, IEndpointAuthorizer authorizer)
         {
-            #pragma warning disable SYSLIB0014 // TODO: create GitHub issue to track this warning
+            #pragma warning disable SYSLIB0014
             var request = WebRequest.Create(url) as HttpWebRequest;
             #pragma warning restore SYSLIB0014
             if (request == null)

@@ -104,7 +104,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         // Logs download progress.
         private async Task DownloadTee(string zipPath)
         {
-            #pragma warning disable SYSLIB0014 // TODO: create GitHub issue to track this warning
+            #pragma warning disable SYSLIB0014
             using (var client = new WebClient())
             #pragma warning restore SYSLIB0014
             using (var registration = cancellationToken.Register(client.CancelAsync))

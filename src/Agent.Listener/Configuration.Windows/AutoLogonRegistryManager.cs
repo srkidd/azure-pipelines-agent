@@ -34,7 +34,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             ArgUtil.NotNull(hostContext, nameof(hostContext));
             base.Initialize(hostContext);
             _registryManager = hostContext.GetService<IWindowsRegistryManager>();
-        _windowsServiceHelper = hostContext.GetService<INativeWindowsServiceHelper>();
+            _windowsServiceHelper = hostContext.GetService<INativeWindowsServiceHelper>();
             _terminal = HostContext.GetService<ITerminal>();
         }
 
