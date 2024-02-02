@@ -420,7 +420,6 @@ namespace Agent.Sdk
                     // For Windows we check Container Execution Agent Service (cexecsvc) existence
                     var serviceName = "cexecsvc";
                     ServiceController[] scServices = ServiceController.GetServices();
-                    scServices.First().ServiceName.ToString();
                     if (scServices.Any(x => String.Equals(x.ServiceName, serviceName, StringComparison.OrdinalIgnoreCase) && x.Status == ServiceControllerStatus.Running))
                     {
                         isDockerContainer = true;
