@@ -58,10 +58,6 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <CodeAnalysisRuleSet>..\rules.ruleset</CodeAnalysisRuleSet>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <DefineConstants>$(OSPlatform);$(OSArchitecture);$(DebugConstant);TRACE</DefineConstants>
   </PropertyGroup>
 </Project>
