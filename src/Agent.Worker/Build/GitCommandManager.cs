@@ -167,15 +167,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             string externalsDirectoryPath = HostContext.GetDirectory(WellKnownDirectory.Externals);
             ArgUtil.NotNullOrEmpty(externalsDirectoryPath, nameof(WellKnownDirectory.Externals));
 
+            Console.WriteLine($"externalsDirectoryPath {externalsDirectoryPath}");
+
             string gitPath;
 
             if (useLatestGitVersion)
             {
-                gitPath = Path.Combine(externalsDirectoryPath, "externals", "ff_git", "cmd$", $"git{IOUtil.ExeExtension}");
+                gitPath = Path.Combine(externalsDirectoryPath, "externals", "ff_git", "cmd", $"git{IOUtil.ExeExtension}");
             }
             else
             {
-                gitPath = Path.Combine(externalsDirectoryPath, "externals", "git", "cmd$", $"git{IOUtil.ExeExtension}");
+                gitPath = Path.Combine(externalsDirectoryPath, "externals", "git", "cmd", $"git{IOUtil.ExeExtension}");
             }
 
             context.Debug($@"The useLatestGitVersion property is set to ""{useLatestGitVersion}"" so the Git path is ""{gitPath}""");

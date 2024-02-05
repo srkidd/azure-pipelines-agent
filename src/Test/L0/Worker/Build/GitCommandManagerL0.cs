@@ -9,9 +9,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build;
 
 public class TestGitCommandManagerL0
 {
-    private readonly string gitPath = Path.Combine("agenthomedirectory", "externals", "git", "cmd", "git.exe");
-    private readonly string ffGitPath = Path.Combine("agenthomedirectory", "externals", "ff_git", "cmd", "git.exe");
-
     public static IEnumerable<object[]> UseNewGitVersionFeatureFlagsData => new List<object[]>
     {
         new object[] { true },
@@ -24,19 +21,25 @@ public class TestGitCommandManagerL0
     [MemberData(nameof(UseNewGitVersionFeatureFlagsData))]
     public void TestGetInternalGitPaths(bool gitFeatureFlagStatus)
     {
-        using var hostContext = new TestHostContext(this, $"GitFeatureFlagStatus_{gitFeatureFlagStatus}");
+        using var tc = new TestHostContext(this, $"GitFeatureFlagStatus_{gitFeatureFlagStatus}");
+        var trace = tc.GetTrace();
         var executionContext = new Mock<IExecutionContext>();
 
         GitCommandManager gitCliManager = new();
+        gitCliManager.Initialize(tc);
         var paths = gitCliManager.GetInternalGitPaths(executionContext.Object, gitFeatureFlagStatus);
+
+        string gitPath;
 
         if (gitFeatureFlagStatus)
         {
-            Assert.Equal(paths.Item1, ffGitPath);
+            gitPath = Path.Combine(tc.GetDirectory(WellKnownDirectory.Externals), "externals", "ff_git", "cmd", "git.exe");
         }
         else
         {
-            Assert.Equal(paths.Item1, gitPath);
+            gitPath = Path.Combine(tc.GetDirectory(WellKnownDirectory.Externals), "externals", "git", "cmd", "git.exe");
         }
+
+        Assert.Equal(paths.Item1, gitPath);
     }
 }
