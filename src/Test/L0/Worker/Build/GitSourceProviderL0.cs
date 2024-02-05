@@ -165,6 +165,37 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
         [Fact]
         [Trait("Level", "L0")]
         [Trait("Category", "Worker")]
+        [Trait("SkipOn", "darwin")]
+        [Trait("SkipOn", "linux")]
+        public void TestSetGitConfiguration()
+        {
+            using TestHostContext tc = new TestHostContext(this);
+            using var trace = tc.GetTrace();
+
+            // Arrange.
+            var sourceProviderL0Path = Path.Combine(tc.GetDirectory(WellKnownDirectory.Bin), "SourceProviderL0");
+
+            var executionContext = GetTestExecutionContext(tc, sourceProviderL0Path, "master", "a596e13f5db8869f44574be0392fb8fe1e790ce4", false);
+            executionContext.Object.Variables.Set(Constants.Variables.Agent.UseLatestGitVersion, "true");
+            executionContext.Object.Variables.Set(Constants.Variables.Agent.FixPossibleGitOutOfMemoryProblem, "true");
+            executionContext.Object.Variables.Set(Constants.Variables.Agent.UseGitLongPaths, "true");
+
+            var gitCommandManager = GetDefaultGitCommandMock();
+
+            GitSourceProvider gitSourceProvider = new ExternalGitSourceProvider();
+
+            // Act.
+            gitSourceProvider.SetGitFeatureFlagsConfiguration(executionContext.Object, gitCommandManager.Object, sourceProviderL0Path);
+
+            // Assert.
+            gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "pack.threads", "1"));
+            gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "core.packedgitlimit", "256m"));
+            gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "core.longpaths", "true"));
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Worker")]
         public void GetSourceGitFetch()
         {
             using (TestHostContext tc = new TestHostContext(this))

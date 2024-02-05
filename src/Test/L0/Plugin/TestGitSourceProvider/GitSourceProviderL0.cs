@@ -36,12 +36,12 @@ public sealed class TestPluginGitSourceProviderL0
         var featureFlagStatusString = featureFlagsStatus.ToString();
         var invocation = featureFlagsStatus ? Times.Once() : Times.Never();
 
-        tc.Variables.Add("USE_SINGLE_GIT_THREAD", featureFlagStatusString);
-        tc.Variables.Add("FIX_GIT_LONG_PATHS", featureFlagStatusString);
+        tc.Variables.Add("USE_GIT_SINGLE_THREAD", featureFlagStatusString);
+        tc.Variables.Add("USE_GIT_LONG_PATHS", featureFlagStatusString);
         tc.Variables.Add("FIX_POSSIBLE_GIT_OUT_OF_MEMORY_PROBLEM", featureFlagStatusString);
 
         GitSourceProvider gitSourceProvider = new ExternalGitSourceProvider();
-        gitSourceProvider.SetGitConfiguration(tc, gitCliManagerMock.Object, repositoryPath);
+        gitSourceProvider.SetGitFeatureFlagsConfiguration(tc, gitCliManagerMock.Object, repositoryPath);
 
         // Assert.
         gitCliManagerMock.Verify(x => x.GitConfig(tc, repositoryPath, "pack.threads", "1"), invocation);

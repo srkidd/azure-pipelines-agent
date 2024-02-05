@@ -684,7 +684,7 @@ namespace Agent.Plugins.Repository
                 executionContext.Warning("Unable turn off git auto garbage collection, git fetch operation may trigger auto garbage collection which will affect the performance of fetching.");
             }
 
-            SetGitConfiguration(executionContext, gitCommandManager, targetPath);
+            SetGitFeatureFlagsConfiguration(executionContext, gitCommandManager, targetPath);
 
             // always remove any possible left extraheader setting from git config.
             if (await gitCommandManager.GitConfigExist(executionContext, targetPath, $"http.{repositoryUrl.AbsoluteUri}.extraheader"))
@@ -1305,12 +1305,12 @@ namespace Agent.Plugins.Repository
             }
         }
 
-        public async void SetGitConfiguration(
+        public async void SetGitFeatureFlagsConfiguration(
             AgentTaskPluginExecutionContext executionContext,
             IGitCliManager gitCommandManager,
             string targetPath)
         {
-            if (AgentKnobs.UseSingleGitThread.GetValue(executionContext).AsBoolean())
+            if (AgentKnobs.UseGitSingleThread.GetValue(executionContext).AsBoolean())
             {
                 await gitCommandManager.GitConfig(executionContext, targetPath, "pack.threads", "1");
             }
@@ -1325,7 +1325,7 @@ namespace Agent.Plugins.Repository
                 await gitCommandManager.GitConfig(executionContext, targetPath, "core.packedgitlimit", "256m");
             }
 
-            if (AgentKnobs.FixGitLongPaths.GetValue(executionContext).AsBoolean())
+            if (AgentKnobs.UseGitLongPaths.GetValue(executionContext).AsBoolean())
             {
                 await gitCommandManager.GitConfig(executionContext, targetPath, "core.longpaths", "true");
             }
