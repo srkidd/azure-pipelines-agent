@@ -167,8 +167,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             string externalsDirectoryPath = HostContext.GetDirectory(WellKnownDirectory.Externals);
             ArgUtil.NotNullOrEmpty(externalsDirectoryPath, nameof(WellKnownDirectory.Externals));
 
-            Console.WriteLine($"externalsDirectoryPath {externalsDirectoryPath}");
-
             string gitPath;
 
             if (useLatestGitVersion)
