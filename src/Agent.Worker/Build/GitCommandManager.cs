@@ -181,7 +181,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 // The Windows agent ships a copy of Git
                 if (PlatformUtil.RunningOnWindows)
                 {
-                    if (AgentKnobs.UseNewGitVersion.GetValue(context).AsBoolean())
+                    if (AgentKnobs.UseLatestGitVersion.GetValue(context).AsBoolean())
                     {
                         _gitPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "ff_git", "cmd", $"git{IOUtil.ExeExtension}");
                     }

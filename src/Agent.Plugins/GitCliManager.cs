@@ -125,7 +125,7 @@ namespace Agent.Plugins.Repository
             {
                 context.Debug("Git paths are resolving from internal dependencies");
 
-                var localGitPaths = GetInternalGitPaths(context, AgentKnobs.UseNewGitVersion.GetValue(context).AsBoolean());
+                var localGitPaths = GetInternalGitPaths(context, AgentKnobs.UseLatestGitVersion.GetValue(context).AsBoolean());
 
                 gitPath = localGitPaths.Item1;
                 gitLfsPath = localGitPaths.Item2;
