@@ -27,8 +27,8 @@ public class TestGitCommandManagerL0
         using var hostContext = new TestHostContext(this, $"GitFeatureFlagStatus_{gitFeatureFlagStatus}");
         var executionContext = new Mock<IExecutionContext>();
 
-        var gitCliManagerMock = new Mock<IGitCommandManager>();
-        var paths = gitCliManagerMock.GetInternalGitPaths(executionContext.Object, gitFeatureFlagStatus);
+        GitCommandManager gitCliManager = new();
+        var paths = gitCliManager.GetInternalGitPaths(executionContext.Object, gitFeatureFlagStatus);
 
         if (gitFeatureFlagStatus)
         {
