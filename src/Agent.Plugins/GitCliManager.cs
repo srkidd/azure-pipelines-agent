@@ -18,7 +18,12 @@ using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
 namespace Agent.Plugins.Repository
 {
-    public class GitCliManager
+    public interface IGitCliManager
+    {
+        Task<int> GitConfig(AgentTaskPluginExecutionContext context, string repositoryPath, string configKey, string configValue);
+    }
+
+    public class GitCliManager : IGitCliManager
     {
         private static Encoding _encoding
         {

@@ -684,25 +684,7 @@ namespace Agent.Plugins.Repository
                 executionContext.Warning("Unable turn off git auto garbage collection, git fetch operation may trigger auto garbage collection which will affect the performance of fetching.");
             }
 
-            if (AgentKnobs.UseSingleGitThread.GetValue(executionContext).AsBoolean())
-            {
-                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.threads", "1");
-            }
-
-            if (AgentKnobs.FixPossibleGitOutOfMemoryProblem.GetValue(executionContext).AsBoolean())
-            {
-                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.windowmemory", "256m");
-                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.deltaCacheSize", "256m");
-                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.packSizeLimit", "256m");
-                await gitCommandManager.GitConfig(executionContext, targetPath, "http.postBuffer", "524288000");
-                await gitCommandManager.GitConfig(executionContext, targetPath, "core.packedgitwindowsize", "256m");
-                await gitCommandManager.GitConfig(executionContext, targetPath, "core.packedgitlimit", "256m");
-            }
-
-            if (AgentKnobs.FixGitLongPaths.GetValue(executionContext).AsBoolean())
-            {
-                await gitCommandManager.GitConfig(executionContext, targetPath, "core.longpaths", "true");
-            }
+            SetGitConfiguration(executionContext, gitCommandManager, targetPath);
 
             // always remove any possible left extraheader setting from git config.
             if (await gitCommandManager.GitConfigExist(executionContext, targetPath, $"http.{repositoryUrl.AbsoluteUri}.extraheader"))
@@ -1320,6 +1302,32 @@ namespace Agent.Plugins.Repository
             if (!string.IsNullOrEmpty(clientCertPrivateKeyAskPassFile))
             {
                 IOUtil.DeleteFile(clientCertPrivateKeyAskPassFile);
+            }
+        }
+
+        public async void SetGitConfiguration(
+            AgentTaskPluginExecutionContext executionContext,
+            IGitCliManager gitCommandManager,
+            string targetPath)
+        {
+            if (AgentKnobs.UseSingleGitThread.GetValue(executionContext).AsBoolean())
+            {
+                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.threads", "1");
+            }
+
+            if (AgentKnobs.FixPossibleGitOutOfMemoryProblem.GetValue(executionContext).AsBoolean())
+            {
+                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.windowmemory", "256m");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.deltaCacheSize", "256m");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.packSizeLimit", "256m");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "http.postBuffer", "524288000");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "core.packedgitwindowsize", "256m");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "core.packedgitlimit", "256m");
+            }
+
+            if (AgentKnobs.FixGitLongPaths.GetValue(executionContext).AsBoolean())
+            {
+                await gitCommandManager.GitConfig(executionContext, targetPath, "core.longpaths", "true");
             }
         }
 
