@@ -173,11 +173,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
             if (useLatestGitVersion)
             {
-                gitPath = Path.Combine(externalsDirectoryPath, "externals", "ff_git", "cmd", $"git{IOUtil.ExeExtension}");
+                gitPath = Path.Combine(externalsDirectoryPath, "externals", "ff_git", "cmd", $"git.exe");
             }
             else
             {
-                gitPath = Path.Combine(externalsDirectoryPath, "externals", "git", "cmd", $"git{IOUtil.ExeExtension}");
+                gitPath = Path.Combine(externalsDirectoryPath, "externals", "git", "cmd", $"git.exe");
             }
 
             context.Debug($@"The useLatestGitVersion property is set to ""{useLatestGitVersion}"" so the Git path is ""{gitPath}""");
@@ -186,11 +186,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
             if (PlatformUtil.BuiltOnX86)
             {
-                gitLfsPath = Path.Combine(externalsDirectoryPath, "externals", "git", "mingw32", "bin", $"git-lfs{IOUtil.ExeExtension}");
+                gitLfsPath = Path.Combine(externalsDirectoryPath, "externals", "git", "mingw32", "bin", $"git-lfs.exe");
             }
             else
             {
-                gitLfsPath = Path.Combine(externalsDirectoryPath, "externals", "git", "mingw64", "bin", $"git-lfs{IOUtil.ExeExtension}");
+                gitLfsPath = Path.Combine(externalsDirectoryPath, "externals", "git", "mingw64", "bin", $"git-lfs.exe");
             }
 
             return Tuple.Create(gitPath, gitLfsPath);
