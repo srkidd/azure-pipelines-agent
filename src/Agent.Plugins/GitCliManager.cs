@@ -82,14 +82,14 @@ namespace Agent.Plugins.Repository
             return gitLfsVersion >= requiredVersion;
         }
 
-        public Tuple<string, string> GetInternalGitPaths(AgentTaskPluginExecutionContext context, bool useNewGitVersion)
+        public Tuple<string, string> GetInternalGitPaths(AgentTaskPluginExecutionContext context, bool useLatestGitVersion)
         {
             string agentHomeDir = context.Variables.GetValueOrDefault("agent.homedirectory")?.Value;
             ArgUtil.NotNullOrEmpty(agentHomeDir, nameof(agentHomeDir));
 
             string gitPath;
 
-            if (useNewGitVersion)
+            if (useLatestGitVersion)
             {
                 gitPath = Path.Combine(agentHomeDir, "externals", "ff_git", "cmd", $"git.exe");
             }
@@ -98,7 +98,7 @@ namespace Agent.Plugins.Repository
                 gitPath = Path.Combine(agentHomeDir, "externals", "git", "cmd", $"git.exe");
             }
 
-            context.Debug($@"The useNewGitVersion property is set to ""{useNewGitVersion}"" so the Git path is ""{gitPath}""");
+            context.Debug($@"The useLatestGitVersion property is set to ""{useLatestGitVersion}"" so the Git path is ""{gitPath}""");
 
             string gitLfsPath;
 

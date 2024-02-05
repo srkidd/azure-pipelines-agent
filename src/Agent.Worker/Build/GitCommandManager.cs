@@ -22,7 +22,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         bool EnsureGitLFSVersion(Version requiredVersion, bool throwOnNotMatch);
 
-        Tuple<string, string> GetInternalGitPaths(IExecutionContext context, bool useNewGitVersion);
+        Tuple<string, string> GetInternalGitPaths(IExecutionContext context, bool useLatestGitVersion);
 
         // setup git execution info, git location, version, useragent, execpath
         Task LoadGitExecutionInfo(IExecutionContext context, bool useBuiltInGit, Dictionary<string, string> gitEnv = null);
@@ -162,14 +162,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             return _gitLfsVersion >= requiredVersion;
         }
 
-        public Tuple<string, string> GetInternalGitPaths(IExecutionContext context, bool useNewGitVersion)
+        public Tuple<string, string> GetInternalGitPaths(IExecutionContext context, bool useLatestGitVersion)
         {
             string externalsDirectoryPath = HostContext.GetDirectory(WellKnownDirectory.Externals);
             ArgUtil.NotNullOrEmpty(externalsDirectoryPath, nameof(WellKnownDirectory.Externals));
 
             string gitPath;
 
-            if (useNewGitVersion)
+            if (useLatestGitVersion)
             {
                 gitPath = Path.Combine(externalsDirectoryPath, "externals", "ff_git", "cmd$", $"git{IOUtil.ExeExtension}");
             }
@@ -178,7 +178,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 gitPath = Path.Combine(externalsDirectoryPath, "externals", "git", "cmd$", $"git{IOUtil.ExeExtension}");
             }
 
-            context.Debug($@"The useNewGitVersion property is set to ""{useNewGitVersion}"" so the Git path is ""{gitPath}""");
+            context.Debug($@"The useLatestGitVersion property is set to ""{useLatestGitVersion}"" so the Git path is ""{gitPath}""");
 
             string gitLfsPath;
 
