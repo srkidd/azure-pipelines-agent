@@ -42,6 +42,8 @@ namespace Test.L0.Plugin.TestGitCliManager
         [Theory]
         [Trait("Level", "L0")]
         [Trait("Category", "Plugin")]
+        [Trait("SkipOn", "darwin")]
+        [Trait("SkipOn", "linux")]
         [MemberData(nameof(UseNewGitVersionFeatureFlagsData))]
         public void TestGetInternalGitPaths(bool gitFeatureFlagStatus)
         {

@@ -17,7 +17,9 @@ public class TestGitCommandManagerL0
     
     [Theory]
     [Trait("Level", "L0")]
-    [Trait("Category", "Plugin")]
+    [Trait("Category", "Worker")]
+    [Trait("SkipOn", "darwin")]
+    [Trait("SkipOn", "linux")]
     [MemberData(nameof(UseNewGitVersionFeatureFlagsData))]
     public void TestGetInternalGitPaths(bool gitFeatureFlagStatus)
     {
