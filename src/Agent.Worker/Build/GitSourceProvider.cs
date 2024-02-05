@@ -1233,27 +1233,27 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         public async void SetGitFeatureFlagsConfiguration(
             IExecutionContext executionContext,
-            IGitCommandManager _gitCommandManager,
+            IGitCommandManager gitCommandManager,
             string targetPath)
         {
             if (executionContext.Variables.GetBoolean(Constants.Variables.Agent.UseGitSingleThread) ?? AgentKnobs.UseGitSingleThread.GetValue(executionContext).AsBoolean())
             {
-                await _gitCommandManager.GitConfig(executionContext, targetPath, "pack.threads", "1");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.threads", "1");
             }
 
             if (executionContext.Variables.GetBoolean(Constants.Variables.Agent.FixPossibleGitOutOfMemoryProblem) ?? AgentKnobs.FixPossibleGitOutOfMemoryProblem.GetValue(executionContext).AsBoolean())
             {
-                await _gitCommandManager.GitConfig(executionContext, targetPath, "pack.windowmemory", "256m");
-                await _gitCommandManager.GitConfig(executionContext, targetPath, "pack.deltaCacheSize", "256m");
-                await _gitCommandManager.GitConfig(executionContext, targetPath, "pack.packSizeLimit", "256m");
-                await _gitCommandManager.GitConfig(executionContext, targetPath, "http.postBuffer", "524288000");
-                await _gitCommandManager.GitConfig(executionContext, targetPath, "core.packedgitwindowsize", "256m");
-                await _gitCommandManager.GitConfig(executionContext, targetPath, "core.packedgitlimit", "256m");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.windowmemory", "256m");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.deltaCacheSize", "256m");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "pack.packSizeLimit", "256m");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "http.postBuffer", "524288000");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "core.packedgitwindowsize", "256m");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "core.packedgitlimit", "256m");
             }
 
             if (executionContext.Variables.GetBoolean(Constants.Variables.Agent.UseGitLongPaths) ?? AgentKnobs.UseGitLongPaths.GetValue(executionContext).AsBoolean())
             {
-                await _gitCommandManager.GitConfig(executionContext, targetPath, "core.longpaths", "true");
+                await gitCommandManager.GitConfig(executionContext, targetPath, "core.longpaths", "true");
             }
         }
 

@@ -22,6 +22,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
 
         bool EnsureGitLFSVersion(Version requiredVersion, bool throwOnNotMatch);
 
+        Tuple<string, string> GetInternalGitPaths(IExecutionContext context, bool useNewGitVersion);
+
         // setup git execution info, git location, version, useragent, execpath
         Task LoadGitExecutionInfo(IExecutionContext context, bool useBuiltInGit, Dictionary<string, string> gitEnv = null);
 
@@ -160,6 +162,38 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
             return _gitLfsVersion >= requiredVersion;
         }
 
+        public Tuple<string, string> GetInternalGitPaths(IExecutionContext context, bool useNewGitVersion)
+        {
+            string externalsDirectoryPath = HostContext.GetDirectory(WellKnownDirectory.Externals);
+            ArgUtil.NotNullOrEmpty(externalsDirectoryPath, nameof(WellKnownDirectory.Externals));
+
+            string gitPath;
+
+            if (useNewGitVersion)
+            {
+                gitPath = Path.Combine(externalsDirectoryPath, "externals", "ff_git", "cmd$", $"git{IOUtil.ExeExtension}");
+            }
+            else
+            {
+                gitPath = Path.Combine(externalsDirectoryPath, "externals", "git", "cmd$", $"git{IOUtil.ExeExtension}");
+            }
+
+            context.Debug($@"The useNewGitVersion property is set to ""{useNewGitVersion}"" so the Git path is ""{gitPath}""");
+
+            string gitLfsPath;
+
+            if (PlatformUtil.BuiltOnX86)
+            {
+                gitLfsPath = Path.Combine(externalsDirectoryPath, "externals", "git", "mingw32", "bin", $"git-lfs{IOUtil.ExeExtension}");
+            }
+            else
+            {
+                gitLfsPath = Path.Combine(externalsDirectoryPath, "externals", "git", "mingw64", "bin", $"git-lfs{IOUtil.ExeExtension}");
+            }
+
+            return Tuple.Create(gitPath, gitLfsPath);
+        }
+
         public async Task LoadGitExecutionInfo(IExecutionContext context, bool useBuiltInGit, Dictionary<string, string> gitEnv = null)
         {
             if (gitEnv != null)
@@ -181,16 +215,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Build
                 // The Windows agent ships a copy of Git
                 if (PlatformUtil.RunningOnWindows)
                 {
-                    if (AgentKnobs.UseLatestGitVersion.GetValue(context).AsBoolean())
-                    {
-                        _gitPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "ff_git", "cmd", $"git{IOUtil.ExeExtension}");
-                    }
-                    else
-                    {
-                        _gitPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "git", "cmd", $"git{IOUtil.ExeExtension}");
-                    }
+                    context.Debug("Git paths are resolving from internal dependencies");
 
-                    _gitLfsPath = Path.Combine(HostContext.GetDirectory(WellKnownDirectory.Externals), "git", PlatformUtil.BuiltOnX86 ? "mingw32" : "mingw64", "bin", "git-lfs.exe");
+                    var localGitPaths = GetInternalGitPaths(context, AgentKnobs.UseLatestGitVersion.GetValue(context).AsBoolean());
+
+                    _gitPath = localGitPaths.Item1;
+                    _gitLfsPath = localGitPaths.Item2;
 
                     // Prepend the PATH.
                     context.Output(StringUtil.Loc("Prepending0WithDirectoryContaining1", Constants.PathVariable, Path.GetFileName(_gitPath)));
