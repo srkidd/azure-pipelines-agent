@@ -15,6 +15,7 @@
 
   <PropertyGroup>
     <L1Root>$(MSBuildProjectDirectory)/../_l1</L1Root>
+    <TreatWarningsAsErrors Condition="'$(BUILDCONFIG)'=='Release'">true</TreatWarningsAsErrors>
   </PropertyGroup>
 
   <ItemGroup>
@@ -72,8 +73,8 @@
              Projects="@(ProjectFiles)"
              SkipNonExistentProjects="false"
              StopOnFirstFailure="true"
-             Properties="Configuration=$(BUILDCONFIG);PackageRuntime=$(PackageRuntime);Version=$(AgentVersion);RuntimeIdentifier=$(PackageRuntime);PublishDir=$(LayoutRoot)/bin" />
-    <Exec Command="%22$(DesktopMSBuild)%22 Agent.Service/Windows/AgentService.csproj /p:Configuration=$(BUILDCONFIG) /p:OutputPath=%22$(LayoutRoot)/bin%22" ConsoleToMSBuild="true" Condition="'$(PackageRuntime)' == 'win-x64' Or '$(PackageRuntime)' == 'win-x86'" />
+             Properties="Configuration=$(BUILDCONFIG);PackageRuntime=$(PackageRuntime);Version=$(AgentVersion);RuntimeIdentifier=$(PackageRuntime);PublishDir=$(LayoutRoot)/bin;TreatWarningsAsErrors=$(TreatWarningsAsErrors)" />
+    <Exec Command="%22$(DesktopMSBuild)%22 Agent.Service/Windows/AgentService.csproj /p:Configuration=$(BUILDCONFIG) /p:OutputPath=%22$(LayoutRoot)/bin%22 /p:TreatWarningsAsErrors=$(TreatWarningsAsErrors)" ConsoleToMSBuild="true" Condition="'$(PackageRuntime)' == 'win-x64' Or '$(PackageRuntime)' == 'win-x86'" />
   </Target>
 
   <Target Name="TestL0" DependsOnTargets="GenerateConstant">
