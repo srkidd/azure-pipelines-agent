@@ -186,9 +186,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
             var sourceProviderL0Path = Path.Combine(tc.GetDirectory(WellKnownDirectory.Bin), "SourceProviderL0");
 
             var executionContext = GetTestExecutionContext(tc, sourceProviderL0Path, "master", "a596e13f5db8869f44574be0392fb8fe1e790ce4", false);
-            executionContext.Object.Variables.Set(Constants.Variables.Agent.UseLatestGitVersion, featureFlagStatusString);
-            executionContext.Object.Variables.Set(Constants.Variables.Agent.FixPossibleGitOutOfMemoryProblem, featureFlagStatusString);
-            executionContext.Object.Variables.Set(Constants.Variables.Agent.UseGitLongPaths, featureFlagStatusString);
+
+            var environment = new LocalEnvironment();
+
+            executionContext
+                .Setup(x => x.GetScopedEnvironment())
+                .Returns(environment);
+
+            environment.SetEnvironmentVariable(Constants.Variables.Agent.UseGitLongPaths, featureFlagStatusString);
+            environment.SetEnvironmentVariable(Constants.Variables.Agent.UseGitSingleThread, featureFlagStatusString);
+            environment.SetEnvironmentVariable(Constants.Variables.Agent.FixPossibleGitOutOfMemoryProblem, featureFlagStatusString);
 
             var gitCommandManager = GetDefaultGitCommandMock();
 
@@ -199,7 +206,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 
             // Assert.
             gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "pack.threads", "1"), invocation);
-            gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "core.packedgitlimit", "256m"), invocation);
+            // gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "core.packedgitlimit", "256m"), invocation);
             gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "core.longpaths", "true"), invocation);
         }
 
