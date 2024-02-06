@@ -206,7 +206,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build
 
             // Assert.
             gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "pack.threads", "1"), invocation);
-            // gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "core.packedgitlimit", "256m"), invocation);
+            gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "core.packedgitlimit", "256m"), invocation);
             gitCommandManager.Verify(x => x.GitConfig(executionContext.Object, sourceProviderL0Path, "core.longpaths", "true"), invocation);
         }
 
