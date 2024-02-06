@@ -1,3 +1,19 @@
+## Features
+ - Remove Node 6 Runner from installation step (#4473)
+ - Add resource utilization warnings (#4559)
+ - Add pipeline feature knob source (#4597)
+ - Pipeline agent unable to kill the last task in time (#4605)
+ - Implemented option to store token in named container (#4607)
+ - Add multiple domain support to Build Artifacts upload/download (#4617)
+ - Support variables where case is preserved (#4620)
+
+## Bugs
+ - Add possibility to get info from /usr/lib/os-release file. (#4615)
+ - Revert "Implemented option to store token in named container" (#4631)
+
+## Misc
+ - Change CI timeout to the default value (10 minutes) (#4630)
+
 
 ## Agent Downloads
 
