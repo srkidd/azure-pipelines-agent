@@ -172,10 +172,10 @@ extends:
           - checkout: self
             clean: true
 
-          - task: Bash@3
+          - task: PowerShell@2
             displayName: Switch to release branch
             inputs:
-              filePath: .azure-pipelines/scripts/switch-branch.sh
+              filePath: .azure-pipelines/scripts/switch-branch.ps1
             env:
               TARGET_BRANCH: $(ReleaseBranch)
 
