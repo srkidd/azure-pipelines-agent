@@ -1,8 +1,10 @@
-﻿using Microsoft.VisualStudio.Services.Agent.Worker;
+﻿using Agent.Sdk;
+using Microsoft.VisualStudio.Services.Agent.Worker;
 using Microsoft.VisualStudio.Services.Agent.Worker.Build;
 using Moq;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker.Build;
@@ -35,13 +37,28 @@ public class TestGitCommandManagerL0
 
         if (gitFeatureFlagStatus)
         {
-            gitPath = Path.Combine(tc.GetDirectory(WellKnownDirectory.Externals), "externals", "ff_git", "cmd", "git.exe");
+            gitPath = Path.Combine(tc.GetDirectory(WellKnownDirectory.Externals), "ff_git", "cmd", "git.exe");
         }
         else
         {
-            gitPath = Path.Combine(tc.GetDirectory(WellKnownDirectory.Externals), "externals", "git", "cmd", "git.exe");
+            gitPath = Path.Combine(tc.GetDirectory(WellKnownDirectory.Externals), "git", "cmd", "git.exe");
+        }
+
+        var binPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+        var rootPath = new DirectoryInfo(binPath).Parent.FullName;
+        var externalsDirectoryPath = Path.Combine(rootPath, Constants.Path.ExternalsDirectory);
+        string gitLfsPath;
+
+        if (PlatformUtil.BuiltOnX86)
+        {
+            gitLfsPath = Path.Combine(externalsDirectoryPath, "git", "mingw32", "bin", $"git-lfs.exe");
+        }
+        else
+        {
+            gitLfsPath = Path.Combine(externalsDirectoryPath, "git", "mingw64", "bin", $"git-lfs.exe");
         }
 
         Assert.Equal(paths.Item1, gitPath);
+        Assert.Equal(paths.Item2, gitLfsPath);
     }
 }
