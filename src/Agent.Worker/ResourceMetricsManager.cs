@@ -187,7 +187,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             DiskInfo diskInfo = new();
 
-            string root = Path.GetPathRoot(_context.GetVariableValueOrDefault("agent.workfolder"));
+            string root = Path.GetPathRoot(_context.GetVariableValueOrDefault(Constants.Variables.Agent.WorkFolder));
             var driveInfo = new DriveInfo(root);
 
             diskInfo.TotalDiskSpaceMB = driveInfo.TotalSize / 1048576;
