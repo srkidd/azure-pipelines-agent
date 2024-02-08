@@ -1,3 +1,24 @@
+## Features
+ - Remove Node 6 Runner from installation step (#4473)
+ - Add resource utilization warnings (#4559)
+ - Add pipeline feature knob source (#4597)
+ - Pipeline agent unable to kill the last task in time (#4605)
+ - Implemented option to store token in named container (#4607)
+ - Use workFolder root as target for disk space monitoring (#4609)
+ - Add multiple domain support to Build Artifacts upload/download (#4617)
+ - Support variables where case is preserved (#4620)
+
+## Bugs
+ - Add possibility to get info from /usr/lib/os-release file. (#4615)
+ - Revert "Implemented option to store token in named container" (#4631)
+ - Use PowerShell instead of bash for the release stage (#4638)
+
+## Misc
+ - Pipeline repository name (#4616)
+ - Change CI timeout to the default value (10 minutes) (#4630)
+ - Fix switch to target branch CI step (#4636)
+ - Change pool for Create PRs stage (#4640)
+
 
 ## Agent Downloads
 
