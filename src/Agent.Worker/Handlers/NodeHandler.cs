@@ -248,7 +248,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             }
             finally
             {
-                if (enableResourceUtilizationWarnings && exitCode == 127) 
+                if (enableResourceUtilizationWarnings && exitCode == 137) 
                 {
                     ExecutionContext.Error(StringUtil.Loc("AgentOutOfMemoryFailure"));
                 }
