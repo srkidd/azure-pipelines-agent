@@ -251,6 +251,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 {
                     ExecutionContext.Error(StringUtil.Loc("AgentOutOfMemoryFailure"));
                 }
+
+                throw;
             }
             finally
             {
