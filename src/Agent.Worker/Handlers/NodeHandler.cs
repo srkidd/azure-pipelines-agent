@@ -245,11 +245,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     await step;
                 }
             }
-            catch(ProcessExitCodeException ex)
+            catch(AggregateException ex)
             {
-                if (enableResourceUtilizationWarnings && ex.ExitCode == 137)
+                foreach(var e in ex.InnerExceptions)
                 {
-                    ExecutionContext.Error(StringUtil.Loc("AgentOutOfMemoryFailure"));
+                    if (e is ProcessExitCodeException)
+                    {
+                        if (enableResourceUtilizationWarnings && ((ProcessExitCodeException)e).ExitCode == 137)
+                        {
+                            ExecutionContext.Error(StringUtil.Loc("AgentOutOfMemoryFailure"));
+                        }
+                    }
                 }
 
                 throw;
