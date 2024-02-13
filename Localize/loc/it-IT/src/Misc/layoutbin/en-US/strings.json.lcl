@@ -4725,10 +4725,13 @@
       </Item>
       <Item ItemId=";ResourceMonitorCPUInfo" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[CPU: usage - {0}]]></Val>
+          <Val><![CDATA[CPU: Usage {0}%]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[CPU: utilizzo - {0}]]></Val>
+            <Val><![CDATA[CPU: utilizzo - {0}%]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[CPU: usage - {0}]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4743,10 +4746,13 @@
       </Item>
       <Item ItemId=";ResourceMonitorDiskInfo" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Disk: Volume {0} - Available {1} MB out of {2} MB]]></Val>
+          <Val><![CDATA[Disk: {0} Available {1} MB out of {2} MB]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Disco: volume {0} - {1} MB disponibili su {2} MB]]></Val>
+            <Val><![CDATA[Disco: {0} - {1} MB disponibili su {2} MB]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Disk: Volume {0} - Available {1} MB out of {2} MB]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
@@ -4761,10 +4767,13 @@
       </Item>
       <Item ItemId=";ResourceMonitorFreeDiskSpaceIsLowerThanThreshold" ItemType="0" PsrId="306" Leaf="true">
         <Str Cat="Text">
-          <Val><![CDATA[Free disk space on volume {0} is lower than {1}%; Currently used: {2}%]]></Val>
+          <Val><![CDATA[Free disk space on {0} is lower than {1}%; Currently used: {2}%]]></Val>
           <Tgt Cat="Text" Stat="Loc" Orig="New">
-            <Val><![CDATA[Lo spazio su disco disponibile nel volume {0} è inferiore al {1}%; Attualmente in uso: {2}%]]></Val>
+            <Val><![CDATA[Lo spazio su disco disponibile {0} è inferiore al {1}%; Attualmente in uso: {2}%]]></Val>
           </Tgt>
+          <Prev Cat="Text">
+            <Val><![CDATA[Free disk space on volume {0} is lower than {1}%; Currently used: {2}%]]></Val>
+          </Prev>
         </Str>
         <Disp Icon="Str" />
       </Item>
