@@ -53,6 +53,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             ArgUtil.NotNull(runtimeVariables, nameof(runtimeVariables));
             ArgUtil.NotNull(taskDirectory, nameof(taskDirectory));
 
+            var disableAgentPluginWithFallbackHandler =  AgentKnobs.DisableAgentPluginWithFallbackHandler.GetValue(executionContext).AsBoolean();
+
             // Create the handler.
             IHandler handler;
             if (data is BaseNodeHandlerData)
@@ -113,6 +115,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 // Agent plugin
                 handler = HostContext.CreateService<IAgentPluginHandler>();
                 (handler as IAgentPluginHandler).Data = data as AgentPluginHandlerData;
+            }
+            else if(!disableAgentPluginWithFallbackHandler && data is AgentPluginWithFallbackHandlerData)
+            {
+                handler = HostContext.CreateService<IAgentPluginHandler>();
+                (handler as IAgentPluginHandler).Data = data as AgentPluginWithFallbackHandlerData;
             }
             else
             {

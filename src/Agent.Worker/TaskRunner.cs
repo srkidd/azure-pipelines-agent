@@ -397,7 +397,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
                 resourceDiagnosticManager.Setup(ExecutionContext);
 
-                if (enableResourceUtilizationWarnings) {
+                if (enableResourceUtilizationWarnings)
+                {
                     _ = resourceDiagnosticManager.RunMemoryUtilizationMonitor();
                     _ = resourceDiagnosticManager.RunDiskSpaceUtilizationMonitor();
                     _ = resourceDiagnosticManager.RunCpuUtilizationMonitor(Task.Reference.Id.ToString());
@@ -513,8 +514,24 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     }
                 }
             }
+
+            var disableAgentPluginWithFallbackHandlerKnob = AgentKnobs.DisableAgentPluginWithFallbackHandler.GetValue(ExecutionContext).AsBoolean();
+            HashSet<HandlerData> exclude;
+
+            if (disableAgentPluginWithFallbackHandlerKnob)
+            {
+                exclude = new HashSet<HandlerData>();
+            }
+            else
+            {
+                var agentPluginsWithFallbackHandlersWherePluginNotSupported = currentExecution.All.Where(x => x is AgentPluginWithFallbackHandlerData && !AgentPluginManager.IsTaskPluginSupported(x.Target));
+                exclude = new HashSet<HandlerData>(agentPluginsWithFallbackHandlersWherePluginNotSupported);
+            }
+
             Trace.Info($"Get handler data for target platform {targetOS.ToString()}");
             return currentExecution.All
+                    .Where(x => !exclude.Contains(x))
+                    .Where(x => (!(x is AgentPluginWithFallbackHandlerData) || !disableAgentPluginWithFallbackHandlerKnob))
                     .OrderBy(x => !(x.PreferredOnPlatform(targetOS) && (preferPowershellHandler || !(x is PowerShell3HandlerData)))) // Sort true to false.
                     .ThenBy(x => x.Priority)
                     .FirstOrDefault();
@@ -572,7 +589,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             // return original inputValue.
             Trace.Info("Cannot root path even by using JobExtension, return original input.");
             return inputValue;
-        } 
+        }
 
         private bool IsTelemetryPublishRequired()
         {
@@ -599,7 +616,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         private void PublishTelemetry(Definition taskDefinition, HandlerData handlerData)
         {
-            if (!IsTelemetryPublishRequired()) 
+            if (!IsTelemetryPublishRequired())
             {
                 return;
             }

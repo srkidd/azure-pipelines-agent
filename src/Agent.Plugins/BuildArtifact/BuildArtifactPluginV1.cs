@@ -64,6 +64,13 @@ namespace Agent.Plugins.BuildArtifacts
         }
     }
 
+    // Create a new version as we changed functionality for FileID https://portal.microsofticm.com/imp/v3/incidents/details/462028809/home
+    // For backcompat with older agents, tasks will use the node (v0) task code using AgentPluginWithFallback
+    public class DownloadBuildArtifactTaskV1_0_1 : DownloadBuildArtifactTaskV1_0_0
+    {
+
+    }
+
     // Can be invoked from a build run or a release run should a build be set as the artifact. 
     public class DownloadBuildArtifactTaskV1_0_0 : BuildArtifactTaskPluginBaseV1
     {

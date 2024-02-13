@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     {
         private readonly Dictionary<Guid, List<string>> _supportedTasks = new Dictionary<Guid, List<string>>();
 
-        protected readonly HashSet<string> _taskPlugins = new HashSet<string>()
+        protected static readonly HashSet<string> _taskPlugins = new HashSet<string>()
         {
             "Agent.Plugins.Repository.CheckoutTask, Agent.Plugins",
             "Agent.Plugins.Repository.CleanupTask, Agent.Plugins",
@@ -42,7 +42,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV1_1_3, Agent.Plugins",
             "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV2_0_0, Agent.Plugins",
             "Agent.Plugins.PipelineArtifact.PublishPipelineArtifactTaskV0_140_0, Agent.Plugins",
-            "Agent.Plugins.BuildArtifacts.DownloadBuildArtifactTaskV1_0_0, Agent.Plugins"
+            "Agent.Plugins.BuildArtifacts.DownloadBuildArtifactTaskV1_0_0, Agent.Plugins",            
+            "Agent.Plugins.BuildArtifacts.DownloadBuildArtifactTaskV1_0_1, Agent.Plugins"
         };
 
         public override void Initialize(IHostContext hostContext)
@@ -130,12 +131,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return pluginContext;
         }
 
+        public static bool IsTaskPluginSupported(string plugin)
+        {
+            ArgUtil.NotNullOrEmpty(plugin, nameof(plugin));
+
+            // Only allow plugins we defined
+            return _taskPlugins.Contains(plugin);
+        }
+
         public async Task RunPluginTaskAsync(IExecutionContext context, string plugin, Dictionary<string, string> inputs, Dictionary<string, string> environment, Variables runtimeVariables, EventHandler<ProcessDataReceivedEventArgs> outputHandler)
         {
             ArgUtil.NotNullOrEmpty(plugin, nameof(plugin));
 
             // Only allow plugins we defined
-            if (!_taskPlugins.Contains(plugin))
+            if (!IsTaskPluginSupported(plugin))
             {
                 throw new NotSupportedException(plugin);
             }

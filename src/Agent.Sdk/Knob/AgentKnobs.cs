@@ -592,5 +592,12 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AZP_AGENT_DOCKER_INIT_OPTION"),
             new EnvironmentKnobSource("AZP_AGENT_DOCKER_INIT_OPTION"),
             new BuiltInDefaultKnobSource("false"));
+
+        public static Knob DisableAgentPluginWithFallbackHandler = new Knob(
+            nameof(AddDockerInitOption),
+            "If true, the agent will not recognize AgentPluginWithFallback execution handler in tasks (e.g. for testing that fallback works as expected, simulating an older agent that doesn't support the plugin).",
+            new RuntimeKnobSource("DISABLE_AGENT_PLUGIN_WITH_FALLBACK_HANDLER"),
+            new EnvironmentKnobSource("DISABLE_AGENT_PLUGIN_WITH_FALLBACK_HANDLER"),
+            new BuiltInDefaultKnobSource("false"));
     }
 }

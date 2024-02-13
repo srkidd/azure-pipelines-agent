@@ -455,6 +455,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private PowerShellExeHandlerData _powerShellExe;
         private ProcessHandlerData _process;
         private AgentPluginHandlerData _agentPlugin;
+        private AgentPluginWithFallbackHandlerData _agentPluginFallback;
 
         [JsonIgnore]
         public List<HandlerData> All => _all;
@@ -615,6 +616,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             set
             {
                 _agentPlugin = value;
+                Add(value);
+            }
+        }
+
+        public AgentPluginWithFallbackHandlerData AgentPluginWithFallback
+        {
+            get
+            {
+                return _agentPluginFallback;
+            }
+
+            set
+            {
+                _agentPluginFallback = value;
                 Add(value);
             }
         }
@@ -916,8 +931,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
     }
 
-    public sealed class AgentPluginHandlerData : HandlerData
+    public class AgentPluginHandlerData : HandlerData
     {
         public override int Priority => 0;
+    }
+
+    public class AgentPluginWithFallbackHandlerData : AgentPluginHandlerData
+    {
     }
 }
