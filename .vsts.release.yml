@@ -172,18 +172,15 @@ extends:
           - checkout: self
             clean: true
 
-          - task: PowerShell@2
-            displayName: Switch to release branch
-            inputs:
-              filePath: .azure-pipelines/scripts/switch-branch.ps1
-            env:
-              TARGET_BRANCH: $(ReleaseBranch)
+
 
           # Download all agent packages from all previous phases
           - task: DownloadBuildArtifacts@0
             displayName: Download Agent Packages
             inputs:
               artifactName: agent
+
+          
 
           # Download all agent hashes created in previous phases
           - task: DownloadBuildArtifacts@0
@@ -198,44 +195,7 @@ extends:
               node fillReleaseNotesTemplate.js $(AgentVersion)
             displayName: Fill release notes
 
-          # Create agent release on Github
-          - powershell: |
-              Write-Host "Creating github release."
-              $releaseNotes = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\releaseNote.md")
-              $releaseData = @{
-                tag_name = "v$(AgentVersion)";
-                target_commitish = "$(Build.SourceVersion)";
-                name = "v$(AgentVersion)";
-                body = $releaseNotes;
-                draft = $false;
-                prerelease = $true;
-              }
-              $releaseParams = @{
-                Uri = "https://api.github.com/repos/Microsoft/azure-pipelines-agent/releases";
-                Method = 'POST';
-                Headers = @{
-                  Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
-                }
-                ContentType = 'application/json';
-                Body = (ConvertTo-Json $releaseData -Compress)
-              }
-              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-              $releaseCreated = Invoke-RestMethod @releaseParams
-              Write-Host $releaseCreated
-              $releaseId = $releaseCreated.id
-              $assets = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\assets.json").Replace("<AGENT_VERSION>","$(AgentVersion)")
-              $assetsParams = @{
-                Uri = "https://uploads.github.com/repos/Microsoft/azure-pipelines-agent/releases/$releaseId/assets?name=assets.json"
-                Method = 'POST';
-                Headers = @{
-                  Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
-                }
-                ContentType = 'application/octet-stream';
-                Body = [system.Text.Encoding]::UTF8.GetBytes($assets)
-              }
-              Invoke-RestMethod @assetsParams
-            displayName: Create agent release on Github
-
+          
       - stage: CreatePRs
         dependsOn:
         - Release
