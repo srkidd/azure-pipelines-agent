@@ -22,16 +22,16 @@ parameters:
   type: string
   values:
   - win
-  # - linux
-  # - linux-musl
-  # - osx
+  - linux
+  - linux-musl
+  - osx
 
 - name: arch
   type: string
   values:
-  # - arm
-  # - arm64
-  # - x64
+  - arm
+  - arm64
+  - x64
   - x86
 
 - name: unitTests
