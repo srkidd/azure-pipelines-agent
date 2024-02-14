@@ -189,6 +189,7 @@ extends:
           - task: AzurePowerShell@5
             displayName: Upload to Azure Blob
             inputs:
+              azurePowerShellVersion: 'LatestVersion'
               azureSubscription: 'v-iismayilov-test'
               scriptType: 'InlineScript'
               inline: |
