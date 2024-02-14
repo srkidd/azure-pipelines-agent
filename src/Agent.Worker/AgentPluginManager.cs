@@ -20,13 +20,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     {
         List<string> GetTaskPlugins(Guid taskId);
         Task RunPluginTaskAsync(IExecutionContext context, string plugin, Dictionary<string, string> inputs, Dictionary<string, string> environment, Variables runtimeVariables, EventHandler<ProcessDataReceivedEventArgs> outputHandler);
+        bool IsTaskPluginSupported(string plugin);
     }
 
     public class AgentPluginManager : AgentService, IAgentPluginManager
     {
         private readonly Dictionary<Guid, List<string>> _supportedTasks = new Dictionary<Guid, List<string>>();
 
-        protected static readonly HashSet<string> _taskPlugins = new HashSet<string>()
+        protected readonly HashSet<string> _taskPlugins = new HashSet<string>
         {
             "Agent.Plugins.Repository.CheckoutTask, Agent.Plugins",
             "Agent.Plugins.Repository.CleanupTask, Agent.Plugins",
@@ -42,7 +43,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV1_1_3, Agent.Plugins",
             "Agent.Plugins.PipelineArtifact.DownloadPipelineArtifactTaskV2_0_0, Agent.Plugins",
             "Agent.Plugins.PipelineArtifact.PublishPipelineArtifactTaskV0_140_0, Agent.Plugins",
-            "Agent.Plugins.BuildArtifacts.DownloadBuildArtifactTaskV1_0_0, Agent.Plugins",            
+            "Agent.Plugins.BuildArtifacts.DownloadBuildArtifactTaskV1_0_0, Agent.Plugins",
             "Agent.Plugins.BuildArtifacts.DownloadBuildArtifactTaskV1_0_1, Agent.Plugins"
         };
 
@@ -131,7 +132,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return pluginContext;
         }
 
-        public static bool IsTaskPluginSupported(string plugin)
+        public bool IsTaskPluginSupported(string plugin)
         {
             ArgUtil.NotNullOrEmpty(plugin, nameof(plugin));
 

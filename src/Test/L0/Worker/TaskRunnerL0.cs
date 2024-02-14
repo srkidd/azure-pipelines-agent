@@ -95,6 +95,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             {
                 using (TestHostContext hc = CreateTestContext(test.Name))
                 {
+                    hc.SetSingleton<IAgentPluginManager>(new FakeAgentPluginManagerL0());
                     test.RunTest(hc);
                 }
             }
@@ -132,6 +133,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
             {
                 using (TestHostContext hc = CreateTestContext(test.Name))
                 {
+                    hc.SetSingleton<IAgentPluginManager>(new FakeAgentPluginManagerL0());
                     test.RunTest(hc);
                 }
             }
@@ -171,6 +173,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.Worker
                 variables.Add("agent.preferPowerShellOnContainers", "true");
                 using (TestHostContext hc = CreateTestContext(test.Name))
                 {
+                    hc.SetSingleton<IAgentPluginManager>(new FakeAgentPluginManagerL0());
+
                     test.RunTest(hc, variables);
                     Environment.SetEnvironmentVariable("AGENT_PREFER_POWERSHELL_ON_CONTAINERS", "true");
                     test.RunTest(hc);

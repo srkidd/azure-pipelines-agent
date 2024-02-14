@@ -524,7 +524,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
             else
             {
-                var agentPluginsWithFallbackHandlersWherePluginNotSupported = currentExecution.All.Where(x => x is AgentPluginWithFallbackHandlerData && !AgentPluginManager.IsTaskPluginSupported(x.Target));
+                var agentPluginManager = HostContext.GetService<IAgentPluginManager>();
+
+                var agentPluginsWithFallbackHandlersWherePluginNotSupported = currentExecution.All.Where(x => x is AgentPluginWithFallbackHandlerData && !agentPluginManager.IsTaskPluginSupported(x.Target));
                 exclude = new HashSet<HandlerData>(agentPluginsWithFallbackHandlersWherePluginNotSupported);
             }
 
