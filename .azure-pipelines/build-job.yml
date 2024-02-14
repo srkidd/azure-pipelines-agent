@@ -261,7 +261,7 @@ jobs:
       displayName: Publish Release Note
       inputs:
         pathToPublish: releaseNote.md
-        artifactName: releaseNote.md
+        artifactName: ./
         artifactType: container
 
   # Signing verification
