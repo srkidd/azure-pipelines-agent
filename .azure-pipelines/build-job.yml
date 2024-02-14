@@ -261,8 +261,10 @@ jobs:
       displayName: Publish Release Note
       inputs:
         pathToPublish: releaseNote.md
-        artifactName: ./
+        artifactName: release_data
         artifactType: container
+        targetPath: $(Build.ArtifactStagingDirectory)
+
 
   # Signing verification
   - ${{ if parameters.verifySigning }}:
