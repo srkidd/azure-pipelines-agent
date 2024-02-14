@@ -160,12 +160,12 @@ extends:
         ################################################################################
           displayName: Publish Agents (Windows/Linux/OSX)
           pool:
-            name: RMAgentsProdAME
+            name: 1ES-Shared-Hosted-Pool_Windows-Server-202
           variables:
             IsRelease: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.isRelease'] ]
             ReleaseBranch: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.releaseBranch'] ]
             AgentVersion: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.agentVersion'] ]
-          condition: and(succeeded(), eq(variables.IsRelease, 'True'))
+          # condition: and(succeeded(), eq(variables.IsRelease, 'True'))
           steps:
 
           # Clean
@@ -186,15 +186,13 @@ extends:
               artifactName: agent
 
           # Upload agent packages to Azure blob storage and refresh Azure CDN
-          - powershell: |
+          - task: AzurePowerShell@5
+            azureSubscription: 'v-iismayilov-test'
+            scriptType: 'InlineScript'
+            inline: |
               Write-Host "Preloading Azure modules." # This is for better performance, to avoid module-autoloading.
               Import-Module Azure, Az.Accounts, Az.Storage, Az.Cdn -ErrorAction Ignore -PassThru
               $uploadFiles = New-Object System.Collections.ArrayList
-              $certificateThumbprint = (Get-ItemProperty -Path "$(ServicePrincipalReg)").ServicePrincipalCertThumbprint
-              $clientId = (Get-ItemProperty -Path "$(ServicePrincipalReg)").ServicePrincipalClientId
-              Write-Host "##vso[task.setsecret]$certificateThumbprint"
-              Write-Host "##vso[task.setsecret]$clientId"
-              Login-AzAccount -ServicePrincipal -CertificateThumbprint $certificateThumbprint -ApplicationId $clientId -TenantId $(TenantId)
               Select-AzSubscription -SubscriptionId $(SubscriptionId)
               $storage = Get-AzStorageAccount -ResourceGroupName vstsagentpackage -AccountName vstsagentpackage
               $versionDir = "$(AgentVersion)"
@@ -226,43 +224,43 @@ extends:
               node fillReleaseNotesTemplate.js $(AgentVersion)
             displayName: Fill release notes
 
-          # Create agent release on Github
-          - powershell: |
-              Write-Host "Creating github release."
-              $releaseNotes = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\releaseNote.md")
-              $releaseData = @{
-                tag_name = "v$(AgentVersion)";
-                target_commitish = "$(Build.SourceVersion)";
-                name = "v$(AgentVersion)";
-                body = $releaseNotes;
-                draft = $false;
-                prerelease = $true;
-              }
-              $releaseParams = @{
-                Uri = "https://api.github.com/repos/Microsoft/azure-pipelines-agent/releases";
-                Method = 'POST';
-                Headers = @{
-                  Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
-                }
-                ContentType = 'application/json';
-                Body = (ConvertTo-Json $releaseData -Compress)
-              }
-              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-              $releaseCreated = Invoke-RestMethod @releaseParams
-              Write-Host $releaseCreated
-              $releaseId = $releaseCreated.id
-              $assets = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\assets.json").Replace("<AGENT_VERSION>","$(AgentVersion)")
-              $assetsParams = @{
-                Uri = "https://uploads.github.com/repos/Microsoft/azure-pipelines-agent/releases/$releaseId/assets?name=assets.json"
-                Method = 'POST';
-                Headers = @{
-                  Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
-                }
-                ContentType = 'application/octet-stream';
-                Body = [system.Text.Encoding]::UTF8.GetBytes($assets)
-              }
-              Invoke-RestMethod @assetsParams
-            displayName: Create agent release on Github
+          # # Create agent release on Github
+          # - powershell: |
+          #     Write-Host "Creating github release."
+          #     $releaseNotes = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\releaseNote.md")
+          #     $releaseData = @{
+          #       tag_name = "v$(AgentVersion)";
+          #       target_commitish = "$(Build.SourceVersion)";
+          #       name = "v$(AgentVersion)";
+          #       body = $releaseNotes;
+          #       draft = $false;
+          #       prerelease = $true;
+          #     }
+          #     $releaseParams = @{
+          #       Uri = "https://api.github.com/repos/Microsoft/azure-pipelines-agent/releases";
+          #       Method = 'POST';
+          #       Headers = @{
+          #         Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
+          #       }
+          #       ContentType = 'application/json';
+          #       Body = (ConvertTo-Json $releaseData -Compress)
+          #     }
+          #     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+          #     $releaseCreated = Invoke-RestMethod @releaseParams
+          #     Write-Host $releaseCreated
+          #     $releaseId = $releaseCreated.id
+          #     $assets = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\assets.json").Replace("<AGENT_VERSION>","$(AgentVersion)")
+          #     $assetsParams = @{
+          #       Uri = "https://uploads.github.com/repos/Microsoft/azure-pipelines-agent/releases/$releaseId/assets?name=assets.json"
+          #       Method = 'POST';
+          #       Headers = @{
+          #         Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
+          #       }
+          #       ContentType = 'application/octet-stream';
+          #       Body = [system.Text.Encoding]::UTF8.GetBytes($assets)
+          #     }
+          #     Invoke-RestMethod @assetsParams
+          #   displayName: Create agent release on Github
 
       - stage: CreatePRs
         dependsOn:
