@@ -39,25 +39,25 @@ parameters:
   default: true
 - name: win_x86
   type: boolean
-  default: true
+  default: false
 - name: linux_x64
   type: boolean
-  default: true
+  default: false
 - name: linux_arm
   type: boolean
-  default: true
+  default: false
 - name: linux_arm64
   type: boolean
-  default: true
+  default: false
 - name: alpine_x64
   type: boolean
-  default: true
+  default: false
 - name: macOS_x64
   type: boolean
-  default: true
+  default: false
 - name: macOS_arm64
   type: boolean
-  default: true
+  default: false
 
 stages:
 
