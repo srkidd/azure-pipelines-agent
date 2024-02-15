@@ -210,9 +210,9 @@ extends:
                   }
                 }
                 Write-Host "Purge Azure CDN Cache"
-                Unpublish-AzCdnEndpointContent -EndpointName vstsagentpackage -ProfileName vstsagentpackage -ResourceGroupName vstsagentpackage -PurgeContent $uploadFiles
+                Clear-AzCdnEndpointContent -EndpointName vstsagentpackage -ProfileName vstsagentpackage -ResourceGroupName vstsagentpackage -ContentPath $uploadFiles
                 Write-Host "Force Refresh Azure CDN Cache"
-                Publish-AzCdnEndpointContent -EndpointName vstsagentpackage -ProfileName vstsagentpackage -ResourceGroupName vstsagentpackage -LoadContent $uploadFiles
+                Import-AzCdnEndpointContent -EndpointName vstsagentpackage -ProfileName vstsagentpackage -ResourceGroupName vstsagentpackage -ContentPath $uploadFiles
 
           # Download all agent hashes created in previous phases
           - task: DownloadBuildArtifacts@0
