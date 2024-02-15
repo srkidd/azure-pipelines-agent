@@ -2,6 +2,7 @@
   <Import Project="..\Common.props" />
   <ItemGroup>
     <ProjectReference Include="..\Agent.Listener\Agent.Listener.csproj" />
+    <ProjectReference Include="..\Agent.PluginHost\Agent.PluginHost.csproj" />
     <ProjectReference Include="..\Microsoft.VisualStudio.Services.Agent\Microsoft.VisualStudio.Services.Agent.csproj" />
     <ProjectReference Include="..\Agent.Worker\Agent.Worker.csproj" />
     <ProjectReference Include="..\Agent.Plugins\Agent.Plugins.csproj" />
@@ -12,9 +13,10 @@
     <!-- Suppress warning CA1416: This call site is reachable on all platforms. -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
+	<SelfContained>false</SelfContained>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup> 
     <PackageReference Include="azuredevops-testresultparser" Version="1.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="Microsoft.CodeCoverage" Version="16.4.0" />
