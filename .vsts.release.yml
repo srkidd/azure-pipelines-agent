@@ -161,6 +161,7 @@ extends:
           displayName: Publish Agents (Windows/Linux/OSX)
           pool:
             name: 1ES-Shared-Hosted-Pool_Linux-Mariner-2
+            demands: AzurePS
           variables:
             IsRelease: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.isRelease'] ]
             ReleaseBranch: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.releaseBranch'] ]
