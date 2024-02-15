@@ -78,38 +78,38 @@ extends:
             $isScheduledRelease = $isRelease -and $buildReason -eq 'Schedule'
             Write-Host "isScheduledRelease = $isScheduledRelease"
 
-            if ($isRelease) {
-              if ($isScheduledRelease) {
-                $majorAndMinorVersion = "3.$($currentSprint.sprint)"
-                $patchVersion = 0
-                ## Looking for a free patch version
-                while ($true) {
-                  $agentVersion = "$majorAndMinorVersion.$patchVersion"
-                  git ls-remote --exit-code --heads origin refs/heads/releases/$agentVersion
-                  if ($LASTEXITCODE -ne 0) {
-                    if ($LASTEXITCODE -eq 2) {
-                        $LASTEXITCODE = 0
-                        break
-                    }
-                    else {
-                        Write-Error "git ls-remote failed with exit code $LASTEXITCODE" -ErrorAction Stop
-                    }
-                  }
-                  $patchVersion++
-                }
-              } else {
-                $agentVersion = "${{ parameters.version }}"
-                if ($agentVersion -eq 'NotSet') {
-                  Write-Error "Version parameter is required for manual release." -ErrorAction Stop
-                }
-              }
-              Write-Host "agentVersion = $agentVersion"
-              Write-Host "##vso[task.setVariable variable=agentVersion;isOutput=true]$agentVersion"
 
-              $releaseBranch = "releases/$agentVersion"
-              Write-Host "releaseBranch = $releaseBranch"
-              Write-Host "##vso[task.setVariable variable=releaseBranch;isOutput=true]$releaseBranch"
+            if ($isScheduledRelease) {
+              $majorAndMinorVersion = "3.$($currentSprint.sprint)"
+              $patchVersion = 0
+              ## Looking for a free patch version
+              while ($true) {
+                $agentVersion = "$majorAndMinorVersion.$patchVersion"
+                git ls-remote --exit-code --heads origin refs/heads/releases/$agentVersion
+                if ($LASTEXITCODE -ne 0) {
+                  if ($LASTEXITCODE -eq 2) {
+                      $LASTEXITCODE = 0
+                      break
+                  }
+                  else {
+                      Write-Error "git ls-remote failed with exit code $LASTEXITCODE" -ErrorAction Stop
+                  }
+                }
+                $patchVersion++
+              }
+            } else {
+              $agentVersion = "${{ parameters.version }}"
+              if ($agentVersion -eq 'NotSet') {
+                Write-Error "Version parameter is required for manual release." -ErrorAction Stop
+              }
             }
+            Write-Host "agentVersion = $agentVersion"
+            Write-Host "##vso[task.setVariable variable=agentVersion;isOutput=true]$agentVersion"
+
+            $releaseBranch = "releases/$agentVersion"
+            Write-Host "releaseBranch = $releaseBranch"
+            Write-Host "##vso[task.setVariable variable=releaseBranch;isOutput=true]$releaseBranch"
+
 
           name: SetReleaseVariables
           displayName: Set release-specific variables
@@ -173,12 +173,12 @@ extends:
           - checkout: self
             clean: true
 
-          # - task: PowerShell@2
-          #   displayName: Switch to release branch
-          #   inputs:
-          #     filePath: .azure-pipelines/scripts/switch-branch.ps1
-          #   env:
-          #     TARGET_BRANCH: $(ReleaseBranch)
+          - task: PowerShell@2
+            displayName: Switch to release branch
+            inputs:
+              filePath: .azure-pipelines/scripts/switch-branch.ps1
+            env:
+              TARGET_BRANCH: $(ReleaseBranch)
 
           # Download all agent packages from all previous phases
           - task: DownloadBuildArtifacts@0
@@ -199,7 +199,7 @@ extends:
                 $uploadFiles = New-Object System.Collections.ArrayList
                 Select-AzSubscription -SubscriptionId $(SubscriptionId)
                 $storage = Get-AzStorageAccount -ResourceGroupName vstsagentpackage -AccountName vstsagentpackage
-                $versionDir = 3.230.0 
+                $versionDir = "$(AgentVersion)"
                 Get-ChildItem -LiteralPath "$(System.ArtifactsDirectory)/agent" | ForEach-Object {
                   $target=$_
                   Get-ChildItem -LiteralPath "$(System.ArtifactsDirectory)/agent/$target" -Include "*.zip","*.tar.gz" | ForEach-Object {
