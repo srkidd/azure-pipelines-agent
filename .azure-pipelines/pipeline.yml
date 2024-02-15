@@ -36,10 +36,10 @@ parameters:
 # Targets
 - name: win_x64
   type: boolean
-  default: true
+  default: false
 - name: win_x86
   type: boolean
-  default: false
+  default: true
 - name: linux_x64
   type: boolean
   default: false
