@@ -199,7 +199,7 @@ extends:
                 $uploadFiles = New-Object System.Collections.ArrayList
                 Select-AzSubscription -SubscriptionId $(SubscriptionId)
                 $storage = Get-AzStorageAccount -ResourceGroupName vstsagentpackage -AccountName vstsagentpackage
-                $versionDir = "$(AgentVersion)"
+                $versionDir = 3.230.0 
                 Get-ChildItem -LiteralPath "$(System.ArtifactsDirectory)/agent" | ForEach-Object {
                   $target=$_
                   Get-ChildItem -LiteralPath "$(System.ArtifactsDirectory)/agent/$target" -Include "*.zip","*.tar.gz" | ForEach-Object {
