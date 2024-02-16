@@ -36,28 +36,28 @@ parameters:
 # Targets
 - name: win_x64
   type: boolean
-  default: false
+  default: true
 - name: win_x86
   type: boolean
   default: true
 - name: linux_x64
   type: boolean
-  default: false
+  default: true
 - name: linux_arm
   type: boolean
-  default: false
+  default: true
 - name: linux_arm64
   type: boolean
-  default: false
+  default: true
 - name: alpine_x64
   type: boolean
-  default: false
+  default: true
 - name: macOS_x64
   type: boolean
-  default: false
+  default: true
 - name: macOS_arm64
   type: boolean
-  default: false
+  default: true
 
 stages:
 

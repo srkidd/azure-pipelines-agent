@@ -78,38 +78,38 @@ extends:
             $isScheduledRelease = $isRelease -and $buildReason -eq 'Schedule'
             Write-Host "isScheduledRelease = $isScheduledRelease"
 
-
-            if ($isScheduledRelease) {
-              $majorAndMinorVersion = "3.$($currentSprint.sprint)"
-              $patchVersion = 0
-              ## Looking for a free patch version
-              while ($true) {
-                $agentVersion = "$majorAndMinorVersion.$patchVersion"
-                git ls-remote --exit-code --heads origin refs/heads/releases/$agentVersion
-                if ($LASTEXITCODE -ne 0) {
-                  if ($LASTEXITCODE -eq 2) {
-                      $LASTEXITCODE = 0
-                      break
+            if ($isRelease) {
+              if ($isScheduledRelease) {
+                $majorAndMinorVersion = "3.$($currentSprint.sprint)"
+                $patchVersion = 0
+                ## Looking for a free patch version
+                while ($true) {
+                  $agentVersion = "$majorAndMinorVersion.$patchVersion"
+                  git ls-remote --exit-code --heads origin refs/heads/releases/$agentVersion
+                  if ($LASTEXITCODE -ne 0) {
+                    if ($LASTEXITCODE -eq 2) {
+                        $LASTEXITCODE = 0
+                        break
+                    }
+                    else {
+                        Write-Error "git ls-remote failed with exit code $LASTEXITCODE" -ErrorAction Stop
+                    }
                   }
-                  else {
-                      Write-Error "git ls-remote failed with exit code $LASTEXITCODE" -ErrorAction Stop
-                  }
+                  $patchVersion++
                 }
-                $patchVersion++
+              } else {
+                $agentVersion = "${{ parameters.version }}"
+                if ($agentVersion -eq 'NotSet') {
+                  Write-Error "Version parameter is required for manual release." -ErrorAction Stop
+                }
               }
-            } else {
-              $agentVersion = "${{ parameters.version }}"
-              if ($agentVersion -eq 'NotSet') {
-                Write-Error "Version parameter is required for manual release." -ErrorAction Stop
-              }
+              Write-Host "agentVersion = $agentVersion"
+              Write-Host "##vso[task.setVariable variable=agentVersion;isOutput=true]$agentVersion"
+
+              $releaseBranch = "releases/$agentVersion"
+              Write-Host "releaseBranch = $releaseBranch"
+              Write-Host "##vso[task.setVariable variable=releaseBranch;isOutput=true]$releaseBranch"
             }
-            Write-Host "agentVersion = $agentVersion"
-            Write-Host "##vso[task.setVariable variable=agentVersion;isOutput=true]$agentVersion"
-
-            $releaseBranch = "releases/$agentVersion"
-            Write-Host "releaseBranch = $releaseBranch"
-            Write-Host "##vso[task.setVariable variable=releaseBranch;isOutput=true]$releaseBranch"
-
 
           name: SetReleaseVariables
           displayName: Set release-specific variables
@@ -166,7 +166,7 @@ extends:
             IsRelease: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.isRelease'] ]
             ReleaseBranch: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.releaseBranch'] ]
             AgentVersion: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.agentVersion'] ]
-          # condition: and(succeeded(), eq(variables.IsRelease, 'True'))
+          condition: and(succeeded(), eq(variables.IsRelease, 'True'))
           steps:
 
           # Clean
@@ -227,43 +227,43 @@ extends:
               node fillReleaseNotesTemplate.js $(AgentVersion)
             displayName: Fill release notes
 
-          # # Create agent release on Github
-          # - powershell: |
-          #     Write-Host "Creating github release."
-          #     $releaseNotes = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\releaseNote.md")
-          #     $releaseData = @{
-          #       tag_name = "v$(AgentVersion)";
-          #       target_commitish = "$(Build.SourceVersion)";
-          #       name = "v$(AgentVersion)";
-          #       body = $releaseNotes;
-          #       draft = $false;
-          #       prerelease = $true;
-          #     }
-          #     $releaseParams = @{
-          #       Uri = "https://api.github.com/repos/Microsoft/azure-pipelines-agent/releases";
-          #       Method = 'POST';
-          #       Headers = @{
-          #         Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
-          #       }
-          #       ContentType = 'application/json';
-          #       Body = (ConvertTo-Json $releaseData -Compress)
-          #     }
-          #     [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
-          #     $releaseCreated = Invoke-RestMethod @releaseParams
-          #     Write-Host $releaseCreated
-          #     $releaseId = $releaseCreated.id
-          #     $assets = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\assets.json").Replace("<AGENT_VERSION>","$(AgentVersion)")
-          #     $assetsParams = @{
-          #       Uri = "https://uploads.github.com/repos/Microsoft/azure-pipelines-agent/releases/$releaseId/assets?name=assets.json"
-          #       Method = 'POST';
-          #       Headers = @{
-          #         Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
-          #       }
-          #       ContentType = 'application/octet-stream';
-          #       Body = [system.Text.Encoding]::UTF8.GetBytes($assets)
-          #     }
-          #     Invoke-RestMethod @assetsParams
-          #   displayName: Create agent release on Github
+          # Create agent release on Github
+          - powershell: |
+              Write-Host "Creating github release."
+              $releaseNotes = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\releaseNote.md")
+              $releaseData = @{
+                tag_name = "v$(AgentVersion)";
+                target_commitish = "$(Build.SourceVersion)";
+                name = "v$(AgentVersion)";
+                body = $releaseNotes;
+                draft = $false;
+                prerelease = $true;
+              }
+              $releaseParams = @{
+                Uri = "https://api.github.com/repos/Microsoft/azure-pipelines-agent/releases";
+                Method = 'POST';
+                Headers = @{
+                  Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
+                }
+                ContentType = 'application/json';
+                Body = (ConvertTo-Json $releaseData -Compress)
+              }
+              [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+              $releaseCreated = Invoke-RestMethod @releaseParams
+              Write-Host $releaseCreated
+              $releaseId = $releaseCreated.id
+              $assets = [System.IO.File]::ReadAllText("$(Build.SourcesDirectory)\assets.json").Replace("<AGENT_VERSION>","$(AgentVersion)")
+              $assetsParams = @{
+                Uri = "https://uploads.github.com/repos/Microsoft/azure-pipelines-agent/releases/$releaseId/assets?name=assets.json"
+                Method = 'POST';
+                Headers = @{
+                  Authorization = 'Basic ' + [Convert]::ToBase64String([Text.Encoding]::ASCII.GetBytes("vsts:$(GithubToken)"));
+                }
+                ContentType = 'application/octet-stream';
+                Body = [system.Text.Encoding]::UTF8.GetBytes($assets)
+              }
+              Invoke-RestMethod @assetsParams
+            displayName: Create agent release on Github
 
       - stage: CreatePRs
         dependsOn:
