@@ -236,6 +236,17 @@ jobs:
       displayName: Hash Package
 
   - ${{ if parameters.verifySigning }}:
-    # Need to add validation through 1es
-    - script: |
-        exit 1;
+
+    # Verify all binaries are signed (generate report)
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-codesignvalidation.CodesignValidation@0
+      displayName: 'Generate Codesign Report'
+      inputs:
+        path: ${{ variables.layoutRoot }}
+
+    # Verify all binaries are signed (check report)
+    - task: securedevelopmentteam.vss-secure-development-tools.build-task-postanalysis.PostAnalysis@1
+      displayName: 'Verify Codesign Report'
+      inputs:
+        CodesignValidation: true
+        CodesignValidationBreakOn: WarningAbove
+        ToolLogsNotFoundAction: Error
