@@ -1,3 +1,5 @@
+# This Yaml Document has been converted by ESAI Yaml Pipeline Conversion Tool.
+
 schedules:
 - cron: '0 6 * * 2'
   displayName: Scheduled weekly run
@@ -36,10 +38,9 @@ parameters:
   displayName: Test Proxy Agent
 
 extends:
-  template: .azure-pipelines/pipeline.yml
+  template: /.azure-pipelines/pipeline.yml@self
   parameters:
-    branch:  $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.releaseBranch'] ]
-    componentDetection: false
+    branch: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.releaseBranch'] ]
     test: ${{ not(parameters.skipTests) }}
     sign: true
     publishArtifacts: true
@@ -57,7 +58,9 @@ extends:
     - stage: Verify_release
       displayName: Verify it's a release run
       pool:
-        vmImage: ubuntu-latest
+        name: 1ES-ABTT-Shared-Pool
+        image: abtt-ubuntu-2204
+        os: linux
       jobs:
       - job: Set_variables
         displayName: Set release-specific variables
@@ -129,7 +132,9 @@ extends:
           AgentVersion: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.agentVersion'] ]
         condition: and(succeeded(), eq(variables.IsRelease, 'True'))
         pool:
-          vmImage: ubuntu-latest
+          name: 1ES-ABTT-Shared-Pool
+          image: abtt-ubuntu-2204
+          os: linux
         steps:
 
         - checkout: self
@@ -151,6 +156,7 @@ extends:
 
     postBuildStages:
       - stage: Release
+        condition: eq(variables['Build.SourceBranch'], 'false') # never  for now
         dependsOn:
           - build
           - Verify_release
@@ -315,7 +321,9 @@ extends:
         - CreatePRs
         condition: always()
         pool:
-          vmImage: ubuntu-latest
+          name: 1ES-ABTT-Shared-Pool
+          image: abtt-ubuntu-2204
+          os: linux
         jobs:
         - job: j_SendPRsNotifications
           displayName: Send Release PRs notifications
