@@ -88,24 +88,21 @@ jobs:
   templateContext:
     outputs:
     - ${{ if or(parameters.unitTests, parameters.functionalTests) }}:
-      - output: pipelineArtifact
+      - output: buildArtifacts
         displayName: 'Publish Test logs'
         condition: always()
-        targetPath: src/Test/TestLogs
-        artifactName: ${{ parameters.os }}-${{ parameters.arch }}-$(System.JobId)
-        artifactType: container
-    - ${{ if and(eq(parameters.publishArtifact, true), eq(parameters.os, 'win')) }}:
-      - output: pipelineArtifact
-        displayName: 'Publish Artifact'
-        targetPath: _package
-        artifactName: agent
-        artifactType: container
-    - ${{ if and(eq(parameters.publishArtifact, true), eq(parameters.os, 'win')) }}:
-      - output: pipelineArtifact
-        displayName: 'Publish Artifact'
-        targetPath: _package_hash
-        artifactName: hash
-        artifactType: container
+        PathtoPublish: src/Test/TestLogs
+        ArtifactName: ${{ parameters.os }}-${{ parameters.arch }}-$(System.JobId)
+    - ${{ if eq(parameters.publishArtifact, true) }}:
+      - output: buildArtifacts
+        displayName: 'Publish Hash Artifact'
+        PathtoPublish: _package
+        ArtifactName: agent
+    - ${{ if eq(parameters.publishArtifact, true) }}:
+      - output: buildArtifacts
+        displayName: 'Publish Agent Artifact'
+        PathtoPublish: _package_hash
+        ArtifactName: hash
   steps:
 
   - checkout: self
