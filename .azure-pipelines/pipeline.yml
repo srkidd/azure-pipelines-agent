@@ -72,6 +72,7 @@ extends:
       # do not fail on CG
       componentgovernance:
         failOnAlert: false
+        alertWarningLevel: "Never"
       baseline:
         baselineSet: default
         baselineFile: $(Build.SourcesDirectory)/.gdn/.gdnbaselines

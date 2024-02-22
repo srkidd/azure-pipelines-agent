@@ -324,7 +324,6 @@ extends:
         dependsOn:
         - Verify_release
         - CreatePRs
-        condition: eq( ${{ parameters.disableNotifications }}, false )
         pool:
           name: 1ES-ABTT-Shared-Pool
           image: abtt-ubuntu-2204
@@ -340,6 +339,7 @@ extends:
             CcPrLink: $[ stageDependencies.CreatePRs.create_ado_prs.outputs['s_CreateAdoPrs.CcPrLink'] ]
           condition: |
             and(
+              not(${{ parameters.disableNotifications }}),
               eq(variables.IsRelease, 'True'),
               not(${{ parameters.onlyGitHubRelease }})
             )
