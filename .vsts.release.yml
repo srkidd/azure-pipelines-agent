@@ -324,7 +324,7 @@ extends:
         dependsOn:
         - Verify_release
         - CreatePRs
-        condition: eq( ${{ parameters.disableNotifications }}, true )
+        condition: eq( ${{ parameters.disableNotifications }}, false )
         pool:
           name: 1ES-ABTT-Shared-Pool
           image: abtt-ubuntu-2204
