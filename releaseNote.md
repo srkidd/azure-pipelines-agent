@@ -1,3 +1,12 @@
+## Features
+
+
+## Bugs
+ - [AgentWorker.PageLogger] - Ignore endgroup tag when counting lines (#4666)
+
+## Misc
+ - Record task name logging in user agent (#4628)
+
 
 ## Agent Downloads
 
