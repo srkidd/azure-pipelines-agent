@@ -42,6 +42,11 @@ parameters:
   default: false
   displayName: Disable Teams Notifications
 
+# Skip CG
+variables:
+  - name: OneES_JobScannedCount
+    value: 1
+
 extends:
   template: /.azure-pipelines/pipeline.yml@self
   parameters:
