@@ -37,16 +37,17 @@ parameters:
   default: true
   displayName: Test Proxy Agent
 
-# Skip CG
-variables:
-  - name: skipScanDir
-    value: true 
+- name: disableNotifications
+  type: boolean
+  default: false
+  displayName: Disable Teams Notifications
 
 extends:
   template: /.azure-pipelines/pipeline.yml@self
   parameters:
     branch: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.releaseBranch'] ]
     test: ${{ not(parameters.skipTests) }}
+    enableComponentGovernanceScan: false
     sign: true
     publishArtifacts: true
     testProxyAgent: ${{ parameters.testProxyAgent }}
@@ -324,7 +325,7 @@ extends:
         dependsOn:
         - Verify_release
         - CreatePRs
-        condition: always()
+        condition: eq( ${{ parameters.disableNotifications }}, true )
         pool:
           name: 1ES-ABTT-Shared-Pool
           image: abtt-ubuntu-2204

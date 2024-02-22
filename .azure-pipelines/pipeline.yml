@@ -31,6 +31,9 @@ parameters:
 - name: stageCondition
   type: string
   default: ''
+- name: enableComponentGovernanceScan
+  type: boolean
+  default: true
 
 # Targets
 - name: win_x64
@@ -66,6 +69,7 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
+    enableComponentGovernanceScan: ${{ parameters.enableComponentGovernanceScan }}
     featureFlags:
       autoBaseline: false
     sdl:
