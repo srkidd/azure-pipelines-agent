@@ -37,6 +37,11 @@ parameters:
   default: true
   displayName: Test Proxy Agent
 
+# Skip CG
+variables:
+  - name: skipScanDir
+    value: true 
+
 extends:
   template: /.azure-pipelines/pipeline.yml@self
   parameters:

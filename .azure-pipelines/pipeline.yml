@@ -204,8 +204,9 @@ extends:
             jobName: build_linux_arm64
             displayName: Linux (ARM64)
             pool:
-              name: 1ES_ARM_Agent_Pool
-              vmImage: Ubuntu_2004_ARM64
+              name: 1ES-ABTT-Shared-Pool
+              vmImage: abtt-mariner_arm64
+              os: linux
             timeoutInMinutes: 75
             os: linux
             arch: arm64
