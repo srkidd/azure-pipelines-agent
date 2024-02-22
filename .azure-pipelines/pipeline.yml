@@ -31,9 +31,6 @@ parameters:
 - name: stageCondition
   type: string
   default: ''
-- name: enableComponentGovernanceScan
-  type: boolean
-  default: true
 
 # Targets
 - name: win_x64
@@ -69,10 +66,12 @@ resources:
 extends:
   template: v1/1ES.Official.PipelineTemplate.yml@1ESPipelineTemplates
   parameters:
-    enableComponentGovernanceScan: ${{ parameters.enableComponentGovernanceScan }}
     featureFlags:
       autoBaseline: false
     sdl:
+      # do not fail on CG
+      componentgovernance:
+        failOnAlert: false
       baseline:
         baselineSet: default
         baselineFile: $(Build.SourcesDirectory)/.gdn/.gdnbaselines

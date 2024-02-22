@@ -47,7 +47,6 @@ extends:
   parameters:
     branch: $[ stageDependencies.Verify_release.Set_variables.outputs['SetReleaseVariables.releaseBranch'] ]
     test: ${{ not(parameters.skipTests) }}
-    enableComponentGovernanceScan: false
     sign: true
     publishArtifacts: true
     testProxyAgent: ${{ parameters.testProxyAgent }}
