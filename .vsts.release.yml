@@ -286,7 +286,9 @@ extends:
         - Verify_release
         condition: and(succeeded(), not(${{ parameters.onlyGitHubRelease }}))
         pool:
-          name: 1ES-Shared-Hosted-Pool_Linux-Mariner-2
+          name: 1ES-ABTT-Shared-Pool
+          image: abtt-mariner
+          os: windows
         jobs:
         ################################################################################
         - job: create_ado_prs
