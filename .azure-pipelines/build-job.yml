@@ -122,7 +122,7 @@ jobs:
 
   # 1ES images used on the ARM pool doesn't contain unzip tool, so we need to install it before starting the build
   - ${{ if and(eq(parameters.arch, 'arm64'), ne(parameters.os, 'osx')) }}:
-    - script: sudo dnf update && sudo dnf -y install unzip
+    - script: sudo dnf -y update && sudo dnf -y install unzip
       displayName: Install unzip
       retryCountOnTaskFailure: 5
 
