@@ -1,3 +1,14 @@
+## Features
+ - [WI 2129366] Decrease WARNING_MESSAGE_INTERVAL (#4644)
+
+## Bugs
+ - [AgentWorker.PageLogger] - Ignore endgroup tag when counting lines (#4666)
+ - Increasing PTR Timeout for Legacy Workflow (#4676)
+
+## Misc
+ - Record task name logging in user agent (#4628)
+ - Change Agent release pipeline pool (#4660)
+
 
 ## Agent Downloads
 
