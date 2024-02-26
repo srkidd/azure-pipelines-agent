@@ -14,6 +14,7 @@
     <VssApiVersion>0.5.234-private</VssApiVersion>
     <CodeAnalysis>$(CodeAnalysis)</CodeAnalysis>
     <InvariantGlobalization>false</InvariantGlobalization>
+    <EnforceCodeStyleInBuild>false</EnforceCodeStyleInBuild>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
