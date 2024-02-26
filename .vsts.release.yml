@@ -166,7 +166,6 @@ extends:
 
     postBuildStages:
       - stage: Release
-        condition: eq(variables['Build.SourceBranch'], 'false') # never  for now
         dependsOn:
           - build
           - Verify_release
