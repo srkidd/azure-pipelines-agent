@@ -288,7 +288,7 @@ extends:
         pool:
           name: 1ES-ABTT-Shared-Pool
           image: abtt-mariner
-          os: windows
+          os: linux
         jobs:
         ################################################################################
         - job: create_ado_prs
