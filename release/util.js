@@ -93,6 +93,10 @@ exports.getHashes = function() {
 
     const hashes = {};
     for (const hashFileName of hashFiles) {
+        if (fs.statSync(hashFileName).isDirectory()) {
+            console.log(`Skipping directory ${hashFileName}`);
+           continue;
+        }
         const agentPackageFileName = hashFileName.replace('.sha256', '');
 
         const hashFileContent = fs.readFileSync(path.join(hashesDirPath, hashFileName), 'utf-8').trim();
