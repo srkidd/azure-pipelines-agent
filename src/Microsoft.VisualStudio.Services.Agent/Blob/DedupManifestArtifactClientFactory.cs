@@ -164,7 +164,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             return (new DedupManifestArtifactClient(telemetry, dedupClient, tracer), telemetry);
         }
 
-        private static IDedupStoreHttpClient GetDedupStoreHttpClient(VssConnection connection, IDomainId domainId, int maxRetries, IAppTraceSource tracer, CancellationToken cancellationToken)
+        private static IDedupStoreHttpClient GetDedupStoreHttpClient(
+            VssConnection connection, 
+            IDomainId domainId, 
+            int maxRetries, 
+            IAppTraceSource tracer, 
+            CancellationToken cancellationToken)
         {
             ArtifactHttpClientFactory factory = new ArtifactHttpClientFactory(
                 connection.Credentials,
@@ -196,6 +201,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                 });
             return dedupStoreHttpClient;
         }
+        
         public (DedupStoreClient client, BlobStoreClientTelemetryTfs telemetry) CreateDedupClient(
             VssConnection connection,
             IDomainId domainId,
