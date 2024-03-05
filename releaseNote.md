@@ -1,3 +1,20 @@
+## Features
+ - [WI 2129366] Decrease WARNING_MESSAGE_INTERVAL (#4644)
+ - Add keepalive request  (#4664)
+ - Add explicit OOM error handling for Nodehandler (#4673)
+
+## Bugs
+ - [AgentWorker.PageLogger] - Ignore endgroup tag when counting lines (#4666)
+ - Increasing PTR Timeout for Legacy Workflow (#4676)
+ - Update to m235 ADO clients (#4678)
+ - Fix bug where chunking could use different hash than the client (#4684)
+
+## Misc
+ - Record task name logging in user agent (#4628)
+ - Change Agent release pipeline pool (#4660)
+ - Localization update (#4671)
+ - Bumping vulnerable packages (#4680)
+
 
 ## Agent Downloads
 
