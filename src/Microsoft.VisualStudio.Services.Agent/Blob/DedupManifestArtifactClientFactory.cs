@@ -39,7 +39,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             int maxParallelism,
             IDomainId domainId,
             BlobstoreClientSettings clientSettings,
-            AgentTaskPluginExecutionContext context,
             CancellationToken cancellationToken);
 
         /// <summary>
@@ -112,6 +111,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
         {
             var clientSettings = await BlobstoreClientSettings.GetClientSettingsAsync(
                 connection,
+                context,
                 client,
                 CreateArtifactsTracer(verbose, traceOutput),
                 cancellationToken);
@@ -123,7 +123,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                     DedupManifestArtifactClientFactory.Instance.GetDedupStoreClientMaxParallelism(context),
                     domainId,
                     clientSettings,
-                    context,
                     cancellationToken);
         }
 
@@ -134,7 +133,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             int maxParallelism,
             IDomainId domainId,
             BlobstoreClientSettings clientSettings,
-            AgentTaskPluginExecutionContext context,
             CancellationToken cancellationToken)
         {
             const int maxRetries = 5;
@@ -150,7 +148,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
             IDedupStoreHttpClient dedupStoreHttpClient = GetDedupStoreHttpClient(connection, domainId, maxRetries, tracer, cancellationToken);
 
             var telemetry = new BlobStoreClientTelemetry(tracer, dedupStoreHttpClient.BaseAddress);
-            HashType hashType= clientSettings.GetClientHashType(context);
+
+            HashType hashType = clientSettings.GetClientHashType();
 
             if (hashType == BuildXL.Cache.ContentStore.Hashing.HashType.Dedup1024K)
             {
