@@ -54,7 +54,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Blob
                     var clientSettings = await clientSettingsHttpClient.GetSettingsAsync(client.Value, userState: null, cancellationToken);
                     
                     // Have to keep this check in for pipelines that have manually opted out for pipeline artifacts:
-                    if (client == BlobStore.WebApi.Contracts.Client.PipelineArtifact && AgentKnobs.AgentEnablePipelineArtifactLargeChunkSize.GetValue(context).AsBoolean())
+                    if (client == BlobStore.WebApi.Contracts.Client.PipelineArtifact && !AgentKnobs.AgentEnablePipelineArtifactLargeChunkSize.GetValue(context).AsBoolean())
                     {
                         if (clientSettings != null && clientSettings.Properties.ContainsKey(ClientSettingsConstants.ChunkSize))
                         {
