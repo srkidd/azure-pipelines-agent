@@ -60,7 +60,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
             Trace.Leaving();
         }
 
-        public async Task<bool> PublishAsync(TestRunContext runContext, List<string> testResultFiles, TestCaseResult[] inputTestCaseResults, PublishOptions publishOptions, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<bool> PublishAsync(TestRunContext runContext, List<string> testResultFiles, TestCaseResult[] inputTestCaseResults, PublishOptions publishOptions, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -95,7 +95,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
                         {
                             for (testResultDataIterator = 0; testResultDataIterator < testRunData[testRunDataIterator].TestResults.Count; testResultDataIterator++)
                             {
-                                var testResultFQN = testRunData[testRunDataIterator].TestResults[testResultDataIterator].AutomatedTestStorage + "." + testRunData[testRunDataIterator].TestResults[testResultDataIterator].AutomatedTestName; 
+                                var testResultFQN = testRunData[testRunDataIterator].TestResults[testResultDataIterator].AutomatedTestStorage +
+                                    "." + testRunData[testRunDataIterator].TestResults[testResultDataIterator].AutomatedTestName;
+
                                 if (testResultByFQN.TryGetValue(testResultFQN, out List<TestCaseResult> inputs))
                                 {
                                     testRunData[testRunDataIterator].TestResults[testResultDataIterator].TestPoint = inputs[0].TestPoint;
@@ -104,6 +106,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
                                     testRunData[testRunDataIterator].TestResults[testResultDataIterator].TestCase = inputs[0].TestCase;
                                     testRunData[testRunDataIterator].TestResults[testResultDataIterator].Owner = inputs[0].Owner;
                                     testRunData[testRunDataIterator].TestResults[testResultDataIterator].State = "5";
+                                    testRunData[testRunDataIterator].TestResults[testResultDataIterator].TestCaseRevision = inputs[0].TestCaseRevision;
 
                                     testResultByFQN[testResultFQN].RemoveAt(0);
                                 }
@@ -126,7 +129,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
 
                     _calculateTestRunSummary = _featureFlagService.GetFeatureFlagState(TestResultsConstants.CalculateTestRunSummaryFeatureFlag, TestResultsConstants.TFSServiceInstanceGuid);
 
-                    var isTestRunOutcomeFailed = GetTestRunOutcome(_executionContext, testRunData, out TestRunSummary testRunSummary);
+                    var isTestRunOutcomeFailed = GetTestRunOutcome(testRunData, out TestRunSummary testRunSummary);
 
                     // Storing testrun summary in environment variable, which will be read by PublishPipelineMetadataTask and publish to evidence store.
                     if (_calculateTestRunSummary)
@@ -166,7 +169,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
                 : _parser.ParseTestResultFiles(_executionContext, runContext, testResultFiles);
         }
 
-        private bool GetTestRunOutcome(IExecutionContext executionContext, IList<TestRunData> testRunDataList, out TestRunSummary testRunSummary)
+        private bool GetTestRunOutcome(IList<TestRunData> testRunDataList, out TestRunSummary testRunSummary)
         {
             bool anyFailedTests = false;
             testRunSummary = new TestRunSummary();
@@ -175,7 +178,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
                 foreach (var testCaseResult in testRunData.TestResults)
                 {
                     testRunSummary.Total += 1;
-                    Enum.TryParse(testCaseResult.Outcome, out TestOutcome outcome);
+                    _ = Enum.TryParse(testCaseResult.Outcome, out TestOutcome outcome);
                     switch (outcome)
                     {
                         case TestOutcome.Failed:
@@ -201,7 +204,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
             return anyFailedTests;
         }
 
-        private async Task UploadBuildDataAttachment(TestRunContext runContext, List<BuildData> buildDataList, CancellationToken cancellationToken = default(CancellationToken))
+        private async Task UploadBuildDataAttachment(TestRunContext runContext, List<BuildData> buildDataList, CancellationToken cancellationToken = default)
         {
             _executionContext.Debug("Uploading build level attachements individually");
 
@@ -223,7 +226,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
                         }
                         else
                         {
-                            attachments.Add(attachment);
+                            _ = attachments.Add(attachment);
                             await UploadTestBuildLog(projectId, attachment, runContext, cancellationToken);
                         }
                     })

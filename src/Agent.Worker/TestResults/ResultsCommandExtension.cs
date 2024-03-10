@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using System.Threading.Tasks;
 using System.Xml;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -18,6 +17,7 @@ using Microsoft.VisualStudio.Services.WebPlatform;
 using Microsoft.VisualStudio.Services.Agent.Worker.LegacyTestResults;
 using Microsoft.VisualStudio.Services.Agent.Worker.TestResults.Utils;
 using Microsoft.VisualStudio.Services.Agent.Worker.CodeCoverage;
+using Microsoft.TeamFoundation.Common;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
 {
@@ -48,6 +48,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
         private string _runTitle;
         private bool _publishRunLevelAttachments;
         private TestCaseResult[] _testCaseResults;
+        private string _testPlanId;
 
         private bool _failTaskOnFailedTests;
 
@@ -60,8 +61,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
 
         public void Execute(IExecutionContext context, Command command)
         {
-
-            System.Diagnostics.Debugger.Launch();
             ArgUtil.NotNull(context, nameof(context));
             ArgUtil.NotNull(command, nameof(command));
             var data = command.Data;
@@ -78,7 +77,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
             TestRunContext runContext = CreateTestRunContext();
             var commandContext = context.GetHostContext().CreateService<IAsyncCommandContext>();
             commandContext.InitializeCommandContext(context, StringUtil.Loc("PublishTestResults"));
-            commandContext.Task = PublishTestRunDataAsync(teamProject, runContext, _testCaseResults);
+            commandContext.Task = PublishTestRunDataAsync(teamProject, runContext);
             _executionContext.AsyncCommands.Add(commandContext);
         }
 
@@ -103,10 +102,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
                 }
             }
 
-            if (eventProperties.TryGetValue(PublishTestResultsEventProperties.listOfAutomatedTestPoints, out string jsonString))
+            if (eventProperties.TryGetValue(PublishTestResultsEventProperties.ListOfAutomatedTestPoints, out string jsonString))
             {
                 //_testCaseResults = JsonSerializer.Deserialize<TestCaseResult[]>(jsonString);
                 _testCaseResults = Newtonsoft.Json.JsonConvert.DeserializeObject<TestCaseResult[]>(jsonString);
+            }
+
+            if (eventProperties.TryGetValue(PublishTestResultsEventProperties.TestPlanId, out _testPlanId))
+            {
+                if (string.IsNullOrEmpty(_testPlanId))
+                {
+                    throw new ArgumentException(StringUtil.Loc("ArgumentNeeded", "TestPlanId"));
+                }
             }
 
             //validate testrunner input
@@ -201,7 +208,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
             string releaseUri = null;
             string releaseEnvironmentUri = null;
 
-            string teamProject = _executionContext.Variables.System_TeamProject;
             string owner = _executionContext.Variables.Build_RequestedFor;
             string buildUri = _executionContext.Variables.Build_BuildUri;
             int buildId = _executionContext.Variables.Build_BuildId ?? 0;
@@ -242,7 +248,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
                 JobReference = jobReference
             };
 
-            TestRunContext testRunContext = new(
+            TestRunContext testRunContext;
+
+            if (!_testPlanId.IsNullOrEmpty())
+            {
+                ShallowReference testPlanObject = new() { Id = _testPlanId };
+
+                testRunContext = new(
+                owner: owner,
+                platform: _platform,
+                configuration: _configuration,
+                buildId: buildId,
+                buildUri: buildUri,
+                releaseUri: releaseUri,
+                releaseEnvironmentUri: releaseEnvironmentUri,
+                runName: runName,
+                testRunSystem: _testRunSystem,
+                buildAttachmentProcessor: new CodeCoverageBuildAttachmentProcessor(),
+                targetBranchName: pullRequestTargetBranchName,
+                pipelineReference: pipelineReference,
+                testPlan: testPlanObject
+            );
+                return testRunContext;
+            }
+
+            testRunContext = new(
                 owner: owner,
                 platform: _platform,
                 configuration: _configuration,
@@ -272,7 +302,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA2000:Dispose objects before losing scope", MessageId = "connection")]
-        private async Task PublishTestRunDataAsync(string teamProject, TestRunContext testRunContext, TestCaseResult[] inputTestResults)
+        private async Task PublishTestRunDataAsync(string teamProject, TestRunContext testRunContext)
         {
             bool isTestRunOutcomeFailed;
 
@@ -288,7 +318,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
                 var publisher = _executionContext.GetHostContext().GetService<ITestDataPublisher>();
                 publisher.InitializePublisher(_executionContext, teamProject, connection, _testRunner);
 
-                isTestRunOutcomeFailed = await publisher.PublishAsync(testRunContext, _testResultFiles, inputTestResults, GetPublishOptions(), _executionContext.CancellationToken);
+                isTestRunOutcomeFailed = await publisher.PublishAsync(testRunContext, _testResultFiles, _testCaseResults, GetPublishOptions(), _executionContext.CancellationToken);
             }
             else
             {
@@ -407,6 +437,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
         public static readonly string ResultFiles = "resultFiles";
         public static readonly string TestRunSystem = "testRunSystem";
         public static readonly string FailTaskOnFailedTests = "failTaskOnFailedTests";
-        public static readonly string listOfAutomatedTestPoints = "listOfAutomatedTestPoints";
+        public static readonly string ListOfAutomatedTestPoints = "listOfAutomatedTestPoints";
+        public static readonly string TestPlanId = "testPlanId";
     }
 }
