@@ -11,6 +11,8 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Agent.Sdk.Util;
+using TFBuildApi = Microsoft.TeamFoundation.Build.WebApi;
+using Agent.Worker.Audit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -33,6 +35,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             InstallWorkerCommand(new TaskSetTaskVariableCommand());
             InstallWorkerCommand(new TaskSetEndpointCommand());
             InstallWorkerCommand(new TaskPrepandPathCommand());
+            InstallWorkerCommand(new TaskAuditLogCommand());
         }
     }
 
@@ -656,6 +659,53 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             var data = command.Data;
             context.Debug(data);
+        }
+    }
+
+    [CommandRestriction(AllowedInRestrictedMode = true)]
+    public sealed class TaskAuditLogCommand : IWorkerCommand
+    {
+        public string Name => "logAudit";
+        public List<string> Aliases => new() { "audit" };
+
+        public void Execute(IExecutionContext context, Command command)
+        {
+            ArgUtil.NotNull(context, nameof(context));
+            ArgUtil.NotNull(command, nameof(command));
+
+            var commandProperties = command.Properties;
+            if (!commandProperties.TryGetValue("taskId", out string taskIdStr)
+                || !Guid.TryParse(taskIdStr, out var taskId))
+            {
+                taskId = Guid.Empty;
+            }
+            if (!commandProperties.TryGetValue("taskVersion", out string taskVersion) 
+                || string.IsNullOrEmpty(taskVersion))
+            {
+                taskVersion = "*";
+            }
+            if (!commandProperties.TryGetValue("action", out string actionStr)
+                || !Enum.TryParse<TaskAuditLog.TaskAuditLogAction>(actionStr, true, out var action))
+            {
+                action = TaskAuditLog.TaskAuditLogAction.Unknown;
+            }
+
+            var log = new TaskAuditLog()
+            {
+                Message = command.Data,
+                TaskId = taskId,
+                TaskVersion = taskVersion,
+                AuditAction = action
+            };
+
+            var hostContext = context.GetHostContext();
+            var commandContext = hostContext.CreateService<IAsyncCommandContext>();
+            commandContext.InitializeCommandContext(context, "TaskCommand_LogAudit");
+
+            var logsService = hostContext.GetService<ITaskAuditLogsService>();
+            commandContext.Task = logsService.SendLog(log);
+
+            context.AsyncCommands.Add(commandContext);
         }
     }
 

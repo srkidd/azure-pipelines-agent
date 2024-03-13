@@ -20,6 +20,7 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
+using Agent.Worker.Audit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -92,6 +93,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 new DelegatingHandler[] { new ThrottlingReportHandler(_jobServerQueue) }
             );
             await jobServer.ConnectAsync(jobConnection);
+
+            HostContext.GetService<ITaskAuditLogsService>().Initialize(message, jobConnection);
 
             _jobServerQueue.Start(message);
             HostContext.WritePerfCounter($"WorkerJobServerQueueStarted_{message.RequestId.ToString()}");
