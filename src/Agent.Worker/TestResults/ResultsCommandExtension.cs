@@ -359,39 +359,40 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.TestResults
             try
             {
                 ITestResultsServer _testResultsServer = context.GetHostContext().GetService<ITestResultsServer>();
-                var connection = WorkerUtilities.GetVssConnection(_executionContext);
-                foreach (var resultFile in resultFilesInput)
+                using (var connection = WorkerUtilities.GetVssConnection(_executionContext))
                 {
-                    string text = File.ReadAllText(resultFile);
-                    XmlDocument xdoc = new XmlDocument();
-                    xdoc.LoadXml(text);
-                    XmlNodeList nodes = xdoc.GetElementsByTagName("A");
-
-                    foreach (XmlNode attachmentNode in nodes)
+                    foreach (var resultFile in resultFilesInput)
                     {
-                        var file = attachmentNode.Attributes?["href"]?.Value;
-                        if (!string.IsNullOrEmpty(file))
+                        string text = File.ReadAllText(resultFile);
+                        XmlDocument xdoc = new XmlDocument();
+                        xdoc.LoadXml(text);
+                        XmlNodeList nodes = xdoc.GetElementsByTagName("A");
+
+                        foreach (XmlNode attachmentNode in nodes)
                         {
-                            if (
-                                Path.GetExtension(file).Equals(".covx", StringComparison.OrdinalIgnoreCase) ||
-                                Path.GetExtension(file).Equals(".covb", StringComparison.OrdinalIgnoreCase) ||
-                                Path.GetExtension(file).Equals(".coverage", StringComparison.OrdinalIgnoreCase)
-                                )
+                            var file = attachmentNode.Attributes?["href"]?.Value;
+                            if (!string.IsNullOrEmpty(file))
                             {
-                                _testResultsServer.InitializeServer(connection, _executionContext);
-                                try
+                                if (
+                                    Path.GetExtension(file).Equals(".covx", StringComparison.OrdinalIgnoreCase) ||
+                                    Path.GetExtension(file).Equals(".covb", StringComparison.OrdinalIgnoreCase) ||
+                                    Path.GetExtension(file).Equals(".coverage", StringComparison.OrdinalIgnoreCase)
+                                    )
                                 {
-                                    var codeCoverageResults = _testResultsServer.UpdateCodeCoverageSummaryAsync(connection, _executionContext.Variables.System_TeamProjectId.ToString(), _executionContext.Variables.Build_BuildId.GetValueOrDefault());
-                                }
-                                catch (Exception e)
-                                {
-                                    _executionContext.Section($"Could not queue code coverage merge:{e}");
+                                    _testResultsServer.InitializeServer(connection, _executionContext);
+                                    try
+                                    {
+                                        var codeCoverageResults = _testResultsServer.UpdateCodeCoverageSummaryAsync(connection, _executionContext.Variables.System_TeamProjectId.ToString(), _executionContext.Variables.Build_BuildId.GetValueOrDefault());
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        _executionContext.Section($"Could not queue code coverage merge:{e}");
+                                    }
                                 }
                             }
                         }
                     }
                 }
-                connection.Dispose();
             }
             catch (Exception e)
             {
