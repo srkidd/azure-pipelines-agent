@@ -1,3 +1,13 @@
+## Features
+ - Handle filter option for treeless or blobless git fetches (#4693)
+ - Changes for Azure Test Plan Task (#4705)
+
+## Bugs
+ - Fix bug where chunking could use different hash than the client (#4684)
+
+## Misc
+ - Follow up PR for Azure Test Plan Changes in Result.Publish (#4708)
+
 
 ## Agent Downloads
 
