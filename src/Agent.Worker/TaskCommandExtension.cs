@@ -11,7 +11,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Agent.Sdk.Util;
-using TFBuildApi = Microsoft.TeamFoundation.Build.WebApi;
 using Agent.Worker.Audit;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
@@ -679,7 +678,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 taskId = Guid.Empty;
             }
-            if (!commandProperties.TryGetValue("taskVersion", out string taskVersion) 
+            if (!commandProperties.TryGetValue("taskVersion", out string taskVersion)
                 || string.IsNullOrEmpty(taskVersion))
             {
                 taskVersion = "*";
@@ -690,12 +689,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 action = TaskAuditLog.TaskAuditLogAction.Unknown;
             }
 
+            var contextVariables = context.Variables;
+            int.TryParse(contextVariables.System_DefinitionId, out int definitionId);
+
+            int? releaseIdVal = null;
+            if (contextVariables.Release_ReleaseId != null
+                && int.TryParse(contextVariables.Get(contextVariables.Release_ReleaseId), out int releaseId))
+            {
+                releaseIdVal = releaseId;
+            }
+
             var log = new TaskAuditLog()
             {
                 Message = command.Data,
                 TaskId = taskId,
                 TaskVersion = taskVersion,
-                AuditAction = action
+                AuditAction = action,
+                PipelineId = definitionId,
+                ProjectName = contextVariables.System_TeamProject,
+                PipelineName = contextVariables.Get(Constants.Variables.System.DefinitionName),
+                StageName = contextVariables.System_StageName,
+                JobName = contextVariables.System_JobName,
+                BuildId = contextVariables.Build_BuildId,
+                BuildNumber = contextVariables.Get(Constants.Variables.Build.Number),
+                ReleaseId = releaseIdVal,
+                ReleaseName = contextVariables.Release_ReleaseName,
             };
 
             var hostContext = context.GetHostContext();
