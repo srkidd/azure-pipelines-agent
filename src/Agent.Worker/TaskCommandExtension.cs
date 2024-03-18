@@ -690,28 +690,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
 
             var contextVariables = context.Variables;
-            int.TryParse(contextVariables.System_DefinitionId, out int definitionId);
-
-            int? releaseIdVal = null;
-            if (int.TryParse(contextVariables.Release_ReleaseId, out int releaseId))
-            {
-                releaseIdVal = releaseId;
-            }
-
             var log = new TaskAuditLog()
             {
                 Message = command.Data,
                 TaskId = taskId,
                 TaskVersion = taskVersion,
                 AuditAction = action,
-                PipelineId = definitionId,
+                PipelineId = contextVariables.GetInt(Constants.Variables.System.DefinitionId),
                 ProjectName = contextVariables.System_TeamProject,
                 PipelineName = contextVariables.Get(Constants.Variables.System.DefinitionName),
                 StageName = contextVariables.System_StageName,
                 JobName = contextVariables.System_JobName,
                 BuildId = contextVariables.Build_BuildId,
                 BuildNumber = contextVariables.Get(Constants.Variables.Build.Number),
-                ReleaseId = releaseIdVal,
+                ReleaseId = contextVariables.GetInt(Constants.Variables.Release.ReleaseId),
                 ReleaseName = contextVariables.Release_ReleaseName,
             };
 
