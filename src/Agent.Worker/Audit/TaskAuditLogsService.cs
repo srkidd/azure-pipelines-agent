@@ -7,8 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
 using Microsoft.VisualStudio.Services.Agent;
 using Microsoft.VisualStudio.Services.Agent.Util;
-using Microsoft.VisualStudio.Services.Content.Common;
-using Microsoft.VisualStudio.Services.Content.Common.Tracing;
 using Microsoft.VisualStudio.Services.WebApi;
 using Pipelines = Microsoft.TeamFoundation.DistributedTask.Pipelines;
 
@@ -58,24 +56,28 @@ public sealed class TaskAuditLogsService : AgentService, ITaskAuditLogsService
         ArgUtil.NotNull(log, nameof(log));
 
         Trace.Info($"Sending audit log for task {log.TaskId} in job jobId of plan {_planId} in scope identifier {_scopeIdentifier}.");
-
-        await AsyncHttpRetryHelper.InvokeAsync(
-            async () =>
+        try
+        {
+            await _taskClient.SendTaskAuditLogAsync(
+                                scopeIdentifier: _scopeIdentifier,
+                                hubName: _hubName,
+                                planId: _planId,
+                                jobId: _jobTimelineRecordId,
+                                log: log,
+                                cancellationToken: ct);
+        }
+        catch (VssServiceResponseException ex)
+        {
+            if (ex.HttpStatusCode == System.Net.HttpStatusCode.NotFound)
             {
-                await _taskClient.SendTaskAuditLogAsync(
-                            scopeIdentifier: _scopeIdentifier,
-                            hubName: _hubName,
-                            planId: _planId,
-                            jobId: _jobTimelineRecordId,
-                            log: log,
-                            cancellationToken: ct);
-                return Task.CompletedTask;
-            },
-            maxRetries: 5,
-            tracer: new CallbackAppTraceSource(str => Trace.Info(str), System.Diagnostics.SourceLevels.Information),
-            continueOnCapturedContext: false,
-            cancellationToken: ct
-        );
+                Trace.Info("Task audit endpoint is not available.");
+            }
+            else
+            {
+                Trace.Error(ex);
+                throw;
+            }
+        }
     }
 
     private void EnsureInitialized()
