@@ -693,8 +693,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             int.TryParse(contextVariables.System_DefinitionId, out int definitionId);
 
             int? releaseIdVal = null;
-            if (contextVariables.Release_ReleaseId != null
-                && int.TryParse(contextVariables.Get(contextVariables.Release_ReleaseId), out int releaseId))
+            if (int.TryParse(contextVariables.Release_ReleaseId, out int releaseId))
             {
                 releaseIdVal = releaseId;
             }
