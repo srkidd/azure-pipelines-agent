@@ -433,7 +433,7 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AGENT_DISABLE_NODE6_TASKS"),
             new EnvironmentKnobSource("AGENT_DISABLE_NODE6_TASKS"),
             new BuiltInDefaultKnobSource("false"));
-       
+
         public static readonly Knob DisableTeePluginRemoval = new Knob(
             nameof(DisableTeePluginRemoval),
             "Disables removing TEE plugin after using it during checkout.",
@@ -504,6 +504,12 @@ namespace Agent.Sdk.Knob
             "Enables new sanitization logic for process handler",
             new RuntimeKnobSource("AZP_75787_ENABLE_NEW_PH_LOGIC"),
             new EnvironmentKnobSource("AZP_75787_ENABLE_NEW_PH_LOGIC"),
+            new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob EnableTaskAuditLogs = new(
+            nameof(EnableTaskAuditLogs),
+            "Enables audit messages from agent for pipelines tasks",
+            new RuntimeKnobSource("AZP_ENABLE_TASK_AUDIT_LOGS"),
             new BuiltInDefaultKnobSource("false"));
 
         public static readonly Knob DisableDrainQueuesAfterTask = new Knob(
@@ -579,7 +585,7 @@ namespace Agent.Sdk.Knob
             new RuntimeKnobSource("AZP_AGENT_MOUNT_WORKSPACE"),
             new EnvironmentKnobSource("AZP_AGENT_MOUNT_WORKSPACE"),
             new BuiltInDefaultKnobSource("false"));
-      
+
         public static readonly Knob EnableNewSecretMasker = new Knob(
             nameof(EnableNewSecretMasker),
             "If true, the agent will use new SecretMasker with additional filters & performance enhancements",

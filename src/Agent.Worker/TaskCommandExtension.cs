@@ -672,6 +672,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ArgUtil.NotNull(context, nameof(context));
             ArgUtil.NotNull(command, nameof(command));
 
+            if (!AgentKnobs.EnableTaskAuditLogs.GetValue(context).AsBoolean())
+            {
+                return;
+            }
+
             var commandProperties = command.Properties;
             if (!commandProperties.TryGetValue("taskId", out string taskIdStr)
                 || !Guid.TryParse(taskIdStr, out var taskId))

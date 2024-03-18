@@ -94,8 +94,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             );
             await jobServer.ConnectAsync(jobConnection);
 
-            HostContext.GetService<ITaskAuditLogsService>().Initialize(message, jobConnection);
-
             _jobServerQueue.Start(message);
             HostContext.WritePerfCounter($"WorkerJobServerQueueStarted_{message.RequestId.ToString()}");
 
@@ -109,6 +107,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Create the job execution context.
                 jobContext = HostContext.CreateService<IExecutionContext>();
                 jobContext.InitializeJob(message, jobRequestCancellationToken);
+
+                if (AgentKnobs.EnableTaskAuditLogs.GetValue(jobContext).AsBoolean())
+                {
+                    HostContext.GetService<ITaskAuditLogsService>().Initialize(message, jobConnection);
+                }
 
                 Trace.Info("Starting the job execution context.");
                 jobContext.Start();
