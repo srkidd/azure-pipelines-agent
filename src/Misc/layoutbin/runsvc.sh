@@ -13,7 +13,7 @@ fi
 # insert anything to setup env when running as a service
 
 # run the host process which keep the listener alive
-./externals/node20/bin/node ./bin/AgentService.js &
+./externals/node20_1/bin/node ./bin/AgentService.js &
 PID=$!
 wait $PID
 trap - TERM INT
