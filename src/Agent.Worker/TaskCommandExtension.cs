@@ -674,6 +674,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             if (!AgentKnobs.EnableTaskAuditLogs.GetValue(context).AsBoolean())
             {
+                var trace = context.GetHostContext().GetTrace(nameof(TaskAuditLogCommand));
+                trace.Info("Task logAudit command is disabled. Skipping.");
                 return;
             }
 
