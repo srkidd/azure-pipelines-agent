@@ -10,17 +10,19 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L0.Util
 {
     public sealed class WindowsProcessUtilL0
     {
-        [Fact]
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
         [Trait("Level", "L0")]
         [Trait("Category", "Common")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
-        public void Test_GetProcessList()
+        public void Test_GetProcessList(bool useInteropToFindParentProcess)
         {
             using TestHostContext hc = new TestHostContext(this);
             Tracing trace = hc.GetTrace();
 
-            // This test is based on the current process.
+            // Arrange: This test is based on the current process.
             Process currentProcess = Process.GetCurrentProcess();
 
             // The first three processes in the list.
@@ -33,7 +35,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L0.Util
             // Act.
             string[] actualProcessNames =
                 WindowsProcessUtil
-                    .GetProcessList(currentProcess)
+                    .GetProcessList(currentProcess, useInteropToFindParentProcess)
                     .Take(expectedProcessNames.Length)
                     .Select(process => process.ProcessName)
                     .ToArray();
@@ -47,6 +49,46 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L0.Util
             {
                 Assert.Equal(expectedProcessNames, actualProcessNames);
             }
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        [Trait("SkipOn", "darwin")]
+        [Trait("SkipOn", "linux")]
+        public void Test_GetParentProcessId_ViaInterop()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+            Tracing trace = hc.GetTrace();
+
+            // Arrange: This test is based on the current process.
+            Process currentProcess = Process.GetCurrentProcess();
+
+            // Act.
+            int? parentProcessId = WindowsProcessUtil.GetParentProcessId(currentProcess.Handle);
+
+            // Assert.
+            Assert.NotNull(parentProcessId);
+        }
+
+        [Fact]
+        [Trait("Level", "L0")]
+        [Trait("Category", "Common")]
+        [Trait("SkipOn", "darwin")]
+        [Trait("SkipOn", "linux")]
+        public void Test_GetParentProcessId_ViaInterop_ReturnsNull_WhenParentPidIsReused()
+        {
+            using TestHostContext hc = new TestHostContext(this);
+            Tracing trace = hc.GetTrace();
+
+            // Arrange: This test is based on the current process.
+            Process currentProcess = Process.GetCurrentProcess();
+
+            // Act.
+            Process parentProcess = WindowsProcessUtil.GetParentProcess(currentProcess.Handle, currentProcess.StartTime.AddSeconds(-1));
+
+            // Assert.
+            Assert.Null(parentProcess);
         }
     }
 }
