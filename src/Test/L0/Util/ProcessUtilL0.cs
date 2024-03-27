@@ -76,7 +76,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L0.Util
         [Trait("Category", "Common")]
         [Trait("SkipOn", "darwin")]
         [Trait("SkipOn", "linux")]
-        public void Test_GetParentProcessId_ViaInterop_ReturnsNull_WhenParentPidIsReused()
+        public void Test_GetParentProcess_ViaInterop()
         {
             using TestHostContext hc = new TestHostContext(this);
             Tracing trace = hc.GetTrace();
@@ -85,10 +85,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L0.Util
             Process currentProcess = Process.GetCurrentProcess();
 
             // Act.
-            Process parentProcess = WindowsProcessUtil.GetParentProcess(currentProcess.Handle, currentProcess.StartTime.AddSeconds(-1));
+            Process parentProcess = WindowsProcessUtil.GetParentProcess(currentProcess);
 
             // Assert.
-            Assert.Null(parentProcess);
+            Assert.NotNull(parentProcess);
         }
     }
 }

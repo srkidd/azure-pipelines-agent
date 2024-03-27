@@ -3,6 +3,7 @@
 using Agent.Sdk;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Management;
@@ -24,12 +25,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
         }
 
         [DllImport("ntdll.dll", SetLastError = true)]
-        internal static extern int NtQueryInformationProcess(SafeHandle processHandle, int processInformationClass, out PROCESS_BASIC_INFORMATION processInformation, int processInformationLength, out int returnLength);
+        internal static extern int NtQueryInformationProcess(IntPtr processHandle, int processInformationClass, out PROCESS_BASIC_INFORMATION processInformation, int processInformationLength, out int returnLength);
     }
 
     public static class WindowsProcessUtil
     {
-        internal static int? GetParentProcessId(SafeHandle handle)
+        internal static int? GetParentProcessId(IntPtr handle)
         {
             Interop.PROCESS_BASIC_INFORMATION pbi;
             int returnLength;
@@ -42,18 +43,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             return parentProcessId;
         }
 
-        internal static Process GetParentProcess(SafeHandle handle, DateTime startTime)
+        internal static Process GetParentProcess(Process process)
         {
-            int? parentProcessId = GetParentProcessId(handle);
-
-            if (parentProcessId == null) return null;
-
             try
             {
+                int? parentProcessId = GetParentProcessId(process.Handle);
+
+                if (parentProcessId == null) return null;
+
                 Process parentProcess = Process.GetProcessById(parentProcessId.Value);
 
                 if (parentProcess == null
-                    || parentProcess.StartTime > startTime
+                    || parentProcess.StartTime > process.StartTime
                     || parentProcess.HasExited)
                 {
                     return null;
@@ -62,6 +63,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 return parentProcess;
             }
             catch (ArgumentException)
+            {
+                return null;
+            }
+            catch (Win32Exception)
             {
                 return null;
             }
@@ -90,7 +95,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
-        public static List<Process> GetProcessList(Process process, bool useInteropToFindParentProcess, ITraceWriter trace)
+        public static List<Process> GetProcessList(Process process, bool useInteropToFindParentProcess, ITraceWriter trace = null)
         {
             var processList = new List<Process>() { process };
 
@@ -99,7 +104,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                 Process lastProcess = processList.Last();
                 trace?.Info($"testing lastProcess: {lastProcess}");
                 Process parentProcess = useInteropToFindParentProcess
-                    ? GetParentProcess(lastProcess.SafeHandle, lastProcess.StartTime)
+                    ? GetParentProcess(lastProcess)
                     : GetParentProcess(lastProcess.Id);
 
                 if (parentProcess == null)
@@ -126,12 +131,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
-        public static bool ProcessIsRunningInPowerShell(Process process, bool useInteropKnob, ITraceWriter trace)
+        public static bool ProcessIsRunningInPowerShell(Process process, bool useInteropKnob, ITraceWriter trace = null)
         {
             return GetProcessList(process, useInteropKnob, trace).Exists(ProcessIsPowerShell);
         }
 
-        public static bool AgentIsRunningInPowerShell(bool useInteropKnob, ITraceWriter trace)
+        public static bool AgentIsRunningInPowerShell(bool useInteropKnob, ITraceWriter trace = null)
         {
             return ProcessIsRunningInPowerShell(Process.GetCurrentProcess(), useInteropKnob, trace);
         }
