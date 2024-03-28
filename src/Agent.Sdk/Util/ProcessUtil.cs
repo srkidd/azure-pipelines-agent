@@ -1,6 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
-using Agent.Sdk;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -30,6 +29,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
 
     public static class WindowsProcessUtil
     {
+        private const string ParentProcessState = nameof(ParentProcessState);
+
         internal static int? GetParentProcessId(IntPtr handle)
         {
             Interop.PROCESS_BASIC_INFORMATION pbi;
@@ -43,13 +44,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             return parentProcessId;
         }
 
-        internal static Process GetParentProcess(Process process)
+        internal static (Process process, Dictionary<string, string> telemetry) GetParentProcess(Process process)
         {
+            var telemetry = new Dictionary<string, string>();
+
             try
             {
                 int? parentProcessId = GetParentProcessId(process.Handle);
 
-                if (parentProcessId == null) return null;
+                if (parentProcessId == null) return (null, telemetry);
 
                 Process parentProcess = Process.GetProcessById(parentProcessId.Value);
 
@@ -57,18 +60,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
                     || parentProcess.StartTime > process.StartTime
                     || parentProcess.HasExited)
                 {
-                    return null;
+                    return (null, telemetry);
                 }
 
-                return parentProcess;
+                return (parentProcess, telemetry);
             }
             catch (ArgumentException)
             {
-                return null;
+                telemetry.Add(ParentProcessState, "Invalid argument for GetProcessById");
+                return (null, telemetry);
             }
             catch (Win32Exception)
             {
-                return null;
+                telemetry.Add(ParentProcessState, "Win32 exception: could not retrieve parent process");
+                return (null, telemetry);
             }
         }
 
@@ -95,21 +100,30 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
-        public static List<Process> GetProcessList(Process process, bool useInteropToFindParentProcess, ITraceWriter trace = null)
+        public static (List<Process> processes, Dictionary<string, string> telemetry) GetProcessList(
+            Process process,
+            bool useInteropToFindParentProcess)
         {
             var processList = new List<Process>() { process };
+            var telemetry = new Dictionary<string, string>();
 
             while (true)
             {
                 Process lastProcess = processList.Last();
-                trace?.Info($"testing lastProcess: {lastProcess}");
-                Process parentProcess = useInteropToFindParentProcess
-                    ? GetParentProcess(lastProcess)
-                    : GetParentProcess(lastProcess.Id);
+                Process parentProcess;
+
+                if (useInteropToFindParentProcess)
+                {
+                    (parentProcess, telemetry) = GetParentProcess(lastProcess);
+                }
+                else
+                {
+                    parentProcess = GetParentProcess(lastProcess.Id);
+                }
 
                 if (parentProcess == null)
                 {
-                    return processList;
+                    return (processList, telemetry);
                 }
 
                 processList.Add(parentProcess);
@@ -131,14 +145,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             }
         }
 
-        public static bool ProcessIsRunningInPowerShell(Process process, bool useInteropKnob, ITraceWriter trace = null)
+        public static (bool isRunningInPowerShell, Dictionary<string, string> telemetry) AgentIsRunningInPowerShell(bool useInteropKnob)
         {
-            return GetProcessList(process, useInteropKnob, trace).Exists(ProcessIsPowerShell);
-        }
+            var (processList, telemetry) = GetProcessList(Process.GetCurrentProcess(), useInteropKnob);
+            var isProcessRunningInPowerShell = processList.Exists(ProcessIsPowerShell);
 
-        public static bool AgentIsRunningInPowerShell(bool useInteropKnob, ITraceWriter trace = null)
-        {
-            return ProcessIsRunningInPowerShell(Process.GetCurrentProcess(), useInteropKnob, trace);
+            return (isProcessRunningInPowerShell, telemetry);
         }
     }
 }

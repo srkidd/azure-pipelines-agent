@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Microsoft.VisualStudio.Services.Agent.Util;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Xunit;
@@ -33,10 +34,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L0.Util
             string[] vsExpectedProcessNames = { currentProcess.ProcessName, "vstest.console", "ServiceHub.TestWindowStoreHost" };
 
             // Act.
-            string[] actualProcessNames =
-                WindowsProcessUtil
-                    .GetProcessList(currentProcess, useInteropToFindParentProcess)
-                    .Take(expectedProcessNames.Length)
+            (List<Process> processes, Dictionary<string, string> telemetryErrors) = 
+                WindowsProcessUtil.GetProcessList(currentProcess, useInteropToFindParentProcess);
+
+            string[] actualProcessNames = processes.Take(expectedProcessNames.Length)
                     .Select(process => process.ProcessName)
                     .ToArray();
 
@@ -49,6 +50,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L0.Util
             {
                 Assert.Equal(expectedProcessNames, actualProcessNames);
             }
+
+            Assert.Equal(0, telemetryErrors.Count);
         }
 
         [Fact]
@@ -85,10 +88,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L0.Util
             Process currentProcess = Process.GetCurrentProcess();
 
             // Act.
-            Process parentProcess = WindowsProcessUtil.GetParentProcess(currentProcess);
+            (Process parentProcess, Dictionary<string, string> telemetryErrors) = WindowsProcessUtil.GetParentProcess(currentProcess);
 
             // Assert.
             Assert.NotNull(parentProcess);
+            Assert.Equal(0, telemetryErrors.Count);
         }
     }
 }
