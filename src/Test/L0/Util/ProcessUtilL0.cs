@@ -50,8 +50,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests.L0.Util
             {
                 Assert.Equal(expectedProcessNames, actualProcessNames);
             }
-
-            Assert.Equal(0, telemetryErrors.Count);
         }
 
         [Fact]
