@@ -37,7 +37,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             int returnLength;
             int status = Interop.NtQueryInformationProcess(handle, 0, out pbi, Marshal.SizeOf<Interop.PROCESS_BASIC_INFORMATION>(), out returnLength);
 
-            if (status != 0) return null;
+            if (status != 0)
+            {
+                return null;
+            }
 
             int parentProcessId = pbi.InheritedFromUniqueProcessId.ToInt32();
 
@@ -52,7 +55,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Util
             {
                 int? parentProcessId = GetParentProcessId(process.Handle);
 
-                if (parentProcessId == null) return (null, telemetry);
+                if (parentProcessId == null)
+                {
+                    return (null, telemetry);
+                }
 
                 Process parentProcess = Process.GetProcessById(parentProcessId.Value);
 
