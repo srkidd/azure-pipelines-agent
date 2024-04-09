@@ -1,3 +1,19 @@
+## Features
+ - Add validation for the task.issue command (#4662)
+ - Handle filter option for treeless or blobless git fetches (#4693)
+ - Changes for Azure Test Plan Task (#4705)
+ - Bump default node version for runsvc (#4719)
+
+## Bugs
+ - Fix bug where chunking could use different hash than the client (#4684)
+ - [BUG]: Installing DevOpsAgent on SLES 15 fails (#4714)
+ - Replace WMI query with interop (#4723)
+ - Address instability during VMSS configuration (#4750)
+
+## Misc
+ - Follow up PR for Azure Test Plan Changes in Result.Publish (#4708)
+ - Localization update (#4740)
+
 
 ## Agent Downloads
 
