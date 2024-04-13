@@ -91,7 +91,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         void EmitHostNode20FallbackTelemetry(bool node20ResultsInGlibCErrorHost);
     }
 
-    public sealed class ExecutionContext : AgentService, IExecutionContext, IDisposable
+    public class ExecutionContext : AgentService, IExecutionContext, IDisposable
     {
         private const int _maxIssueCount = 10;
 
@@ -937,13 +937,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
         public void Dispose()
         {
-            _cancellationTokenSource?.Dispose();
-            _forceCompleteCancellationTokenSource?.Dispose();
+            Dispose(true);
 
-            _buildLogsWriter?.Dispose();
-            _buildLogsWriter = null;
-            _buildLogsData?.Dispose();
-            _buildLogsData = null;
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _cancellationTokenSource?.Dispose();
+                _forceCompleteCancellationTokenSource?.Dispose();
+
+                _buildLogsWriter?.Dispose();
+                _buildLogsWriter = null;
+                _buildLogsData?.Dispose();
+                _buildLogsData = null;
+            }
         }
     }
 
