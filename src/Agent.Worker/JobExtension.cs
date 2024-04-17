@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.TeamFoundation.DistributedTask.Expressions;
 using Microsoft.TeamFoundation.DistributedTask.WebApi;
@@ -447,6 +448,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             ServiceEndpoint systemConnection = context.Endpoints.Single(x => string.Equals(x.Name, WellKnownServiceEndpointNames.SystemVssConnection, StringComparison.OrdinalIgnoreCase));
                             finallyStep.AccessToken = systemConnection.Authorization.Parameters["AccessToken"];
                             postJobSteps.Add(finallyStep);
+                        }
+                    }
+
+                    if (PlatformUtil.RunningOnMacOS)
+                    {
+                        if (PlatformUtil.IsArm64 && RuntimeInformation.ProcessArchitecture == Architecture.X64)
+                        {
+                            jobContext.Warning(StringUtil.Loc("OsxX64EmulationWarning"));
                         }
                     }
 
