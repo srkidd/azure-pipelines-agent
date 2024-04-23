@@ -388,7 +388,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             }
 
             // We will Combine() what's stored with root.  Defaults to string a relative path
-            agentSettings.WorkFolder = command.GetWork();
+            if (PlatformUtil.RunningOnWindows)
+            {
+                agentSettings.WorkFolder = command.GetWorkNonValidated();
+            }
+            else
+            {
+                agentSettings.WorkFolder = command.GetWork();
+            }
 
             // notificationPipeName for Hosted agent provisioner.
             agentSettings.NotificationPipeName = command.GetNotificationPipeName();

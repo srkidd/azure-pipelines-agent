@@ -68,6 +68,22 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                    string.Equals(value, StringUtil.Loc("N"), StringComparison.CurrentCultureIgnoreCase);
         }
 
+        public static bool WorkFolderPathValidator(string value)
+        {
+            if (string.IsNullOrEmpty(value))
+            {
+                return false;
+            }
+
+            if (value.Contains(' ') || value.Contains(".sh"))
+            {
+                Console.WriteLine(StringUtil.Loc("InvalidWorkFolderPath"));
+                return false;
+            }
+
+            return true;
+        }
+
         public static bool NonEmptyValidator(string value)
         {
             return !string.IsNullOrEmpty(value);

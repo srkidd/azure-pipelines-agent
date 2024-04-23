@@ -790,7 +790,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Tests
                     .Returns("some work");
 
                 // Act.
-                string actual = command.GetWork();
+                string actual = command.GetWorkNonValidated();
 
                 // Assert.
                 Assert.Equal("some work", actual);
