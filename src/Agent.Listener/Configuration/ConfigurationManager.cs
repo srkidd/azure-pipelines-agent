@@ -387,15 +387,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 throw;
             }
 
+            // Check if the workFolder path contains spaces or file extensions on linux and macos
+            bool validateWorkFolderPath = false;
+
+            if (!PlatformUtil.RunningOnWindows)
+            {
+                validateWorkFolderPath = true;
+            }
+
             // We will Combine() what's stored with root.  Defaults to string a relative path
-            if (PlatformUtil.RunningOnWindows)
-            {
-                agentSettings.WorkFolder = command.GetWorkNonValidated();
-            }
-            else
-            {
-                agentSettings.WorkFolder = command.GetWork();
-            }
+            agentSettings.WorkFolder = command.GetWork(validateWorkFolderPath);
 
             // notificationPipeName for Hosted agent provisioner.
             agentSettings.NotificationPipeName = command.GetNotificationPipeName();

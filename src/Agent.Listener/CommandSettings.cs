@@ -452,24 +452,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
                 validator: Validators.NonEmptyValidator);
         }
 
-        public string GetWorkNonValidated()
+        public string GetWork(bool validateWorkFolderPath = false)
         {
-            return GetArgOrPrompt(
-                argValue: Configure?.Work,
-                name: Constants.Agent.CommandLine.Args.Work,
-                description: StringUtil.Loc("WorkFolderDescription"),
-                defaultValue: Constants.Path.WorkDirectory,
-                validator: Validators.NonEmptyValidator);
-        }
+            var validator = Validators.NonEmptyValidator;
+            if (validateWorkFolderPath)
+            {
+                validator = Validators.WorkFolderPathValidator;
+            }
 
-        public string GetWork()
-        {
             return GetArgOrPrompt(
                 argValue: Configure?.Work,
                 name: Constants.Agent.CommandLine.Args.Work,
                 description: StringUtil.Loc("WorkFolderDescription"),
                 defaultValue: Constants.Path.WorkDirectory,
-                validator: Validators.WorkFolderPathValidator);
+                validator: validator);
         }
 
         public string GetMonitorSocketAddress()
