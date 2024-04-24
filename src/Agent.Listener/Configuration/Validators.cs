@@ -75,7 +75,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 return false;
             }
 
-            if (value.Contains(' ') || value.Contains(".sh"))
+            if (value.Contains(' '))
             {
                 Console.WriteLine(StringUtil.Loc("InvalidWorkFolderPath"));
                 return false;
