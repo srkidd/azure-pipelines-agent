@@ -387,7 +387,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                 throw;
             }
 
-            // Check if the workFolder path contains spaces or file extensions on linux and macos
+            // Check if the workFolder path contains spaces on linux and macos
             bool validateWorkFolderPath = false;
 
             if (!PlatformUtil.RunningOnWindows)
