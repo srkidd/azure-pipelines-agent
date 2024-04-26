@@ -384,7 +384,7 @@
   "InvalidSIDForUser": "Invalid Security Identifier for the user {0}\\{1} while configuring/unconfiguring AutoLogon. Refer logs for more details.",
   "InvalidValueInXml": "Unable to retrieve value for '{0}' from the summary file '{1}'. Verify the summary file is well-formed and try again.",
   "InvalidWindowsCredential": "Invalid windows credentials entered. Try again or ctrl-c to quit",
-  "InvalidWorkFolderPath": "Invalid work folder path, please avoid using spaces or file extensions in the path.",
+  "InvalidWorkFolderPath": "Invalid work folder path, please avoid using spaces in the path.",
   "JenkinsBuildDoesNotExistsForCommits": "Cannot find build index for jenkins builds {0} and {1}. Found indexes are {2} and {3}. Probably the build does not exist",
   "JenkinsCommitsInvalidEndJobId": "EndJobId {0} associated with the jenkins artifact {1} is invalid. Commits will not be downloaded.",
   "JenkinsDownloadingChangeFromCurrentBuild": "Cannot find endJobId, will be fetching the current build's changeset",
