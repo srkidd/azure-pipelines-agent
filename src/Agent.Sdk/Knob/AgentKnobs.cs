@@ -413,6 +413,12 @@ namespace Agent.Sdk.Knob
             new EnvironmentKnobSource("ENABLE_FCS_ITEM_PATH_FIX"),
             new BuiltInDefaultKnobSource("false"));
 
+        public static readonly Knob AgentSkipWorkFolderValidation = new Knob(
+            nameof(AgentSkipWorkFolderValidation),
+            "If true, skip the workfolder path validation on nix systems during the agent configuration.",
+            new EnvironmentKnobSource("AZP_SKIP_WORKFOLDER_VALIDATION"),
+            new BuiltInDefaultKnobSource("false"));
+
         // Set DISABLE_JAVA_CAPABILITY_HIGHER_THAN_9 variable with any value
         // to disable recognition of Java higher than 9
         public static readonly Knob DisableRecognitionOfJDKHigherThen9 = new Knob(

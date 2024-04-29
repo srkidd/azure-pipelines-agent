@@ -22,6 +22,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using Newtonsoft.Json;
 using Microsoft.VisualStudio.Services.Agent.Listener.Telemetry;
+using Agent.Sdk.Knob;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 {
@@ -390,7 +391,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             // Check if the workFolder path contains spaces on linux and macos
             bool validateWorkFolderPath = false;
 
-            if (!PlatformUtil.RunningOnWindows)
+            if (!AgentKnobs.AgentSkipWorkFolderValidation.GetValue(HostContext).AsBoolean() && !PlatformUtil.RunningOnWindows)
             {
                 validateWorkFolderPath = true;
             }
