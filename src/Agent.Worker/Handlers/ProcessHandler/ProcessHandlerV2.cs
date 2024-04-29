@@ -131,6 +131,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
             string cmdExeArgs = GetCmdExeArgs(cmdExe, command, arguments, disableInlineExecution);
 
+            var sigintTimeout = TimeSpan.FromMilliseconds(AgentKnobs.ProccessSigintTimeout.GetValue(ExecutionContext).AsInt());
+            var sigtermTimeout = TimeSpan.FromMilliseconds(AgentKnobs.ProccessSigtermTimeout.GetValue(ExecutionContext).AsInt());
+            var useGracefulShutdown = AgentKnobs.UseGracefulProcessShutdown.GetValue(ExecutionContext).AsBoolean();
+
             // Invoke the process.
             ExecutionContext.Debug($"{cmdExe} {cmdExeArgs}");
             ExecutionContext.Command($"{cmdExeArgs}");
@@ -145,6 +149,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 {
                     processInvoker.ErrorDataReceived += OnOutputDataReceived;
                 }
+
+                processInvoker.SigintTimeout = sigintTimeout;
+                processInvoker.SigtermTimeout = sigtermTimeout;
+                processInvoker.TryUseGracefulShutdown = useGracefulShutdown;
 
                 int exitCode = await processInvoker.ExecuteAsync(workingDirectory: workingDirectory,
                                                                  fileName: cmdExe,
