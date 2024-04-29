@@ -690,5 +690,12 @@ namespace Agent.Sdk.Knob
             "Get config from FF.",
             new EnvironmentKnobSource("RSAKEYGETCONFIGFROMFF"),
             new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob UseDockerComposeV2CompatibleMode = new Knob(
+            nameof(UseDockerComposeV2CompatibleMode),
+            "Enables using Docker Compose v2 from Docker CLI with the --compatible flag in the DockerComposeV0 task.",
+            new RuntimeKnobSource("USE_DOCKER_COMPOSE_V2_COMPATIBLE_MODE"),
+            new EnvironmentKnobSource("USE_DOCKER_COMPOSE_V2_COMPATIBLE_MODE"),
+            new BuiltInDefaultKnobSource("false"));
     }
 }
