@@ -20,6 +20,8 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
+using Agent.Sdk.Util.ParentProcessUtil;
+using System.Diagnostics;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -187,6 +189,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 dockerDetectCommand.InitializeCommandContext(jobContext, "DetectDockerContainer");
                 dockerDetectCommand.Task = Task.Run(() => jobContext.SetVariable(Constants.Variables.System.IsDockerContainer, PlatformUtil.DetectDockerContainer() ? "1" : "0"));
                 jobContext.AsyncCommands.Add(dockerDetectCommand);
+
+                //Debugger.Launch();
+                if (PlatformUtil.RunningOnWindows && AgentKnobs.CheckIfAgentIsRunningInPowershellOncePerJob.GetValue(jobContext).AsBoolean())
+                {
+                    // TODO use async command?
+                    var useInteropKnob = AgentKnobs.UseInteropToFindParentProcess.GetValue(jobContext).AsBoolean();
+                    var isRunningInPowershell = WindowsParentProcessUtil.IsAgentRunningInPowerShell(useInteropKnob);
+                    jobContext.SetVariable(Constants.Variables.System.IsRunningInPowershell, isRunningInPowershell ? "1" : "0");
+                }
 
                 string toolsDirectory = HostContext.GetDirectory(WellKnownDirectory.Tools);
                 Directory.CreateDirectory(toolsDirectory);
