@@ -690,5 +690,19 @@ namespace Agent.Sdk.Knob
             "Get config from FF.",
             new EnvironmentKnobSource("RSAKEYGETCONFIGFROMFF"),
             new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob CheckIfAgentIsRunningInPowershellOncePerJob = new Knob(
+            nameof(CheckIfAgentIsRunningInPowershellOncePerJob),
+            "Checks if the agent process is started from Powershell.",
+            new RuntimeKnobSource("AZP_AGENT_CHECK_IF_AGENT_IS_RUNNING_IN_POWERSHELL"),
+            new EnvironmentKnobSource("AZP_AGENT_CHECK_IF_AGENT_IS_RUNNING_IN_POWERSHELL"),
+            new BuiltInDefaultKnobSource("false"));
+
+        public static readonly Knob ModifyPsModulePath = new Knob(
+            nameof(ModifyPsModulePath),
+            "Removes Windows Powershell module paths from the PSModulePath env variable if the agent process is started from Powershell Core.",
+            new RuntimeKnobSource("AZP_AGENT_MODIFY_PSMODULEPATH"),
+            new EnvironmentKnobSource("AZP_AGENT_MODIFY_PSMODULEPATH"),
+            new BuiltInDefaultKnobSource("false"));
     }
 }
