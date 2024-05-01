@@ -1,3 +1,14 @@
+## Features
+ - Add the ability to modify SIGINT and SIGTERM timeouts and use graceful shutdown for worker child processes (#4744)
+ - Build the agent `linux-musl-arm64` (#4754)
+ - Cancel chcp 65001 configuration by timeout (#4760)
+
+## Bugs
+ - Handling disposed connection (#4779)
+
+## Misc
+
+
 
 ## Agent Downloads
 
