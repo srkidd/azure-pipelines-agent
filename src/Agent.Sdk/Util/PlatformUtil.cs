@@ -113,7 +113,7 @@ namespace Agent.Sdk
 
                         var process = Process.Start(psi);
                         var cpuBrand = process.StandardOutput.ReadToEnd();
-                        return cpuBrand.Contains("Apple");
+                        return cpuBrand.Contains("Apple") && RuntimeInformation.ProcessArchitecture != Architecture.Arm;
                     }
                     catch
                     {
