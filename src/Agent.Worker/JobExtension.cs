@@ -450,6 +450,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         }
                     }
 
+                    if (AgentKnobs.Rosetta2Warning.GetValue(jobContext).AsBoolean() &&
+                        PlatformUtil.RunningOnAppleSiliconAsX64)
+                    {
+                        jobContext.Warning(StringUtil.Loc("Rosetta2Warning"));
+                    }
+
                     List<IStep> steps = new List<IStep>();
                     steps.AddRange(preJobSteps);
                     steps.AddRange(jobSteps);

@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -87,6 +88,37 @@ namespace Agent.Sdk
                 if (File.Exists("/etc/alpine-release"))
                 {
                     return true;
+                }
+
+                return false;
+            }
+        }
+
+        public static bool RunningOnAppleSiliconAsX64
+        {
+            get
+            {
+                if (RunningOnMacOS)
+                {
+                    try
+                    {
+                        // See https://stackoverflow.com/questions/65259300/detect-apple-silicon-from-command-line
+                        ProcessStartInfo psi = new ProcessStartInfo
+                        {
+                            FileName = "/bin/sh",
+                            Arguments = "-c \"sysctl -n machdep.cpu.brand_string\"",
+                            RedirectStandardOutput = true,
+                            UseShellExecute = false
+                        };
+
+                        var process = Process.Start(psi);
+                        var cpuBrand = process.StandardOutput.ReadToEnd();
+                        return cpuBrand.Contains("Apple");
+                    }
+                    catch
+                    {
+                        return false;
+                    }
                 }
 
                 return false;
