@@ -145,7 +145,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 executionContext.Debug("Dumping cloud-init logs.");
 
                 string logsFilePath = $"{HostContext.GetDiagDirectory()}/cloudinit-{jobStartTimeUtc.ToString("yyyyMMdd-HHmmss")}-logs.tar.gz";
-                string resultLogs = await DumpCloudInitLogs(logsFilePath);
+                string resultLogs = await DumpCloudInitLogs(executionContext, logsFilePath);
                 executionContext.Debug(resultLogs);
 
                 if (File.Exists(logsFilePath))
@@ -336,7 +336,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         /// </summary>
         /// <param name="logsFile">Path to collect cloud-init logs</param>
         /// <returns>Returns the method execution logs</returns>
-        private async Task<string> DumpCloudInitLogs(string logsFile)
+        private async Task<string> DumpCloudInitLogs(IExecutionContext executionContext, string logsFile)
         {
             var builder = new StringBuilder();
             string cloudInit = WhichUtil.Which("cloud-init", trace: Trace);
@@ -349,28 +349,43 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             try
             {
-                using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
+                using var processInvoker = HostContext.CreateService<IProcessInvoker>();
+                processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
                 {
-                    processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
-                    {
-                        builder.AppendLine(args.Data);
-                    };
+                    builder.AppendLine(args.Data);
+                };
+                processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
+                {
+                    builder.AppendLine(args.Data);
+                };
 
-                    processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
+                var retryHelper = new RetryHelper(executionContext, maxRetries: 3);
+                await retryHelper.Retry(
+                    async () =>
                     {
-                        builder.AppendLine(args.Data);
-                    };
+                        using var cts = new CancellationTokenSource();
+                        cts.CancelAfter(TimeSpan.FromSeconds(20));
 
-                    await processInvoker.ExecuteAsync(
-                        workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
-                        fileName: cloudInit,
-                        arguments: arguments,
-                        environment: null,
-                        requireExitCodeZero: false,
-                        outputEncoding: null,
-                        killProcessOnCancel: false,
-                        cancellationToken: default(CancellationToken));
-                }
+                        return await processInvoker.ExecuteAsync(
+                            workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
+                            fileName: cloudInit,
+                            arguments: arguments,
+                            environment: null,
+                            requireExitCodeZero: false,
+                            outputEncoding: null,
+                            killProcessOnCancel: false,
+                            cancellationToken: cts.Token);
+                    },
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                    (exception) =>
+                    {
+                        if (exception is OperationCanceledException)
+                        {
+                            executionContext.Debug("Getting of cloud-init logs process failed by timeout. Retrying...");
+                        }
+
+                        return true;
+                    });
             }
             catch (Exception ex)
             {
@@ -486,7 +501,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
             return await GetEnvironmentContentNonWindows(agentId, agentName, steps);
         }
-    
+
         [SupportedOSPlatform("windows")]
         private async Task<string> GetEnvironmentContentWindows(int agentId, string agentName, IList<Pipelines.JobStep> steps)
         {
