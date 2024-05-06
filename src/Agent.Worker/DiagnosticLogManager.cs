@@ -773,7 +773,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 async () =>
                 {
                     using var cts = new CancellationTokenSource();
-                    cts.CancelAfter(TimeSpan.FromSeconds(20));
+                    cts.CancelAfter(TimeSpan.FromSeconds(45));
 
                     return await processInvoker.ExecuteAsync(
                         workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
