@@ -197,7 +197,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     try
                     {
-                        string packageVerificationResults = await GetPackageVerificationResult(debsums);
+                        string packageVerificationResults = await GetPackageVerificationResult(executionContext, debsums);
                         IEnumerable<string> brokenPackagesInfo = packageVerificationResults
                             .Split("\n")
                             .Where((line) => !String.IsNullOrEmpty(line) && !line.EndsWith("OK"));
@@ -381,7 +381,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         if (exception is OperationCanceledException)
                         {
-                            executionContext.Debug("Getting of cloud-init logs process failed by timeout. Retrying...");
+                            executionContext.Debug("DumpCloudInitLogs process failed by timeout. Retrying...");
                         }
 
                         return true;
@@ -604,7 +604,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         if (exception is OperationCanceledException)
                         {
-                            executionContext.Debug("Getting of powershell version info process failed by timeout. Retrying...");
+                            executionContext.Debug("GetPsVersionInfo process failed by timeout. Retrying...");
                         }
 
                         return true;
@@ -662,7 +662,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         if (exception is OperationCanceledException)
                         {
-                            executionContext.Debug("Getting of local group membership process failed by timeout. Retrying...");
+                            executionContext.Debug("GetLocalGroupMembership process failed by timeout. Retrying...");
                         }
 
                         return true;
@@ -717,16 +717,33 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         stringBuilder.AppendLine(mes.Data);
                     };
 
-                    await processInvoker.ExecuteAsync(
-                        workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
-                        fileName: idUtil,
-                        arguments: "-nG",
-                        environment: null,
-                        requireExitCodeZero: false,
-                        outputEncoding: null,
-                        killProcessOnCancel: false,
-                        cancellationToken: default(CancellationToken)
-                    );
+                    var retryHelper = new RetryHelper(executionContext, maxRetries: 3);
+                    await retryHelper.Retry(
+                        async () =>
+                        {
+                            using var cts = new CancellationTokenSource();
+                            cts.CancelAfter(TimeSpan.FromSeconds(20));
+
+                            return await processInvoker.ExecuteAsync(
+                                workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
+                                fileName: idUtil,
+                                arguments: "-nG",
+                                environment: null,
+                                requireExitCodeZero: false,
+                                outputEncoding: null,
+                                killProcessOnCancel: false,
+                                cancellationToken: cts.Token);
+                        },
+                        (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                        (exception) =>
+                        {
+                            if (exception is OperationCanceledException)
+                            {
+                                executionContext.Debug("GetUserGroupsOnNonWindows process failed by timeout. Retrying...");
+                            }
+
+                            return true;
+                        });
                 }
             }
             catch (Exception ex)
@@ -750,49 +767,81 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Get-WinEvent -ListLog * | where {{ $_.RecordCount -gt 0 }} `
                 | ForEach-Object {{ Get-WinEvent -ErrorAction SilentlyContinue -FilterHashtable @{{ LogName=$_.LogName; StartTime='{startDate}'; EndTime='{endDate}'; }} }} `
                 | Export-CSV {logFile}";
-            using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
-            {
-                await processInvoker.ExecuteAsync(
-                    workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
-                    fileName: powerShellExe,
-                    arguments: arguments,
-                    environment: null,
-                    requireExitCodeZero: false,
-                    outputEncoding: null,
-                    killProcessOnCancel: false,
-                    cancellationToken: default(CancellationToken));
-            }
+            using var processInvoker = HostContext.CreateService<IProcessInvoker>();
+            var retryHelper = new RetryHelper(executionContext, maxRetries: 3);
+            await retryHelper.Retry(
+                async () =>
+                {
+                    using var cts = new CancellationTokenSource();
+                    cts.CancelAfter(TimeSpan.FromSeconds(20));
+
+                    return await processInvoker.ExecuteAsync(
+                        workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
+                        fileName: powerShellExe,
+                        arguments: arguments,
+                        environment: null,
+                        requireExitCodeZero: false,
+                        outputEncoding: null,
+                        killProcessOnCancel: false,
+                        cancellationToken: cts.Token);
+                },
+                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                (exception) =>
+                {
+                    if (exception is OperationCanceledException)
+                    {
+                        executionContext.Debug("DumpCurrentJobEventLogs process failed by timeout. Retrying...");
+                    }
+
+                    return true;
+                });
         }
 
         /// <summary>
         ///  Git package verification result using the "debsums" utility.
         /// </summary>
         /// <returns>String with the "debsums" output</returns>
-        private async Task<string> GetPackageVerificationResult(string debsumsPath)
+        private async Task<string> GetPackageVerificationResult(IExecutionContext executionContext, string debsumsPath)
         {
             var stringBuilder = new StringBuilder();
-            using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
+            using var processInvoker = HostContext.CreateService<IProcessInvoker>();
+            processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs mes) =>
             {
-                processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs mes) =>
-                {
-                    stringBuilder.AppendLine(mes.Data);
-                };
-                processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs mes) =>
-                {
-                    stringBuilder.AppendLine(mes.Data);
-                };
+                stringBuilder.AppendLine(mes.Data);
+            };
+            processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs mes) =>
+            {
+                stringBuilder.AppendLine(mes.Data);
+            };
 
-                await processInvoker.ExecuteAsync(
-                    workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
-                    fileName: debsumsPath,
-                    arguments: string.Empty,
-                    environment: null,
-                    requireExitCodeZero: false,
-                    outputEncoding: null,
-                    killProcessOnCancel: false,
-                    cancellationToken: default(CancellationToken)
-                );
-            }
+            var retryHelper = new RetryHelper(executionContext, maxRetries: 3);
+            await retryHelper.Retry(
+                async () =>
+                {
+                    using var cts = new CancellationTokenSource();
+                    cts.CancelAfter(TimeSpan.FromSeconds(20));
+
+                    return await processInvoker.ExecuteAsync(
+                        workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
+                        fileName: debsumsPath,
+                        arguments: string.Empty,
+                        environment: null,
+                        requireExitCodeZero: false,
+                        outputEncoding: null,
+                        killProcessOnCancel: false,
+                        cancellationToken: cts.Token);
+                },
+                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                (exception) =>
+                {
+                    if (exception is OperationCanceledException)
+                    {
+                        executionContext.Debug("GetPackageVerificationResult process failed by timeout. Retrying...");
+                    }
+
+                    return true;
+                });
+
 
             return stringBuilder.ToString();
         }
