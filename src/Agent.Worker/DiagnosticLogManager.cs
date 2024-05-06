@@ -72,7 +72,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             executionContext.Debug("Creating diagnostic log environment file.");
             string environmentFile = Path.Combine(supportFilesFolder, "environment.txt");
-            string content = await GetEnvironmentContent(agentId, agentName, message.Steps);
+            string content = await GetEnvironmentContent(executionContext, agentId, agentName, message.Steps);
             File.WriteAllText(environmentFile, content);
 
             // Create the capabilities file
@@ -493,17 +493,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return agentLogFiles;
         }
 
-        private async Task<string> GetEnvironmentContent(int agentId, string agentName, IList<Pipelines.JobStep> steps)
+        private async Task<string> GetEnvironmentContent(IExecutionContext executionContext, int agentId, string agentName, IList<Pipelines.JobStep> steps)
         {
             if (PlatformUtil.RunningOnWindows)
             {
-                return await GetEnvironmentContentWindows(agentId, agentName, steps);
+                return await GetEnvironmentContentWindows(executionContext, agentId, agentName, steps);
             }
-            return await GetEnvironmentContentNonWindows(agentId, agentName, steps);
+            return await GetEnvironmentContentNonWindows(executionContext, agentId, agentName, steps);
         }
 
         [SupportedOSPlatform("windows")]
-        private async Task<string> GetEnvironmentContentWindows(int agentId, string agentName, IList<Pipelines.JobStep> steps)
+        private async Task<string> GetEnvironmentContentWindows(IExecutionContext executionContext, int agentId, string agentName, IList<Pipelines.JobStep> steps)
         {
             var builder = new StringBuilder();
 
@@ -527,9 +527,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             // $psversiontable
             builder.AppendLine("Powershell Version Info:");
-            builder.AppendLine(await GetPsVersionInfo());
+            builder.AppendLine(await GetPsVersionInfo(executionContext));
 
-            builder.AppendLine(await GetLocalGroupMembership());
+            builder.AppendLine(await GetLocalGroupMembership(executionContext));
 
             return builder.ToString();
         }
@@ -565,7 +565,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
 
         [SupportedOSPlatform("windows")]
-        private async Task<string> GetPsVersionInfo()
+        private async Task<string> GetPsVersionInfo(IExecutionContext executionContext)
         {
             var builder = new StringBuilder();
 
@@ -577,21 +577,38 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     builder.AppendLine(args.Data);
                 };
-
                 processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
                 {
                     builder.AppendLine(args.Data);
                 };
 
-                await processInvoker.ExecuteAsync(
-                    workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
-                    fileName: powerShellExe,
-                    arguments: arguments,
-                    environment: null,
-                    requireExitCodeZero: false,
-                    outputEncoding: null,
-                    killProcessOnCancel: false,
-                    cancellationToken: default(CancellationToken));
+                var retryHelper = new RetryHelper(executionContext, maxRetries: 3);
+                await retryHelper.Retry(
+                    async () =>
+                    {
+                        using var cts = new CancellationTokenSource();
+                        cts.CancelAfter(TimeSpan.FromSeconds(20));
+
+                        return await processInvoker.ExecuteAsync(
+                            workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
+                            fileName: powerShellExe,
+                            arguments: arguments,
+                            environment: null,
+                            requireExitCodeZero: false,
+                            outputEncoding: null,
+                            killProcessOnCancel: false,
+                            cancellationToken: cts.Token);
+                    },
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                    (exception) =>
+                    {
+                        if (exception is OperationCanceledException)
+                        {
+                            executionContext.Debug("Getting of powershell version info process failed by timeout. Retrying...");
+                        }
+
+                        return true;
+                    });
             }
 
             return builder.ToString();
@@ -601,7 +618,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         /// Gathers a list of local group memberships for the current user.
         /// </summary>
         [SupportedOSPlatform("windows")]
-        private async Task<string> GetLocalGroupMembership()
+        private async Task<string> GetLocalGroupMembership(IExecutionContext executionContext)
         {
             var builder = new StringBuilder();
 
@@ -644,7 +661,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             return builder.ToString();
         }
 
-        private async Task<string> GetEnvironmentContentNonWindows(int agentId, string agentName, IList<Pipelines.JobStep> steps)
+        private async Task<string> GetEnvironmentContentNonWindows(IExecutionContext executionContext, int agentId, string agentName, IList<Pipelines.JobStep> steps)
         {
             var builder = new StringBuilder();
 
@@ -653,7 +670,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             builder.AppendLine($"Agent Id: {agentId}");
             builder.AppendLine($"Agent Name: {agentName}");
             builder.AppendLine($"OS: {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
-            builder.AppendLine($"User groups: {await GetUserGroupsOnNonWindows()}");
+            builder.AppendLine($"User groups: {await GetUserGroupsOnNonWindows(executionContext)}");
             builder.AppendLine("Steps:");
 
             foreach (Pipelines.TaskStep task in steps.OfType<Pipelines.TaskStep>())
@@ -668,7 +685,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         ///  Get user groups on a non-windows platform using core utility "id".
         /// </summary>
         /// <returns>Returns the string with user groups</returns>
-        private async Task<string> GetUserGroupsOnNonWindows()
+        private async Task<string> GetUserGroupsOnNonWindows(IExecutionContext executionContext)
         {
             var idUtil = WhichUtil.Which("id");
             var stringBuilder = new StringBuilder();
