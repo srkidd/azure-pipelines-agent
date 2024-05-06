@@ -39,6 +39,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     //          support.zip
     public sealed class DiagnosticLogManager : AgentService, IDiagnosticLogManager
     {
+        private const int FiveSecondsInMs = 5000;
+
         public async Task UploadDiagnosticLogsAsync(IExecutionContext executionContext,
                                          Pipelines.AgentJobRequestMessage message,
                                          DateTime jobStartTimeUtc)
@@ -376,7 +378,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             killProcessOnCancel: false,
                             cancellationToken: cts.Token);
                     },
-                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
                     (exception) =>
                     {
                         if (exception is OperationCanceledException)
@@ -587,7 +589,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     async () =>
                     {
                         using var cts = new CancellationTokenSource();
-                        cts.CancelAfter(TimeSpan.FromSeconds(20));
+                        cts.CancelAfter(TimeSpan.FromSeconds(10));
 
                         return await processInvoker.ExecuteAsync(
                             workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
@@ -599,7 +601,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             killProcessOnCancel: false,
                             cancellationToken: cts.Token);
                     },
-                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
                     (exception) =>
                     {
                         if (exception is OperationCanceledException)
@@ -645,7 +647,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     async () =>
                     {
                         using var cts = new CancellationTokenSource();
-                        cts.CancelAfter(TimeSpan.FromSeconds(20));
+                        cts.CancelAfter(TimeSpan.FromSeconds(45));
 
                         return await processInvoker.ExecuteAsync(
                             workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
@@ -657,7 +659,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             killProcessOnCancel: false,
                             cancellationToken: cts.Token);
                     },
-                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
                     (exception) =>
                     {
                         if (exception is OperationCanceledException)
@@ -706,45 +708,43 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             var stringBuilder = new StringBuilder();
             try
             {
-                using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
+                using var processInvoker = HostContext.CreateService<IProcessInvoker>();
+                processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs mes) =>
                 {
-                    processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs mes) =>
+                    stringBuilder.AppendLine(mes.Data);
+                };
+                processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs mes) =>
+                {
+                    stringBuilder.AppendLine(mes.Data);
+                };
+
+                var retryHelper = new RetryHelper(executionContext, maxRetries: 3);
+                await retryHelper.Retry(
+                    async () =>
                     {
-                        stringBuilder.AppendLine(mes.Data);
-                    };
-                    processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs mes) =>
+                        using var cts = new CancellationTokenSource();
+                        cts.CancelAfter(TimeSpan.FromSeconds(45));
+
+                        return await processInvoker.ExecuteAsync(
+                            workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
+                            fileName: idUtil,
+                            arguments: "-nG",
+                            environment: null,
+                            requireExitCodeZero: false,
+                            outputEncoding: null,
+                            killProcessOnCancel: false,
+                            cancellationToken: cts.Token);
+                    },
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
+                    (exception) =>
                     {
-                        stringBuilder.AppendLine(mes.Data);
-                    };
-
-                    var retryHelper = new RetryHelper(executionContext, maxRetries: 3);
-                    await retryHelper.Retry(
-                        async () =>
+                        if (exception is OperationCanceledException)
                         {
-                            using var cts = new CancellationTokenSource();
-                            cts.CancelAfter(TimeSpan.FromSeconds(20));
+                            executionContext.Debug("GetUserGroupsOnNonWindows process failed by timeout. Retrying...");
+                        }
 
-                            return await processInvoker.ExecuteAsync(
-                                workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
-                                fileName: idUtil,
-                                arguments: "-nG",
-                                environment: null,
-                                requireExitCodeZero: false,
-                                outputEncoding: null,
-                                killProcessOnCancel: false,
-                                cancellationToken: cts.Token);
-                        },
-                        (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
-                        (exception) =>
-                        {
-                            if (exception is OperationCanceledException)
-                            {
-                                executionContext.Debug("GetUserGroupsOnNonWindows process failed by timeout. Retrying...");
-                            }
-
-                            return true;
-                        });
-                }
+                        return true;
+                    });
             }
             catch (Exception ex)
             {
@@ -785,7 +785,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         killProcessOnCancel: false,
                         cancellationToken: cts.Token);
                 },
-                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
                 (exception) =>
                 {
                     if (exception is OperationCanceledException)
@@ -831,7 +831,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         killProcessOnCancel: false,
                         cancellationToken: cts.Token);
                 },
-                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
                 (exception) =>
                 {
                     if (exception is OperationCanceledException)
@@ -841,7 +841,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                     return true;
                 });
-
 
             return stringBuilder.ToString();
         }
