@@ -630,28 +630,43 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             try
             {
-                using (var processInvoker = HostContext.CreateService<IProcessInvoker>())
+                using var processInvoker = HostContext.CreateService<IProcessInvoker>();
+                processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
                 {
-                    processInvoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
-                    {
-                        builder.AppendLine(args.Data);
-                    };
+                    builder.AppendLine(args.Data);
+                };
+                processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
+                {
+                    builder.AppendLine(args.Data);
+                };
 
-                    processInvoker.ErrorDataReceived += (object sender, ProcessDataReceivedEventArgs args) =>
+                var retryHelper = new RetryHelper(executionContext, maxRetries: 3);
+                await retryHelper.Retry(
+                    async () =>
                     {
-                        builder.AppendLine(args.Data);
-                    };
+                        using var cts = new CancellationTokenSource();
+                        cts.CancelAfter(TimeSpan.FromSeconds(20));
 
-                    await processInvoker.ExecuteAsync(
-                        workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
-                        fileName: powerShellExe,
-                        arguments: arguments,
-                        environment: null,
-                        requireExitCodeZero: false,
-                        outputEncoding: null,
-                        killProcessOnCancel: false,
-                        cancellationToken: default(CancellationToken));
-                }
+                        return await processInvoker.ExecuteAsync(
+                            workingDirectory: HostContext.GetDirectory(WellKnownDirectory.Bin),
+                            fileName: powerShellExe,
+                            arguments: arguments,
+                            environment: null,
+                            requireExitCodeZero: false,
+                            outputEncoding: null,
+                            killProcessOnCancel: false,
+                            cancellationToken: cts.Token);
+                    },
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter),
+                    (exception) =>
+                    {
+                        if (exception is OperationCanceledException)
+                        {
+                            executionContext.Debug("Getting of local group membership process failed by timeout. Retrying...");
+                        }
+
+                        return true;
+                    });
             }
             catch (Exception ex)
             {
