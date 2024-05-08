@@ -16,8 +16,8 @@ using Agent.Sdk.Knob;
 using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
 using Newtonsoft.Json;
 using System.Runtime.Versioning;
+using Agent.Sdk.Util;
 using Agent.Sdk.Util.ParentProcessUtil;
-using System.Text;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -313,7 +313,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 
             bool useInteropKnob = AgentKnobs.UseInteropToFindParentProcess.GetValue(ExecutionContext).AsBoolean();
 
-            return WindowsParentProcessUtil.IsAgentRunningInPowerShell(useInteropKnob);
+            var (isRunningInPowerShell, telemetry) = WindowsParentProcessUtil.IsAgentRunningInPowerShell(useInteropKnob);
+            PublishTelemetry(telemetry);
+
+            return isRunningInPowerShell;
         }
 
         [SupportedOSPlatform("windows")]
@@ -324,42 +327,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 return;
             }
 
-            if (AgentKnobs.ModifyPsModulePath.GetValue(ExecutionContext).AsBoolean() && IsAgentRunningInPowerShell())
-            {
-                Inputs.TryGetValue("pwsh", out var isPwsh);
+            bool modifyPsModulePathKnob = AgentKnobs.ModifyPsModulePath.GetValue(ExecutionContext).AsBoolean();
+            bool cleanupPsModulePathKnob = AgentKnobs.CleanupPSModules.GetValue(ExecutionContext).AsBoolean();
+            bool isRunningInPowershell = false;
 
+            if (modifyPsModulePathKnob || cleanupPsModulePathKnob)
+            {
+                isRunningInPowershell = IsAgentRunningInPowerShell();
+            }
+
+            if (modifyPsModulePathKnob && isRunningInPowershell)
+            {
                 if (Task.Name.ToLower() == "powershell")
                 {
-                    // check PsModulePath for pwsh locations 
-                    var currentPsModulePath = System.Environment.GetEnvironmentVariable("PsModulePath");
-
-                    const string wellKnownPsModuleLocation1 = "C:\\Program Files\\PowerShell\\Modules";
-                    const string wellKnownPsModuleLocation2 = "c:\\program files\\powershell\\7\\Modules";
-                    const string wellKnownPsModuleLocation3 = "\\Documents\\PowerShell\\Modules";
-
-                    var splitModules = currentPsModulePath.Split(';').Where(path =>
-                    {
-                        return path != wellKnownPsModuleLocation1
-                            && path != wellKnownPsModuleLocation2
-                            && !path.Contains(wellKnownPsModuleLocation3);
-                    });
-
-                    var newPsModulePath = string.Join(';', splitModules);
-
-                    //var newPsModulePath = new StringBuilder(currentPsModulePath)
-                    //    .Replace(wellKnownPsModuleLocation1, string.Empty)
-                    //    .Replace(wellKnownPsModuleLocation2, string.Empty)
-                    //    .ToString();
+                    string currentPsModulePath = System.Environment.GetEnvironmentVariable("PsModulePath");
+                    string newPsModulePath = PsModulePathUtil.GetPsModulePathWithoutPowershellCoreLocations(currentPsModulePath);
 
                     AddEnvironmentVariable("PSModulePath", newPsModulePath);
+                    Trace.Info("PSModulePath is modified to remove locations specific to Powershell Core.");
                 }
             }
 
-            if (AgentKnobs.CleanupPSModules.GetValue(ExecutionContext).AsBoolean() && IsAgentRunningInPowerShell())
+            if (cleanupPsModulePathKnob && isRunningInPowershell)
             {
                 AddEnvironmentVariable("PSModulePath", "");
-                Trace.Info("PSModulePath removed from environment since agent is running on Windows and in PowerShell.");
-                // TODO telemetry
+                Trace.Info("PSModulePath is removed from environment since agent is running on Windows and in PowerShell.");
             }
         }
 
