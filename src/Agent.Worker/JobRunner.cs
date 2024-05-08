@@ -20,6 +20,8 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
+using System.Diagnostics;
+using BuildXL.Cache.ContentStore.UtilitiesCore.Internal;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -320,6 +322,61 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Trace.Error($"Job initialize failed.");
                     Trace.Error($"Caught exception from {nameof(jobExtension.InitializeJob)}: {ex}");
                     return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
+                }
+
+                if (PlatformUtil.RunningOnWindows && !settings.IsMSHosted)
+                {
+                    var hasPreinstalledGit = "False";
+                    var preinstalledGitVersion = "";
+
+                    try
+                    {
+                        ProcessStartInfo processStartInfo = new ProcessStartInfo();
+
+                        var processStartInfoOutput = "";
+                        processStartInfo.FileName = "git";
+                        processStartInfo.Arguments = "--version";
+                        processStartInfo.RedirectStandardOutput = true;
+
+                        using (var process = Process.Start(processStartInfo))
+                        {
+                            processStartInfoOutput = process.StandardOutput.ReadToEnd();
+                        }
+
+                        if (processStartInfoOutput.Length != 0)
+                        {
+                            hasPreinstalledGit = "True";
+                            preinstalledGitVersion = processStartInfoOutput.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2];
+                        }
+                    }
+                    catch (Exception)
+                    {
+                    }
+
+                    Dictionary<string, string> telemetryData = new Dictionary<string, string>
+                    {
+                        { "JobId", jobContext.Variables.System_JobId.ToString() },
+                        { "PlanId", jobContext.Variables.Get(Constants.Variables.System.PlanId) },
+                        { "HasPreinstalledGit", hasPreinstalledGit },
+                        { "PreinstalledGitVersion", preinstalledGitVersion }
+                    };
+
+                    try
+                    {
+                        var cmd = new Command("telemetry", "publish");
+                        cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
+                        cmd.Properties.Add("area", "PipelinesTasks");
+                        cmd.Properties.Add("feature", "WindowsGitTelemetry");
+
+                        var publishTelemetryCmd = new TelemetryCommandExtension();
+                        publishTelemetryCmd.Initialize(HostContext);
+                        publishTelemetryCmd.ProcessCommand(jobContext, cmd);
+                    }
+                    catch (Exception ex) when (ex is FormatException || ex is ArgumentNullException || ex is NullReferenceException)
+                    {
+                        jobContext.Debug($"ExecutionHandler telemetry wasn't published, because one of the variables has unexpected value.");
+                        jobContext.Debug(ex.ToString());
+                    }
                 }
 
                 // trace out all steps

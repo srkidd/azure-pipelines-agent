@@ -651,7 +651,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 var useNode10 = AgentKnobs.UseNode10.GetValue(ExecutionContext).AsString();
                 var expectedExecutionHandler = (taskDefinition.Data.Execution?.All != null) ? string.Join(", ", taskDefinition.Data.Execution.All) : "";
                 var systemVersion = PlatformUtil.GetSystemVersion();
-                var isSelfHosted = ExecutionContext.Variables.Get(Constants.Variables.Agent.IsSelfHosted);
 
                 Dictionary<string, string> telemetryData = new Dictionary<string, string>
                 {
@@ -668,43 +667,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     { "PlanId", ExecutionContext.Variables.Get(Constants.Variables.System.PlanId)},
                     { "AgentName", ExecutionContext.Variables.Get(Constants.Variables.Agent.Name)},
                     { "MachineName", ExecutionContext.Variables.Get(Constants.Variables.Agent.MachineName)},
-                    { "IsSelfHosted", isSelfHosted},
+                    { "IsSelfHosted", ExecutionContext.Variables.Get(Constants.Variables.Agent.IsSelfHosted)},
                     { "IsAzureVM", ExecutionContext.Variables.Get(Constants.Variables.System.IsAzureVM)},
                     { "IsDockerContainer", ExecutionContext.Variables.Get(Constants.Variables.System.IsDockerContainer)}
                 };
-
-                if (PlatformUtil.RunningOnWindows && isSelfHosted == "1")
-                {
-                    var hasPreinstalledGit = "False";
-                    var preinstalledGitVersion = "";
-
-                    try
-                    {
-                        ProcessStartInfo processStartInfo = new ProcessStartInfo();
-
-                        var processStartInfoOutput = "";
-                        processStartInfo.FileName = "git";
-                        processStartInfo.Arguments = "--version";
-                        processStartInfo.RedirectStandardOutput = true;
-
-                        using (var process = Process.Start(processStartInfo))
-                        {
-                            processStartInfoOutput = process.StandardOutput.ReadToEnd();
-                        }
-
-                        if (processStartInfoOutput.Length != 0)
-                        {
-                            hasPreinstalledGit = "True";
-                            preinstalledGitVersion = processStartInfoOutput.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2];
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
-
-                    telemetryData.Add("HasPreinstalledGit", hasPreinstalledGit);
-                    telemetryData.Add("PreinstalledGitVersion", preinstalledGitVersion);
-                }
 
                 var cmd = new Command("telemetry", "publish");
                 cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
