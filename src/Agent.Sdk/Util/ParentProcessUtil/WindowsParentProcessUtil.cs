@@ -4,30 +4,40 @@ using System.Linq;
 
 namespace Agent.Sdk.Util.ParentProcessUtil
 {
-    public enum ParentProcessType { Other, PwshCore, WindowsPowershell };
     public static class WindowsParentProcessUtil
     {
-        public static bool IsAgentRunningInPowerShell(bool useInteropToFindParentProcess)
+        public static (bool, Dictionary<string, string>) IsAgentRunningInPowerShell(bool useInteropToFindParentProcess)
         {
-            var processList = GetProcessList(Process.GetCurrentProcess(), useInteropToFindParentProcess);
+            var processList = new List<Process>();
 
-            var isProcessRunningInPowerShell = processList.Exists(process =>
-                GetParentProcessType(process) == ParentProcessType.PwshCore
-                    || GetParentProcessType(process) == ParentProcessType.WindowsPowershell);
+            try
+            {
+                (processList, var telemetry) = GetProcessList(Process.GetCurrentProcess(), useInteropToFindParentProcess);
 
-            return isProcessRunningInPowerShell;
+                var isProcessRunningInPowerShell = processList.Exists(IsProcessPowershell);
+
+                return (isProcessRunningInPowerShell, telemetry);
+            }
+            finally
+            {
+                foreach (var process in processList)
+                {
+                    process.Dispose();
+                }
+            }
         }
 
-        private static List<Process> GetProcessList(Process process, bool useInterop)
+        internal static (List<Process>, Dictionary<string, string>) GetProcessList(Process process, bool useInterop)
         {
+            var telemetry = new Dictionary<string, string>();
             var processList = new List<Process>() { process };
-            int maxSearchDepthForProcess = 10;
+            const int maxSearchDepthForProcess = 10;
 
             while (processList.Count < maxSearchDepthForProcess)
             {
                 Process lastProcess = processList.Last();
 
-                (Process parentProcess, Dictionary<string, string> telemetry) = useInterop
+                (Process parentProcess, telemetry) = useInterop
                     ? InteropParentProcessFinder.GetParentProcess(lastProcess)
                     : WmiParentProcessFinder.GetParentProcess(lastProcess);
 
@@ -39,32 +49,21 @@ namespace Agent.Sdk.Util.ParentProcessUtil
                 processList.Add(parentProcess);
             }
 
-            return processList;
+            return (processList, telemetry);
         }
 
-        private static ParentProcessType GetParentProcessType(Process process)
+        private static bool IsProcessPowershell(Process process)
         {
             try
             {
                 // Getting process name can throw.
                 string name = process.ProcessName.ToLower();
 
-                if (name == "pwsh")
-                {
-                    return ParentProcessType.PwshCore;
-                }
-                if (name == "powershell")
-                {
-                    return ParentProcessType.WindowsPowershell;
-                }
-                else
-                {
-                    return ParentProcessType.Other;
-                }
+                return name == "pwsh" || name == "powershell";
             }
             catch
             {
-                return ParentProcessType.Other;
+                return false;
             }
         }
     }
