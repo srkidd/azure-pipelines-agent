@@ -27,7 +27,7 @@ namespace Agent.Sdk.Util.ParentProcessUtil
     {
         private const string ParentProcessState = nameof(ParentProcessState);
 
-        private static int? GetParentProcessId(IntPtr handle)
+        internal static int? GetParentProcessId(IntPtr handle)
         {
             Interop.PROCESS_BASIC_INFORMATION pbi;
             int returnLength;
@@ -75,6 +75,11 @@ namespace Agent.Sdk.Util.ParentProcessUtil
             catch (Win32Exception)
             {
                 telemetry.Add(ParentProcessState, "Win32 exception: could not retrieve parent process using interop");
+                return (null, telemetry);
+            }
+            catch (Exception)
+            {
+                telemetry.Add(ParentProcessState, "Exception occurred while retrieving parent process using interop");
                 return (null, telemetry);
             }
         }
