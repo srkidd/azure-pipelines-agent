@@ -304,6 +304,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         var telemetryData = new Dictionary<string, string>
                         {
+                            { "JobId", jobContext.Variables.System_JobId.ToString() },
                             { "JobResult", TaskResult.Failed.ToString() },
                             { "TracePoint", "111"},
                         };
@@ -664,8 +665,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             try
             {
-                telemetryData.Add("JobId", context.Variables.System_JobId.ToString());
-
                 var cmd = new Command("telemetry", "publish");
                 cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
                 cmd.Properties.Add("area", "PipelinesTasks");
