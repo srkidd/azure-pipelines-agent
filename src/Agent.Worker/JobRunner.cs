@@ -361,6 +361,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         }
                         catch (Exception)
                         {
+                            // Ignore all exceptions
                         }
 
                         var telemetryData = new Dictionary<string, string>
