@@ -334,37 +334,42 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     var hasPreinstalledGit = "False";
                     var preinstalledGitVersion = "";
 
-                    try
+                    _ = Task.Run(() =>
                     {
-                        ProcessStartInfo processStartInfo = new ProcessStartInfo();
-
-                        var processStartInfoOutput = "";
-                        processStartInfo.FileName = "git";
-                        processStartInfo.Arguments = "--version";
-                        processStartInfo.RedirectStandardOutput = true;
-
-                        using (var process = Process.Start(processStartInfo))
+                        try
                         {
-                            processStartInfoOutput = process.StandardOutput.ReadToEnd();
+                            ProcessStartInfo processStartInfo = new ProcessStartInfo();
+
+                            string path = Environment.GetEnvironmentVariable("PATH");
+
+                            var processStartInfoOutput = "";
+                            processStartInfo.FileName = "git";
+                            processStartInfo.Arguments = "--version";
+                            processStartInfo.RedirectStandardOutput = true;
+
+                            using (var process = Process.Start(processStartInfo))
+                            {
+                                processStartInfoOutput = process.StandardOutput.ReadToEnd();
+                            }
+
+                            if (processStartInfoOutput.Length != 0)
+                            {
+                                hasPreinstalledGit = "True";
+                                preinstalledGitVersion = processStartInfoOutput.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim(Environment.NewLine.ToCharArray());
+                            }
+                        }
+                        catch (Exception)
+                        {
                         }
 
-                        if (processStartInfoOutput.Length != 0)
+                        var telemetryData = new Dictionary<string, string>
                         {
-                            hasPreinstalledGit = "True";
-                            preinstalledGitVersion = processStartInfoOutput.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim(Environment.NewLine.ToCharArray());
-                        }
-                    }
-                    catch (Exception)
-                    {
-                    }
+                            { "HasPreinstalledGit", hasPreinstalledGit },
+                            { "PreinstalledGitVersion", preinstalledGitVersion }
+                        };
 
-                    var telemetryData = new Dictionary<string, string>
-                    {
-                        { "HasPreinstalledGit", hasPreinstalledGit },
-                        { "PreinstalledGitVersion", preinstalledGitVersion }
-                    };
-
-                    PublishTelemetry(jobContext, telemetryData, "WindowsGitTelemetry");
+                        PublishTelemetry(jobContext, telemetryData, "WindowsGitTelemetry");
+                    });
                 }
 
                 // trace out all steps
