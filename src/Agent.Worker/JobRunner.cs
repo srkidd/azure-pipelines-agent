@@ -332,11 +332,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 if (PlatformUtil.RunningOnWindows && !settings.IsMSHosted)
                 {
-                    var hasPreinstalledGit = "False";
-                    var preinstalledGitVersion = "";
-
                     _ = Task.Run(() =>
                     {
+                        var hasPreinstalledGit = "False";
+                        var preinstalledGitVersion = "";
+
                         try
                         {
                             ProcessStartInfo processStartInfo = new ProcessStartInfo();
