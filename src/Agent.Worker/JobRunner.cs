@@ -303,7 +303,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     if (AgentKnobs.FailJobWhenAgentDies.GetValue(jobContext).AsBoolean() &&
                         HostContext.AgentShutdownToken.IsCancellationRequested)
                     {
-                        PublishTelemetry(jobContext, TaskResult.Failed.ToString(), "111");
+                        var telemetryData = new Dictionary<string, string>
+                        {
+                            { "JobResult", TaskResult.Failed.ToString() },
+                            { "TracePoint", "111"},
+                        };
+
+                        PublishTelemetry(jobContext, telemetryData, "AgentShutdown");
                         Trace.Error($"Job is canceled during initialize.");
                         Trace.Error($"Caught exception: {ex}");
                         return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
@@ -346,37 +352,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         if (processStartInfoOutput.Length != 0)
                         {
                             hasPreinstalledGit = "True";
-                            preinstalledGitVersion = processStartInfoOutput.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2];
+                            preinstalledGitVersion = processStartInfoOutput.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim(Environment.NewLine.ToCharArray());
                         }
                     }
                     catch (Exception)
                     {
                     }
 
-                    Dictionary<string, string> telemetryData = new Dictionary<string, string>
+                    var telemetryData = new Dictionary<string, string>
                     {
-                        { "JobId", jobContext.Variables.System_JobId.ToString() },
-                        { "PlanId", jobContext.Variables.Get(Constants.Variables.System.PlanId) },
                         { "HasPreinstalledGit", hasPreinstalledGit },
                         { "PreinstalledGitVersion", preinstalledGitVersion }
                     };
 
-                    try
-                    {
-                        var cmd = new Command("telemetry", "publish");
-                        cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
-                        cmd.Properties.Add("area", "PipelinesTasks");
-                        cmd.Properties.Add("feature", "WindowsGitTelemetry");
-
-                        var publishTelemetryCmd = new TelemetryCommandExtension();
-                        publishTelemetryCmd.Initialize(HostContext);
-                        publishTelemetryCmd.ProcessCommand(jobContext, cmd);
-                    }
-                    catch (Exception ex) when (ex is FormatException || ex is ArgumentNullException || ex is NullReferenceException)
-                    {
-                        jobContext.Debug($"ExecutionHandler telemetry wasn't published, because one of the variables has unexpected value.");
-                        jobContext.Debug(ex.ToString());
-                    }
+                    PublishTelemetry(jobContext, telemetryData, "WindowsGitTelemetry");
                 }
 
                 // trace out all steps
@@ -667,20 +656,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        private void PublishTelemetry(IExecutionContext context, string Task_Result, string TracePoint)
+        private void PublishTelemetry(IExecutionContext context, Dictionary<string, string> telemetryData, String feature)
         {
             try
             {
-                var telemetryData = new Dictionary<string, string>
-                {
-                    { "JobId", context.Variables.System_JobId.ToString()},
-                    { "JobResult", Task_Result },
-                    { "TracePoint", TracePoint},
-                };
+                telemetryData.Add("JobId", context.Variables.System_JobId.ToString());
+
                 var cmd = new Command("telemetry", "publish");
                 cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
                 cmd.Properties.Add("area", "PipelinesTasks");
-                cmd.Properties.Add("feature", "AgentShutdown");
+                cmd.Properties.Add("feature", feature);
 
                 var publishTelemetryCmd = new TelemetryCommandExtension();
                 publishTelemetryCmd.Initialize(HostContext);
