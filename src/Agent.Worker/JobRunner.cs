@@ -21,7 +21,6 @@ using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
 using System.Diagnostics;
-using BuildXL.Cache.ContentStore.UtilitiesCore.Internal;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
