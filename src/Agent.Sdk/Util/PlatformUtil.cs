@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Agent.Sdk.Knob;
@@ -94,35 +95,35 @@ namespace Agent.Sdk
             }
         }
 
-        public static bool RunningOnAppleSiliconAsX64
+        public static async Task<bool> IsRunningOnAppleSiliconAsX64Async(CancellationToken cancellationToken)
         {
-            get
+            if (RunningOnMacOS)
             {
-                if (RunningOnMacOS)
+                try
                 {
-                    try
+                    // See https://stackoverflow.com/questions/65259300/detect-apple-silicon-from-command-line
+                    using (var invoker = new ProcessInvoker(new NullTraceWriter()))
                     {
-                        // See https://stackoverflow.com/questions/65259300/detect-apple-silicon-from-command-line
-                        ProcessStartInfo psi = new ProcessStartInfo
-                        {
-                            FileName = "/bin/sh",
-                            Arguments = "-c \"sysctl -n machdep.cpu.brand_string\"",
-                            RedirectStandardOutput = true,
-                            UseShellExecute = false
-                        };
+                        var stdout = new StringBuilder();
+                        invoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs e) => stdout.Append(e.Data);
+                        await invoker.ExecuteAsync(
+                            string.Empty,
+                            "/bin/sh",
+                            "-c \"sysctl -n machdep.cpu.brand_string\"",
+                            null,
+                            cancellationToken);
 
-                        var process = Process.Start(psi);
-                        var cpuBrand = process.StandardOutput.ReadToEnd();
+                        var cpuBrand = stdout.ToString();
                         return cpuBrand.Contains("Apple") && RuntimeInformation.ProcessArchitecture != Architecture.Arm;
                     }
-                    catch
-                    {
-                        return false;
-                    }
                 }
-
-                return false;
+                catch
+                {
+                    return false;
+                }
             }
+
+            return false;
         }
 
         public static bool RunningOnRHEL6
