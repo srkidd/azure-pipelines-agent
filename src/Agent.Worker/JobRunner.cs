@@ -370,7 +370,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             { "PreinstalledGitVersion", preinstalledGitVersion }
                         };
 
-                        PublishTelemetry(jobContext, telemetryData, "WindowsGitTelemetry");
+                        if (jobContext != null)
+                        {
+                            PublishTelemetry(jobContext, telemetryData, "WindowsGitTelemetry");
+                        }
                     });
                 }
 
