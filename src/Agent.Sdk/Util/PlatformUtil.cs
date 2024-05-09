@@ -114,7 +114,7 @@ namespace Agent.Sdk
                             cancellationToken);
 
                         var cpuBrand = stdout.ToString();
-                        return cpuBrand.Contains("Apple") && RuntimeInformation.ProcessArchitecture != Architecture.Arm;
+                        return cpuBrand.Contains("Apple") && RuntimeInformation.ProcessArchitecture != Architecture.Arm64;
                     }
                 }
                 catch
