@@ -341,8 +341,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         {
                             ProcessStartInfo processStartInfo = new ProcessStartInfo();
 
-                            string path = Environment.GetEnvironmentVariable("PATH");
-
                             var processStartInfoOutput = "";
                             processStartInfo.FileName = "git";
                             processStartInfo.Arguments = "--version";
