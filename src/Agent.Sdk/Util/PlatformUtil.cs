@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -102,20 +101,9 @@ namespace Agent.Sdk
                 try
                 {
                     // See https://stackoverflow.com/questions/65259300/detect-apple-silicon-from-command-line
-                    using (var invoker = new ProcessInvoker(new NullTraceWriter()))
-                    {
-                        var stdout = new StringBuilder();
-                        invoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs e) => stdout.Append(e.Data);
-                        await invoker.ExecuteAsync(
-                            string.Empty,
-                            "/bin/sh",
-                            "-c \"sysctl -n machdep.cpu.brand_string\"",
-                            null,
-                            cancellationToken);
-
-                        var cpuBrand = stdout.ToString();
-                        return cpuBrand.Contains("Apple") && RuntimeInformation.ProcessArchitecture != Architecture.Arm64;
-                    }
+                    var cpuBrand = await ExecuteShCommand("sysctl -n machdep.cpu.brand_string", cancellationToken);
+                    var processArchitecture = await ExecuteShCommand("uname -m", cancellationToken);
+                    return cpuBrand.Contains("Apple") && processArchitecture.Contains("x86_64");
                 }
                 catch
                 {
@@ -124,6 +112,23 @@ namespace Agent.Sdk
             }
 
             return false;
+        }
+
+        private static async Task<string> ExecuteShCommand(string command, CancellationToken cancellationToken)
+        {
+            using (var invoker = new ProcessInvoker(new NullTraceWriter()))
+            {
+                var stdout = new StringBuilder();
+                invoker.OutputDataReceived += (object sender, ProcessDataReceivedEventArgs e) => stdout.Append(e.Data);
+                await invoker.ExecuteAsync(
+                    string.Empty,
+                    "/bin/sh",
+                    $"-c \"{command}\"",
+                    null,
+                    cancellationToken);
+
+                return stdout.ToString();
+            }
         }
 
         public static bool RunningOnRHEL6
