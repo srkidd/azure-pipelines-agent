@@ -6,7 +6,7 @@ namespace Agent.Sdk.Util.ParentProcessUtil
 {
     public static class WindowsParentProcessUtil
     {
-        public static (bool, Dictionary<string, string>) IsAgentRunningInPowerShell(bool useInteropToFindParentProcess)
+        public static (bool, Dictionary<string, string>) IsAgentRunningInPowerShellOrCmd(bool useInteropToFindParentProcess)
         {
             var processList = new List<Process>();
 
@@ -14,7 +14,7 @@ namespace Agent.Sdk.Util.ParentProcessUtil
             {
                 (processList, var telemetry) = GetProcessList(Process.GetCurrentProcess(), useInteropToFindParentProcess);
 
-                var isProcessRunningInPowerShell = processList.Exists(IsProcessPowershell);
+                var isProcessRunningInPowerShell = processList.Exists(IsProcessPowershellOrCmd);
 
                 return (isProcessRunningInPowerShell, telemetry);
             }
@@ -52,14 +52,14 @@ namespace Agent.Sdk.Util.ParentProcessUtil
             return (processList, telemetry);
         }
 
-        private static bool IsProcessPowershell(Process process)
+        private static bool IsProcessPowershellOrCmd(Process process)
         {
             try
             {
                 // Getting process name can throw.
                 string name = process.ProcessName.ToLower();
 
-                return name == "pwsh" || name == "powershell";
+                return name == "pwsh" || name == "powershell" || name == "cmd";
             }
             catch
             {

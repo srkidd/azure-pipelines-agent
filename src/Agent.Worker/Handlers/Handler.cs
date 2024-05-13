@@ -302,18 +302,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         }
 
         [SupportedOSPlatform("windows")]
-        private bool IsAgentRunningInPowerShell()
+        private bool IsAgentRunningInPowerShellOrCmd()
         {
-            bool checkOncePerJobKnob = AgentKnobs.CheckIfAgentIsRunningInPowershellOncePerJob.GetValue(ExecutionContext).AsBoolean();
+            bool checkOncePerJobKnob = AgentKnobs.CheckIfAgentIsRunningInPowershellOrCmdOncePerJob.GetValue(ExecutionContext).AsBoolean();
 
             if (checkOncePerJobKnob)
             {
-                return ExecutionContext.Variables.Get(Constants.Variables.System.IsRunningInPowershell) == "1";
+                return ExecutionContext.Variables.Get(Constants.Variables.System.IsRunningInPowershellOrCmd) == "1";
             }
 
             bool useInteropKnob = AgentKnobs.UseInteropToFindParentProcess.GetValue(ExecutionContext).AsBoolean();
 
-            var (isRunningInPowerShell, telemetry) = WindowsParentProcessUtil.IsAgentRunningInPowerShell(useInteropKnob);
+            var (isRunningInPowerShell, telemetry) = WindowsParentProcessUtil.IsAgentRunningInPowerShellOrCmd(useInteropKnob);
             PublishTelemetry(telemetry);
 
             return isRunningInPowerShell;
@@ -326,18 +326,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 return;
             }
-            
+
             bool modifyPsModulePathKnob = AgentKnobs.ModifyPsModulePath.GetValue(ExecutionContext).AsBoolean();
             bool cleanupPsModulePathKnob = AgentKnobs.CleanupPSModules.GetValue(ExecutionContext).AsBoolean();
-            bool isRunningInPowershell = false;
+            bool isRunningInPowershellOrCmd = false;
             const string PSModulePath = nameof(PSModulePath);
 
             if (modifyPsModulePathKnob || cleanupPsModulePathKnob)
             {
-                isRunningInPowershell = IsAgentRunningInPowerShell();
+                isRunningInPowershellOrCmd = IsAgentRunningInPowerShellOrCmd();
             }
 
-            if (modifyPsModulePathKnob && isRunningInPowershell)
+            if (modifyPsModulePathKnob && isRunningInPowershellOrCmd)
             {
                 if (Task.Name.ToLower() == "powershell")
                 {
@@ -352,7 +352,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                 }
             }
 
-            if (cleanupPsModulePathKnob && isRunningInPowershell)
+            if (cleanupPsModulePathKnob && isRunningInPowershellOrCmd)
             {
                 AddEnvironmentVariable(PSModulePath, "");
                 Trace.Info("PSModulePath is removed from environment since agent is running on Windows and in PowerShell.");

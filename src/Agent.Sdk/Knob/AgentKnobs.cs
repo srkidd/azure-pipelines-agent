@@ -706,9 +706,9 @@ namespace Agent.Sdk.Knob
             new PipelineFeatureSource("Rosetta2Warning"),
             new BuiltInDefaultKnobSource("false"));
 
-        public static readonly Knob CheckIfAgentIsRunningInPowershellOncePerJob = new Knob(
-            nameof(CheckIfAgentIsRunningInPowershellOncePerJob),
-            "Checks if the agent process is started from Powershell.",
+        public static readonly Knob CheckIfAgentIsRunningInPowershellOrCmdOncePerJob = new Knob(
+            nameof(CheckIfAgentIsRunningInPowershellOrCmdOncePerJob),
+            "Checks if the agent process is started from Powershell or Cmd.",
             new RuntimeKnobSource("AZP_AGENT_CHECK_IF_AGENT_IS_RUNNING_IN_POWERSHELL"),
             new EnvironmentKnobSource("AZP_AGENT_CHECK_IF_AGENT_IS_RUNNING_IN_POWERSHELL"),
             new BuiltInDefaultKnobSource("false"));
