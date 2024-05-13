@@ -326,10 +326,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 return;
             }
-
+            
             bool modifyPsModulePathKnob = AgentKnobs.ModifyPsModulePath.GetValue(ExecutionContext).AsBoolean();
             bool cleanupPsModulePathKnob = AgentKnobs.CleanupPSModules.GetValue(ExecutionContext).AsBoolean();
             bool isRunningInPowershell = false;
+            const string PSModulePath = nameof(PSModulePath);
 
             if (modifyPsModulePathKnob || cleanupPsModulePathKnob)
             {
@@ -340,17 +341,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 if (Task.Name.ToLower() == "powershell")
                 {
-                    string currentPsModulePath = System.Environment.GetEnvironmentVariable("PsModulePath");
+                    string currentPsModulePath = Environment.TryGetValue(PSModulePath, out var psModulePath)
+                        ? psModulePath
+                        : System.Environment.GetEnvironmentVariable(PSModulePath);
+
                     string newPsModulePath = PsModulePathUtil.GetPsModulePathWithoutPowershellCoreLocations(currentPsModulePath);
 
-                    AddEnvironmentVariable("PSModulePath", newPsModulePath);
+                    AddEnvironmentVariable(PSModulePath, newPsModulePath);
                     Trace.Info("PSModulePath is modified to remove locations specific to Powershell Core.");
                 }
             }
 
             if (cleanupPsModulePathKnob && isRunningInPowershell)
             {
-                AddEnvironmentVariable("PSModulePath", "");
+                AddEnvironmentVariable(PSModulePath, "");
                 Trace.Info("PSModulePath is removed from environment since agent is running on Windows and in PowerShell.");
             }
         }
