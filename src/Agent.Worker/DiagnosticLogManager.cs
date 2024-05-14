@@ -39,7 +39,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     //          support.zip
     public sealed class DiagnosticLogManager : AgentService, IDiagnosticLogManager
     {
-        private const int FiveSecondsInMs = 5000;
+        private const int DefaultTimeoutIncreaseInMilliseconds = 10000;
 
         public async Task UploadDiagnosticLogsAsync(IExecutionContext executionContext,
                                          Pipelines.AgentJobRequestMessage message,
@@ -378,7 +378,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             killProcessOnCancel: false,
                             cancellationToken: cts.Token);
                     },
-                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + DefaultTimeoutIncreaseInMilliseconds,
                     (exception) =>
                     {
                         if (exception is OperationCanceledException)
@@ -601,7 +601,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             killProcessOnCancel: false,
                             cancellationToken: cts.Token);
                     },
-                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + DefaultTimeoutIncreaseInMilliseconds,
                     (exception) =>
                     {
                         if (exception is OperationCanceledException)
@@ -659,7 +659,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             killProcessOnCancel: false,
                             cancellationToken: cts.Token);
                     },
-                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + DefaultTimeoutIncreaseInMilliseconds,
                     (exception) =>
                     {
                         if (exception is OperationCanceledException)
@@ -735,7 +735,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             killProcessOnCancel: false,
                             cancellationToken: cts.Token);
                     },
-                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
+                    (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + DefaultTimeoutIncreaseInMilliseconds,
                     (exception) =>
                     {
                         if (exception is OperationCanceledException)
@@ -785,7 +785,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         killProcessOnCancel: false,
                         cancellationToken: cts.Token);
                 },
-                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
+                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + DefaultTimeoutIncreaseInMilliseconds,
                 (exception) =>
                 {
                     if (exception is OperationCanceledException)
@@ -831,7 +831,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                         killProcessOnCancel: false,
                         cancellationToken: cts.Token);
                 },
-                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + FiveSecondsInMs,
+                (retryCounter) => RetryHelper.ExponentialDelay(retryCounter) + DefaultTimeoutIncreaseInMilliseconds,
                 (exception) =>
                 {
                     if (exception is OperationCanceledException)
