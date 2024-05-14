@@ -112,9 +112,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 jobContext.Section(StringUtil.Loc("StepStarting", message.JobDisplayName));
 
                 //Start Resource Diagnostics if enabled in the job message
-                jobContext.Variables.TryGetValue("system.debug", out var systemDebug);
-
-                if (string.Equals(systemDebug, "true", StringComparison.OrdinalIgnoreCase))
+                if (jobContext.WriteDebug)
                 {
                     resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
                     resourceDiagnosticManager.Setup(jobContext);
