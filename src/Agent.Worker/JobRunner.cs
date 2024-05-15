@@ -20,7 +20,6 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
-using System.Diagnostics;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
@@ -302,14 +301,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     if (AgentKnobs.FailJobWhenAgentDies.GetValue(jobContext).AsBoolean() &&
                         HostContext.AgentShutdownToken.IsCancellationRequested)
                     {
-                        var telemetryData = new Dictionary<string, string>
+                        PublishTelemetry(context: jobContext, area: "PipelinesTasks", feature: "AgentShutdown", properties: new Dictionary<string, string>
                         {
                             { "JobId", jobContext.Variables.System_JobId.ToString() },
                             { "JobResult", TaskResult.Failed.ToString() },
                             { "TracePoint", "111"},
-                        };
+                        });
 
-                        PublishTelemetry(jobContext, telemetryData, "AgentShutdown");
                         Trace.Error($"Job is canceled during initialize.");
                         Trace.Error($"Caught exception: {ex}");
                         return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
@@ -330,48 +328,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
                 }
 
+                // Send telemetry in case if git is preinstalled on windows platform
                 if (PlatformUtil.RunningOnWindows && !settings.IsMSHosted)
                 {
-                    _ = Task.Run(() =>
+                    var hasPreinstalledGit = false;
+
+                    var filePath = WhichUtil.Which("git.exe", require: false, trace: null);
+                    if (!string.IsNullOrEmpty(filePath))
                     {
-                        var hasPreinstalledGit = "False";
-                        var preinstalledGitVersion = "";
+                        hasPreinstalledGit = true;
+                    }
 
-                        try
-                        {
-                            ProcessStartInfo processStartInfo = new ProcessStartInfo();
-
-                            var processStartInfoOutput = "";
-                            processStartInfo.FileName = "git";
-                            processStartInfo.Arguments = "--version";
-                            processStartInfo.RedirectStandardOutput = true;
-
-                            using (var process = Process.Start(processStartInfo))
-                            {
-                                processStartInfoOutput = process.StandardOutput.ReadToEnd();
-                            }
-
-                            if (processStartInfoOutput.Length != 0)
-                            {
-                                hasPreinstalledGit = "True";
-                                preinstalledGitVersion = processStartInfoOutput.Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim(Environment.NewLine.ToCharArray());
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            // Ignore all exceptions
-                        }
-
-                        var telemetryData = new Dictionary<string, string>
-                        {
-                            { "HasPreinstalledGit", hasPreinstalledGit },
-                            { "PreinstalledGitVersion", preinstalledGitVersion }
-                        };
-
-                        if (jobContext != null)
-                        {
-                            PublishTelemetry(jobContext, telemetryData, "WindowsGitTelemetry");
-                        }
+                    PublishTelemetry(context: jobContext, area: "AzurePipelinesAgent", feature: "WindowsGitTelemetry", properties: new Dictionary<string, string>
+                    {
+                        { "hasPreinstalledGit", hasPreinstalledGit.ToString() }
                     });
                 }
 
@@ -663,13 +633,13 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        private void PublishTelemetry(IExecutionContext context, Dictionary<string, string> telemetryData, String feature)
+        private void PublishTelemetry(IExecutionContext context, string area, String feature, Dictionary<string, string> properties)
         {
             try
             {
                 var cmd = new Command("telemetry", "publish");
-                cmd.Data = JsonConvert.SerializeObject(telemetryData, Formatting.None);
-                cmd.Properties.Add("area", "PipelinesTasks");
+                cmd.Data = JsonConvert.SerializeObject(properties, Formatting.None);
+                cmd.Properties.Add("area", area);
                 cmd.Properties.Add("feature", feature);
 
                 var publishTelemetryCmd = new TelemetryCommandExtension();
