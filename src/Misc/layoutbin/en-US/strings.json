@@ -23,6 +23,7 @@
   "agentRootFolderCheckError": "Unable to check access rules of the agent root folder. Please examine the log for more details.",
   "agentRootFolderInsecure": "Security warning! The group {0} has access to write/modify the agent folder. Please examine the log for more details.",
   "AgentRunningBehindProxy": "Agent is running behind proxy server: '{0}'",
+  "AgentRunningInPowerShellCore": "Agent is running in PowerShell Core. Please take note that if you are going to use Windows PowerShell tasks in your pipeline you may experience errors due to the use of PowerShell Core module locations in the PSModulePath environment variable. See for more details: https://aka.ms/azp-agent-run-docs",
   "AgentVersion": "Current agent version: '{0}'",
   "AgentWithSameNameAlreadyExistInPool": "Pool {0} already contains an agent with name {1}.",
   "AllowContainerUserRunDocker": "Allow user '{0}' run any docker command without SUDO.",
