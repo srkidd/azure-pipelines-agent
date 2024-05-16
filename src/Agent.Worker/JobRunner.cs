@@ -331,7 +331,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Send telemetry in case if git is preinstalled on windows platform
                 if (PlatformUtil.RunningOnWindows && !settings.IsMSHosted)
                 {
-                    _ = Task.Run( () =>
+                    var windowsPreinstalledGitCommand = jobContext.GetHostContext().GetService<IAsyncCommandContext>();
+                    windowsPreinstalledGitCommand.InitializeCommandContext(jobContext, "WindowsPreinstalledGitTelemetry");
+                    windowsPreinstalledGitCommand.Task = Task.Run(() =>
                     {
                         var hasPreinstalledGit = false;
 
@@ -346,6 +348,8 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                             { "hasPreinstalledGit", hasPreinstalledGit.ToString() }
                         });
                     });
+
+                    jobContext.AsyncCommands.Add(windowsPreinstalledGitCommand);
                 }
 
                 // trace out all steps
