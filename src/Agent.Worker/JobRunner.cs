@@ -331,17 +331,20 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 // Send telemetry in case if git is preinstalled on windows platform
                 if (PlatformUtil.RunningOnWindows && !settings.IsMSHosted)
                 {
-                    var hasPreinstalledGit = false;
-
-                    var filePath = WhichUtil.Which("git.exe", require: false, trace: null);
-                    if (!string.IsNullOrEmpty(filePath))
+                    _ = Task.Run( () =>
                     {
-                        hasPreinstalledGit = true;
-                    }
+                        var hasPreinstalledGit = false;
 
-                    PublishTelemetry(context: jobContext, area: "AzurePipelinesAgent", feature: "WindowsGitTelemetry", properties: new Dictionary<string, string>
-                    {
-                        { "hasPreinstalledGit", hasPreinstalledGit.ToString() }
+                        var filePath = WhichUtil.Which("git.exe", require: false, trace: null);
+                        if (!string.IsNullOrEmpty(filePath))
+                        {
+                            hasPreinstalledGit = true;
+                        }
+
+                        PublishTelemetry(context: jobContext, area: "PipelinesTasks", feature: "WindowsGitTelemetry", properties: new Dictionary<string, string>
+                        {
+                            { "hasPreinstalledGit", hasPreinstalledGit.ToString() }
+                        });
                     });
                 }
 
