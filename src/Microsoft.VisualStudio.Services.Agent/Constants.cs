@@ -495,7 +495,6 @@ namespace Microsoft.VisualStudio.Services.Agent
                 public static readonly string HostType = "system.hosttype";
                 public static readonly string IsAzureVM = "system.isazurevm";
                 public static readonly string IsDockerContainer = "system.isdockercontainer";
-                public static readonly string IsRunningInPowershellOrCmd = "system.isrunninginpowershellorcmd";
                 public static readonly string JobAttempt = "system.jobAttempt";
                 public static readonly string JobDisplayName = "system.jobDisplayName";
                 public static readonly string JobId = "system.jobId";
@@ -654,7 +653,6 @@ namespace Microsoft.VisualStudio.Services.Agent
                 System.HostType,
                 System.IsAzureVM,
                 System.IsDockerContainer,
-                System.IsRunningInPowershellOrCmd,
                 System.JobAttempt,
                 System.JobDisplayName,
                 System.JobId,

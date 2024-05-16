@@ -190,13 +190,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 dockerDetectCommand.Task = Task.Run(() => jobContext.SetVariable(Constants.Variables.System.IsDockerContainer, PlatformUtil.DetectDockerContainer() ? "1" : "0"));
                 jobContext.AsyncCommands.Add(dockerDetectCommand);
 
-                if (PlatformUtil.RunningOnWindows && AgentKnobs.CheckIfAgentIsRunningInPowershellOrCmdOncePerJob.GetValue(jobContext).AsBoolean())
-                {
-                    var useInteropKnob = AgentKnobs.UseInteropToFindParentProcess.GetValue(jobContext).AsBoolean();
-                    var (isRunningInPowershellOrCmd, _) = WindowsParentProcessUtil.IsAgentRunningInPowerShellOrCmd(useInteropKnob);
-                    jobContext.SetVariable(Constants.Variables.System.IsRunningInPowershellOrCmd, isRunningInPowershellOrCmd ? "1" : "0");
-                }
-
                 string toolsDirectory = HostContext.GetDirectory(WellKnownDirectory.Tools);
                 Directory.CreateDirectory(toolsDirectory);
                 jobContext.SetVariable(Constants.Variables.Agent.ToolsDirectory, toolsDirectory, isFilePath: true);
