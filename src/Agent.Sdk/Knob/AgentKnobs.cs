@@ -681,7 +681,6 @@ namespace Agent.Sdk.Knob
         public static readonly Knob UseInteropToFindParentProcess = new Knob(
             nameof(UseInteropToFindParentProcess),
             "Uses native Windows function to find parent processes of a process.",
-            new RuntimeKnobSource("AZP_AGENT_USE_INTEROP_TO_FIND_PARENT_PROCESS"),
             new EnvironmentKnobSource("AZP_AGENT_USE_INTEROP_TO_FIND_PARENT_PROCESS"),
             new BuiltInDefaultKnobSource("false"));
 
@@ -706,18 +705,10 @@ namespace Agent.Sdk.Knob
             new PipelineFeatureSource("Rosetta2Warning"),
             new BuiltInDefaultKnobSource("false"));
 
-        public static readonly Knob CheckIfAgentIsRunningInPowershellOrCmdOncePerJob = new Knob(
-            nameof(CheckIfAgentIsRunningInPowershellOrCmdOncePerJob),
-            "Checks if the agent process is started from Powershell or Cmd.",
-            new RuntimeKnobSource("AZP_AGENT_CHECK_IF_AGENT_IS_RUNNING_IN_POWERSHELL"),
+        public static readonly Knob CheckIfAgentIsRunningInPowershell = new Knob(
+            nameof(CheckIfAgentIsRunningInPowershell),
+            "Checks if the agent process is started from PowerShell.",
             new EnvironmentKnobSource("AZP_AGENT_CHECK_IF_AGENT_IS_RUNNING_IN_POWERSHELL"),
-            new BuiltInDefaultKnobSource("false"));
-
-        public static readonly Knob ModifyPsModulePath = new Knob(
-            nameof(ModifyPsModulePath),
-            "Removes Windows Powershell module paths from the PSModulePath env variable if the agent process is started from Powershell Core.",
-            new RuntimeKnobSource("AZP_AGENT_MODIFY_PSMODULEPATH"),
-            new EnvironmentKnobSource("AZP_AGENT_MODIFY_PSMODULEPATH"),
             new BuiltInDefaultKnobSource("false"));
     }
 }

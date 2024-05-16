@@ -19,6 +19,9 @@ using Microsoft.TeamFoundation.TestClient.PublishTestResults.Telemetry;
 using Microsoft.VisualStudio.Services.Agent.Listener.Telemetry;
 using System.Collections.Generic;
 using Newtonsoft.Json;
+using Agent.Sdk.Knob;
+using Agent.Sdk.Util.ParentProcessUtil;
+using System.Diagnostics;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener
 {
@@ -326,6 +329,18 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             try
             {
                 Trace.Info(nameof(RunAsync));
+
+                if (AgentKnobs.CheckIfAgentIsRunningInPowershell.GetValue(HostContext).AsBoolean())
+                {
+                    bool useInteropKnob = AgentKnobs.UseInteropToFindParentProcess.GetValue(HostContext).AsBoolean();
+                    (bool isRunningInPwsh, _) = WindowsParentProcessUtil.IsParentProcess(useInteropKnob, ParentProcessNames.Pwsh);
+
+                    if (isRunningInPwsh)
+                    {
+                        _term.WriteLine(StringUtil.Loc("AgentRunningInPowerShellCore"));
+                    }
+                }
+
                 _listener = HostContext.GetService<IMessageListener>();
                 if (!await _listener.CreateSessionAsync(HostContext.AgentShutdownToken))
                 {
