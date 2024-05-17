@@ -277,6 +277,31 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     this.ExpandProperties(sidecar, jobContext.Variables);
                 }
 
+                // Send telemetry in case if git is preinstalled on windows platform
+                var isSelfHosted = StringUtil.ConvertToBoolean(jobContext.Variables.Get(Constants.Variables.Agent.IsSelfHosted));
+                if (PlatformUtil.RunningOnWindows && isSelfHosted)
+                {
+                    var windowsPreinstalledGitCommand = jobContext.GetHostContext().GetService<IAsyncCommandContext>();
+                    windowsPreinstalledGitCommand.InitializeCommandContext(jobContext, "WindowsPreinstalledGitTelemetry");
+                    windowsPreinstalledGitCommand.Task = Task.Run(() =>
+                    {
+                        var hasPreinstalledGit = false;
+
+                        var filePath = WhichUtil.Which("git.exe", require: false, trace: null);
+                        if (!string.IsNullOrEmpty(filePath))
+                        {
+                            hasPreinstalledGit = true;
+                        }
+
+                        PublishTelemetry(context: jobContext, area: "PipelinesTasks", feature: "WindowsGitTelemetry", properties: new Dictionary<string, string>
+                        {
+                            { "hasPreinstalledGit", hasPreinstalledGit.ToString() }
+                        });
+                    });
+
+                    jobContext.AsyncCommands.Add(windowsPreinstalledGitCommand);
+                }
+
                 // Get the job extension.
                 Trace.Info("Getting job extension.");
                 var hostType = jobContext.Variables.System_HostType;
@@ -326,30 +351,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     Trace.Error($"Job initialize failed.");
                     Trace.Error($"Caught exception from {nameof(jobExtension.InitializeJob)}: {ex}");
                     return await CompleteJobAsync(jobServer, jobContext, message, TaskResult.Failed);
-                }
-
-                // Send telemetry in case if git is preinstalled on windows platform
-                if (PlatformUtil.RunningOnWindows && !settings.IsMSHosted)
-                {
-                    var windowsPreinstalledGitCommand = jobContext.GetHostContext().GetService<IAsyncCommandContext>();
-                    windowsPreinstalledGitCommand.InitializeCommandContext(jobContext, "WindowsPreinstalledGitTelemetry");
-                    windowsPreinstalledGitCommand.Task = Task.Run(() =>
-                    {
-                        var hasPreinstalledGit = false;
-
-                        var filePath = WhichUtil.Which("git.exe", require: false, trace: null);
-                        if (!string.IsNullOrEmpty(filePath))
-                        {
-                            hasPreinstalledGit = true;
-                        }
-
-                        PublishTelemetry(context: jobContext, area: "PipelinesTasks", feature: "WindowsGitTelemetry", properties: new Dictionary<string, string>
-                        {
-                            { "hasPreinstalledGit", hasPreinstalledGit.ToString() }
-                        });
-                    });
-
-                    jobContext.AsyncCommands.Add(windowsPreinstalledGitCommand);
                 }
 
                 // trace out all steps
