@@ -1,3 +1,16 @@
+## Features
+ - Add -prerelease flag to lookup vsbuildtools in VisualStudioFunctions.ps1 (#4791)
+ - Updated to support Xamarin detection with VS2022 (#4792)
+ - Support container jobs running with ACR docker registry service connection with workload identity federation auth scheme (#4795)
+
+## Bugs
+ - [GHSA-vh55-786g-wjwj ] Bump System.Security.Cryptography.Xml to 6.0.7 and dotnet to 6.0.29 (#4745)
+ - Ubuntu libssl package version does not exist any more in installdependencies.sh (#4753)
+ - Resolve NuGet vulnerabilities for System.Data.SqlClient (#4776)
+
+## Misc
+ - Add ability to disable Resource Utilization warning (#4775)
+
 
 ## Agent Downloads
 
