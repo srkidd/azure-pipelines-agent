@@ -179,12 +179,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 jobContext.SetVariable(Constants.Variables.System.WorkFolder, HostContext.GetDirectory(WellKnownDirectory.Work), isFilePath: true);
 
                 var azureVmCheckCommand = jobContext.GetHostContext().GetService<IAsyncCommandContext>();
-                azureVmCheckCommand.InitializeCommandContext(jobContext, "GetAzureVMMetada");
+                azureVmCheckCommand.InitializeCommandContext(jobContext, Constants.AsyncExecution.Commands.Names.GetAzureVMMetada);
                 azureVmCheckCommand.Task = Task.Run(() => jobContext.SetVariable(Constants.Variables.System.IsAzureVM, PlatformUtil.DetectAzureVM() ? "1" : "0"));
                 jobContext.AsyncCommands.Add(azureVmCheckCommand);
 
                 var dockerDetectCommand = jobContext.GetHostContext().GetService<IAsyncCommandContext>();
-                dockerDetectCommand.InitializeCommandContext(jobContext, "DetectDockerContainer");
+                dockerDetectCommand.InitializeCommandContext(jobContext, Constants.AsyncExecution.Commands.Names.DetectDockerContainer);
                 dockerDetectCommand.Task = Task.Run(() => jobContext.SetVariable(Constants.Variables.System.IsDockerContainer, PlatformUtil.DetectDockerContainer() ? "1" : "0"));
                 jobContext.AsyncCommands.Add(dockerDetectCommand);
 
@@ -282,7 +282,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 if (PlatformUtil.RunningOnWindows && isSelfHosted)
                 {
                     var windowsPreinstalledGitCommand = jobContext.GetHostContext().GetService<IAsyncCommandContext>();
-                    windowsPreinstalledGitCommand.InitializeCommandContext(jobContext, "WindowsPreinstalledGitTelemetry");
+                    windowsPreinstalledGitCommand.InitializeCommandContext(jobContext, Constants.AsyncExecution.Commands.Names.WindowsPreinstalledGitTelemetry);
                     windowsPreinstalledGitCommand.Task = Task.Run(() =>
                     {
                         var hasPreinstalledGit = false;

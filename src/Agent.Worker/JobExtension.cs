@@ -244,7 +244,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     {
                         try
                         {
-                            var windowsPreinstalledGitCommand = jobContext.AsyncCommands.Find(c => c != null && c.Name == "WindowsPreinstalledGitTelemetry");;
+                            var windowsPreinstalledGitCommand = jobContext.AsyncCommands.Find(c => c != null && c.Name == Constants.AsyncExecution.Commands.Names.WindowsPreinstalledGitTelemetry);
                             if (windowsPreinstalledGitCommand != null)
                             {
                                 await windowsPreinstalledGitCommand.WaitAsync();
