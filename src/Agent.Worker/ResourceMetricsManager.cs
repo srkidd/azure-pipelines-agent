@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Management;
 using System.Threading.Tasks;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
@@ -27,13 +29,45 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
     public sealed class ResourceMetricsManager : AgentService, IResourceMetricsManager
     {
-        const int ACTIVE_MODE_INTERVAL = 5000;
-        const int WARNING_MESSAGE_INTERVAL = 5000;
-        const int AVAILABLE_DISK_SPACE_PERCENTAGE_THRESHOLD = 5;
-        const int AVAILABLE_MEMORY_PERCENTAGE_THRESHOLD = 5;
-        const int CPU_UTILIZATION_PERCENTAGE_THRESHOLD = 95;
+        private const int METRICS_UPDATE_INTERVAL = 5000;
+        private const int ACTIVE_MODE_INTERVAL = 5000;
+        private const int WARNING_MESSAGE_INTERVAL = 5000;
+        private const int AVAILABLE_DISK_SPACE_PERCENTAGE_THRESHOLD = 5;
+        private const int AVAILABLE_MEMORY_PERCENTAGE_THRESHOLD = 5;
+        private const int CPU_UTILIZATION_PERCENTAGE_THRESHOLD = 95;
 
-        IExecutionContext _context;
+        private IExecutionContext _context;
+
+        private Process _currentProcess;
+
+        private static CpuInfo _cpuInfo;
+        private static DiskInfo _diskInfo;
+        private static MemoryInfo _memoryInfo;
+
+        private static readonly object _cpuLock = new object();
+        private static readonly object _diskLock = new object();
+        private static readonly object _memoryLock = new object();
+
+        private struct CpuInfo
+        {
+            public DateTime Updated;
+            public double Usage;
+        }
+
+        private struct DiskInfo
+        {
+            public DateTime Updated;
+            public long TotalDiskSpaceMB;
+            public long FreeDiskSpaceMB;
+            public string VolumeRoot;
+        }
+
+        public struct MemoryInfo
+        {
+            public DateTime Updated;
+            public long TotalMemoryMB;
+            public long UsedMemoryMB;
+        }
 
         public void Setup(IExecutionContext context)
         {
@@ -50,13 +84,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             ArgUtil.NotNull(context, nameof(context));
             _context = context;
         }
-        public async Task RunDebugResourceMonitor()
+
+        public void Dispose()
         {
-            while (!_context.CancellationToken.IsCancellationRequested)
-            {
-                _context.Debug(StringUtil.Loc("ResourceMonitorAgentEnvironmentResource", GetDiskInfoString(), GetMemoryInfoString(), GetCpuInfoString()));
-                await Task.Delay(ACTIVE_MODE_INTERVAL, _context.CancellationToken);
-            }
+            _currentProcess?.Dispose();
         }
 
         private void PublishTelemetry(string message, string taskId)
@@ -89,20 +120,214 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
+        private CpuInfo GetCpuInfo()
+        {
+            lock (_cpuLock)
+            {
+                if (_cpuInfo.Updated == DateTime.Now - TimeSpan.FromMilliseconds(METRICS_UPDATE_INTERVAL))
+                {
+                    return _cpuInfo;
+                }
+
+                TimeSpan totalCpuTime = _currentProcess.TotalProcessorTime;
+                TimeSpan elapsedTime = DateTime.Now - _currentProcess.StartTime;
+
+                _cpuInfo.Updated = DateTime.Now;
+                _cpuInfo.Usage = (totalCpuTime.TotalMilliseconds / elapsedTime.TotalMilliseconds) * 100.0;
+
+                return _cpuInfo;
+            }
+        }
+
+        private DiskInfo GetDiskInfo()
+        {
+            lock (_diskLock)
+            {
+                if (_diskInfo.Updated == DateTime.Now - TimeSpan.FromMilliseconds(METRICS_UPDATE_INTERVAL))
+                {
+                    return _diskInfo;
+                }
+
+                string root = Path.GetPathRoot(_context.GetVariableValueOrDefault(Constants.Variables.Agent.WorkFolder));
+                var driveInfo = new DriveInfo(root);
+
+                _diskInfo.Updated = DateTime.Now;
+                _diskInfo.TotalDiskSpaceMB = driveInfo.TotalSize / 1048576;
+                _diskInfo.FreeDiskSpaceMB = driveInfo.AvailableFreeSpace / 1048576;
+                _diskInfo.VolumeRoot = root;
+
+                return _diskInfo;
+            }
+        }
+
+        private MemoryInfo GetMemoryInfo()
+        {
+            lock (_memoryLock)
+            {
+                if (_memoryInfo.Updated == DateTime.Now - TimeSpan.FromMilliseconds(METRICS_UPDATE_INTERVAL))
+                {
+                    return _memoryInfo;
+                }
+
+                if (PlatformUtil.RunningOnWindows)
+                {
+                    using var query = new ManagementObjectSearcher("SELECT FreePhysicalMemory, TotalVisibleMemorySize FROM CIM_OperatingSystem");
+
+                    ManagementObject memoryInfo = query.Get().OfType<ManagementObject>().FirstOrDefault();
+
+                    var freeMemory = Convert.ToInt64(memoryInfo["FreePhysicalMemory"]);
+                    var totalMemory = Convert.ToInt64(memoryInfo["TotalVisibleMemorySize"]);
+
+                    _memoryInfo.Updated = DateTime.Now;
+                    _memoryInfo.TotalMemoryMB = totalMemory / 1024;
+                    _memoryInfo.UsedMemoryMB = (totalMemory - freeMemory) / 1024;
+                }
+
+                if (PlatformUtil.RunningOnLinux)
+                {
+                    // Some compact Linux distributions like UBI may not have "free" utility installed, or it may have a custom output
+                    // We don't want to break currently existing pipelines with ADO warnings
+                    // so related errors thrown here will be sent to the trace or debug logs by caller methods
+
+                    try
+                    {
+                        ProcessStartInfo processStartInfo = new ProcessStartInfo();
+
+                        processStartInfo.FileName = "free";
+                        processStartInfo.Arguments = "-m";
+                        processStartInfo.RedirectStandardOutput = true;
+
+                        var processStartInfoOutput = "";
+                        using (var process = Process.Start(processStartInfo))
+                        {
+                            processStartInfoOutput = process.StandardOutput.ReadToEnd();
+                        }
+
+                        var processStartInfoOutputString = processStartInfoOutput.Split("\n");
+                        var memoryInfoString = processStartInfoOutputString[1].Split(" ", StringSplitOptions.RemoveEmptyEntries);
+
+                        if (memoryInfoString.Length != 7)
+                        {
+                            throw new Exception("\"free\" utility has non-default output");
+                        }
+
+                        _memoryInfo.Updated = DateTime.Now;
+                        _memoryInfo.TotalMemoryMB = Int32.Parse(memoryInfoString[1]);
+                        _memoryInfo.UsedMemoryMB = Int32.Parse(memoryInfoString[2]);
+                    }
+                    catch (Win32Exception ex)
+                    {
+                        throw new Exception($"\"free\" utility is unavailable. Exception: {ex.Message}");
+                    }
+                }
+
+                if (PlatformUtil.RunningOnMacOS)
+                {
+                    // vm_stat allows to get the most detailed information about memory usage on MacOS
+                    // but unfortunately it returns values in pages and has no built-in arguments for custom output
+                    // so we need to parse and cast the output manually
+
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo();
+
+                    processStartInfo.FileName = "vm_stat";
+                    processStartInfo.RedirectStandardOutput = true;
+
+                    var processStartInfoOutput = "";
+                    using (var process = Process.Start(processStartInfo))
+                    {
+                        processStartInfoOutput = process.StandardOutput.ReadToEnd();
+                    }
+
+                    var processStartInfoOutputString = processStartInfoOutput.Split("\n");
+
+                    var pageSize = Int32.Parse(processStartInfoOutputString[0].Split(" ", StringSplitOptions.RemoveEmptyEntries)[7]);
+
+                    var pagesFree = Int64.Parse(processStartInfoOutputString[1].Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim('.'));
+                    var pagesActive = Int64.Parse(processStartInfoOutputString[2].Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim('.'));
+                    var pagesInactive = Int64.Parse(processStartInfoOutputString[3].Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim('.'));
+                    var pagesSpeculative = Int64.Parse(processStartInfoOutputString[4].Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim('.'));
+                    var pagesWiredDown = Int64.Parse(processStartInfoOutputString[6].Split(" ", StringSplitOptions.RemoveEmptyEntries)[3].Trim('.'));
+                    var pagesOccupied = Int64.Parse(processStartInfoOutputString[16].Split(" ", StringSplitOptions.RemoveEmptyEntries)[4].Trim('.'));
+
+                    var freeMemory = (pagesFree + pagesInactive) * pageSize;
+                    var usedMemory = (pagesActive + pagesSpeculative + pagesWiredDown + pagesOccupied) * pageSize;
+
+                    _memoryInfo.Updated = DateTime.Now;
+                    _memoryInfo.TotalMemoryMB = (freeMemory + usedMemory) / 1048576;
+                    _memoryInfo.UsedMemoryMB = usedMemory / 1048576;
+                }
+
+                return _memoryInfo;
+            }
+        }
+
+        private string GetCpuInfoString()
+        {
+            try
+            {
+                GetCpuInfo();
+
+                return StringUtil.Loc("ResourceMonitorCPUInfo", $"{_cpuInfo.Usage:0.00}");
+            }
+            catch (Exception ex)
+            {
+                return StringUtil.Loc("ResourceMonitorCPUInfoError", ex.Message);
+            }
+        }
+
+        private string GetDiskInfoString()
+        {
+            try
+            {
+                GetDiskInfo();
+
+                return StringUtil.Loc("ResourceMonitorDiskInfo", _diskInfo.VolumeRoot, $"{_diskInfo.FreeDiskSpaceMB:0.00}", $"{_diskInfo.TotalDiskSpaceMB:0.00}");
+
+            }
+            catch (Exception ex)
+            {
+                return StringUtil.Loc("ResourceMonitorDiskInfoError", ex.Message);
+            }
+        }
+
+        private string GetMemoryInfoString()
+        {
+            try
+            {
+                GetMemoryInfo();
+
+                return StringUtil.Loc("ResourceMonitorMemoryInfo", $"{_memoryInfo.UsedMemoryMB:0.00}", $"{_memoryInfo.TotalMemoryMB:0.00}");
+            }
+            catch (Exception ex)
+            {
+                return StringUtil.Loc("ResourceMonitorMemoryInfoError", ex.Message);
+            }
+        }
+
+        public async Task RunDebugResourceMonitor()
+        {
+            while (!_context.CancellationToken.IsCancellationRequested)
+            {
+                _context.Debug(StringUtil.Loc("ResourceMonitorAgentEnvironmentResource", GetDiskInfoString(), GetMemoryInfoString(), GetCpuInfoString()));
+
+                await Task.Delay(ACTIVE_MODE_INTERVAL, _context.CancellationToken);
+            }
+        }
+
         public async Task RunDiskSpaceUtilizationMonitor()
         {
             while (!_context.CancellationToken.IsCancellationRequested)
             {
                 try
                 {
-                    var diskInfo = GetDiskInfo();
+                    GetDiskInfo();
 
-                    var freeDiskSpacePercentage = Math.Round(((diskInfo.FreeDiskSpaceMB / (double)diskInfo.TotalDiskSpaceMB) * 100.0), 2);
+                    var freeDiskSpacePercentage = Math.Round(((_diskInfo.FreeDiskSpaceMB / (double)_diskInfo.TotalDiskSpaceMB) * 100.0), 2);
                     var usedDiskSpacePercentage = 100.0 - freeDiskSpacePercentage;
 
                     if (freeDiskSpacePercentage <= AVAILABLE_DISK_SPACE_PERCENTAGE_THRESHOLD)
                     {
-                        _context.Warning(StringUtil.Loc("ResourceMonitorFreeDiskSpaceIsLowerThanThreshold", diskInfo.VolumeRoot, AVAILABLE_DISK_SPACE_PERCENTAGE_THRESHOLD, $"{usedDiskSpacePercentage:0.00}"));
+                        _context.Warning(StringUtil.Loc("ResourceMonitorFreeDiskSpaceIsLowerThanThreshold", _diskInfo.VolumeRoot, AVAILABLE_DISK_SPACE_PERCENTAGE_THRESHOLD, $"{usedDiskSpacePercentage:0.00}"));
                         break;
                     }
                 }
@@ -123,14 +348,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 try
                 {
-                    var memoryInfo = GetMemoryInfo();
+                    GetMemoryInfo();
 
-                    var usedMemoryPercentage = Math.Round(((memoryInfo.UsedMemoryMB / (double)memoryInfo.TotalMemoryMB) * 100.0), 2);
-                    var freeMemoryPercentage = 100.0 - usedMemoryPercentage;
+                    var usedMemoryPercentage = Math.Round(((_memoryInfo.UsedMemoryMB / (double)_memoryInfo.TotalMemoryMB) * 100.0), 2);
 
-                    if (freeMemoryPercentage <= AVAILABLE_MEMORY_PERCENTAGE_THRESHOLD)
+                    if (100.0 - usedMemoryPercentage <= AVAILABLE_MEMORY_PERCENTAGE_THRESHOLD)
                     {
                         _context.Warning(StringUtil.Loc("ResourceMonitorMemorySpaceIsLowerThanThreshold", AVAILABLE_MEMORY_PERCENTAGE_THRESHOLD, $"{usedMemoryPercentage:0.00}"));
+
                         break;
                     }
                 }
@@ -151,11 +376,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 try
                 {
-                    var usedCpuPercentage = GetCpuInfo();
+                    GetCpuInfo();
 
-                    if (usedCpuPercentage >= CPU_UTILIZATION_PERCENTAGE_THRESHOLD)
+                    if (_cpuInfo.Usage >= CPU_UTILIZATION_PERCENTAGE_THRESHOLD)
                     {
-                        string message = $"CPU utilization is higher than {CPU_UTILIZATION_PERCENTAGE_THRESHOLD}%; currently used: {usedCpuPercentage:0.00}%";
+                        string message = $"CPU utilization is higher than {CPU_UTILIZATION_PERCENTAGE_THRESHOLD}%; currently used: {_cpuInfo.Usage:0.00}%";
 
                         PublishTelemetry(message, taskId);
 
@@ -172,187 +397,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 await Task.Delay(WARNING_MESSAGE_INTERVAL, _context.CancellationToken);
             }
-        }
-
-        private struct DiskInfo
-        {
-            public long TotalDiskSpaceMB;
-            public long FreeDiskSpaceMB;
-            public string VolumeRoot;
-        }
-
-        private DiskInfo GetDiskInfo()
-        {
-            DiskInfo diskInfo = new();
-
-            string root = Path.GetPathRoot(_context.GetVariableValueOrDefault(Constants.Variables.Agent.WorkFolder));
-            var driveInfo = new DriveInfo(root);
-
-            diskInfo.TotalDiskSpaceMB = driveInfo.TotalSize / 1048576;
-            diskInfo.FreeDiskSpaceMB = driveInfo.AvailableFreeSpace / 1048576;
-            diskInfo.VolumeRoot = root;
-
-            return diskInfo;
-        }
-
-        private string GetDiskInfoString()
-        {
-            try
-            {
-                var diskInfo = GetDiskInfo();
-
-                return StringUtil.Loc("ResourceMonitorDiskInfo", diskInfo.VolumeRoot, $"{diskInfo.FreeDiskSpaceMB:0.00}", $"{diskInfo.TotalDiskSpaceMB:0.00}");
-
-            }
-            catch (Exception ex)
-            {
-                return StringUtil.Loc("ResourceMonitorDiskInfoError", ex.Message);
-            }
-        }
-
-        private Process _currentProcess;
-
-        private double GetCpuInfo()
-        {
-            TimeSpan totalCpuTime = _currentProcess.TotalProcessorTime;
-            TimeSpan elapsedTime = DateTime.Now - _currentProcess.StartTime;
-
-            double cpuUsage = (totalCpuTime.TotalMilliseconds / elapsedTime.TotalMilliseconds) * 100.0;
-
-            return cpuUsage;
-        }
-
-        private string GetCpuInfoString()
-        {
-            try
-            {
-                return StringUtil.Loc("ResourceMonitorCPUInfo", $"{GetCpuInfo():0.00}");
-            }
-            catch (Exception ex)
-            {
-                return StringUtil.Loc("ResourceMonitorCPUInfoError", ex.Message);
-            }
-        }
-
-        public struct MemoryInfo
-        {
-            public long TotalMemoryMB;
-            public long UsedMemoryMB;
-        }
-
-        private MemoryInfo GetMemoryInfo()
-        {
-            MemoryInfo memoryInfo = new();
-
-            ProcessStartInfo processStartInfo = new ProcessStartInfo();
-            var processStartInfoOutput = "";
-
-            if (PlatformUtil.RunningOnWindows)
-            {
-                processStartInfo.FileName = "wmic";
-                processStartInfo.Arguments = "OS GET FreePhysicalMemory,TotalVisibleMemorySize /Value";
-                processStartInfo.RedirectStandardOutput = true;
-
-                using (var process = Process.Start(processStartInfo))
-                {
-                    processStartInfoOutput = process.StandardOutput.ReadToEnd();
-                }
-
-                var processStartInfoOutputString = processStartInfoOutput.Trim().Split("\n");
-
-                var freeMemory = Int32.Parse(processStartInfoOutputString[0].Split("=", StringSplitOptions.RemoveEmptyEntries)[1]);
-                var totalMemory = Int32.Parse(processStartInfoOutputString[1].Split("=", StringSplitOptions.RemoveEmptyEntries)[1]);
-
-                memoryInfo.TotalMemoryMB = totalMemory / 1024;
-                memoryInfo.UsedMemoryMB = (totalMemory - freeMemory) / 1024;
-            }
-
-            if (PlatformUtil.RunningOnLinux)
-            {
-                // Some compact Linux distributions like UBI may not have "free" utility installed, or it may have a custom output
-                // We don't want to break currently existing pipelines with ADO warnings
-                // so related errors thrown here will be sent to the trace or debug logs by caller methods
-
-                try
-                {
-                    processStartInfo.FileName = "free";
-                    processStartInfo.Arguments = "-m";
-                    processStartInfo.RedirectStandardOutput = true;
-
-                    using (var process = Process.Start(processStartInfo))
-                    {
-                        processStartInfoOutput = process.StandardOutput.ReadToEnd();
-                    }
-
-                    var processStartInfoOutputString = processStartInfoOutput.Split("\n");
-                    var memoryInfoString = processStartInfoOutputString[1].Split(" ", StringSplitOptions.RemoveEmptyEntries);
-
-                    if (memoryInfoString.Length != 7)
-                    {
-                        throw new Exception("\"free\" utility has non-default output");
-                    }
-
-                    memoryInfo.TotalMemoryMB = Int32.Parse(memoryInfoString[1]);
-                    memoryInfo.UsedMemoryMB = Int32.Parse(memoryInfoString[2]);
-                }
-                catch (Win32Exception ex)
-                {
-                    throw new Exception($"\"free\" utility is unavailable. Exception: {ex.Message}");
-                }
-            }
-
-            if (PlatformUtil.RunningOnMacOS)
-            {
-                // vm_stat allows to get the most detailed information about memory usage on MacOS
-                // but unfortunately it returns values in pages and has no built-in arguments for custom output
-                // so we need to parse and cast the output manually
-
-                processStartInfo.FileName = "vm_stat";
-                processStartInfo.RedirectStandardOutput = true;
-
-                using (var process = Process.Start(processStartInfo))
-                {
-                    processStartInfoOutput = process.StandardOutput.ReadToEnd();
-                }
-
-                var processStartInfoOutputString = processStartInfoOutput.Split("\n");
-
-                var pageSize = Int32.Parse(processStartInfoOutputString[0].Split(" ", StringSplitOptions.RemoveEmptyEntries)[7]);
-
-                var pagesFree = Int64.Parse(processStartInfoOutputString[1].Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim('.'));
-                var pagesActive = Int64.Parse(processStartInfoOutputString[2].Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim('.'));
-                var pagesInactive = Int64.Parse(processStartInfoOutputString[3].Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim('.'));
-                var pagesSpeculative = Int64.Parse(processStartInfoOutputString[4].Split(" ", StringSplitOptions.RemoveEmptyEntries)[2].Trim('.'));
-                var pagesWiredDown = Int64.Parse(processStartInfoOutputString[6].Split(" ", StringSplitOptions.RemoveEmptyEntries)[3].Trim('.'));
-                var pagesOccupied = Int64.Parse(processStartInfoOutputString[16].Split(" ", StringSplitOptions.RemoveEmptyEntries)[4].Trim('.'));
-
-                var freeMemory = (pagesFree + pagesInactive) * pageSize;
-                var usedMemory = (pagesActive + pagesSpeculative + pagesWiredDown + pagesOccupied) * pageSize;
-
-                memoryInfo.TotalMemoryMB = (freeMemory + usedMemory) / 1048576;
-                memoryInfo.UsedMemoryMB = usedMemory / 1048576;
-            }
-
-            return memoryInfo;
-        }
-
-        private string GetMemoryInfoString()
-        {
-            try
-            {
-                var memoryInfo = GetMemoryInfo();
-
-                return StringUtil.Loc("ResourceMonitorMemoryInfo", $"{memoryInfo.UsedMemoryMB:0.00}", $"{memoryInfo.TotalMemoryMB:0.00}");
-            }
-            catch (Exception ex)
-            {
-                return StringUtil.Loc("ResourceMonitorMemoryInfoError", ex.Message);
-            }
-        }
-
-        public void Dispose()
-        {
-            _currentProcess?.Dispose();
         }
     }
 }

@@ -113,11 +113,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 //Start Resource Diagnostics if enabled in the job message 
                 jobContext.Variables.TryGetValue("system.debug", out var systemDebug);
-                resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
 
                 if (string.Equals(systemDebug, "true", StringComparison.OrdinalIgnoreCase))
                 {
+                    resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
                     resourceDiagnosticManager.Setup(jobContext);
+
                     _ = resourceDiagnosticManager.RunDebugResourceMonitor();
                 }
 
