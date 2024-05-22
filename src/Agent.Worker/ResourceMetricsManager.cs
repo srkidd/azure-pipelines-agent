@@ -124,7 +124,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             lock (_cpuLock)
             {
-                if (_cpuInfo.Updated == DateTime.Now - TimeSpan.FromMilliseconds(METRICS_UPDATE_INTERVAL))
+                if (_cpuInfo.Updated >= DateTime.Now - TimeSpan.FromMilliseconds(METRICS_UPDATE_INTERVAL))
                 {
                     return _cpuInfo;
                 }
@@ -143,7 +143,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             lock (_diskLock)
             {
-                if (_diskInfo.Updated == DateTime.Now - TimeSpan.FromMilliseconds(METRICS_UPDATE_INTERVAL))
+                if (_diskInfo.Updated >= DateTime.Now - TimeSpan.FromMilliseconds(METRICS_UPDATE_INTERVAL))
                 {
                     return _diskInfo;
                 }
@@ -164,7 +164,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             lock (_memoryLock)
             {
-                if (_memoryInfo.Updated == DateTime.Now - TimeSpan.FromMilliseconds(METRICS_UPDATE_INTERVAL))
+                if (_memoryInfo.Updated >= DateTime.Now - TimeSpan.FromMilliseconds(METRICS_UPDATE_INTERVAL))
                 {
                     return _memoryInfo;
                 }
@@ -174,6 +174,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     using var query = new ManagementObjectSearcher("SELECT FreePhysicalMemory, TotalVisibleMemorySize FROM CIM_OperatingSystem");
 
                     ManagementObject memoryInfo = query.Get().OfType<ManagementObject>().FirstOrDefault();
+
+                    if (memoryInfo == null)
+                    {
+                        throw new Exception("Failed to execute WMI query");
+                    }
 
                     var freeMemory = Convert.ToInt64(memoryInfo["FreePhysicalMemory"]);
                     var totalMemory = Convert.ToInt64(memoryInfo["TotalVisibleMemorySize"]);
