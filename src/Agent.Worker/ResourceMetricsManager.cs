@@ -29,16 +29,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
     public sealed class ResourceMetricsManager : AgentService, IResourceMetricsManager
     {
+        #region MonitorProperties
+        private IExecutionContext _context;
+
+        private Process _currentProcess;
+
         private const int METRICS_UPDATE_INTERVAL = 5000;
         private const int ACTIVE_MODE_INTERVAL = 5000;
         private const int WARNING_MESSAGE_INTERVAL = 5000;
         private const int AVAILABLE_DISK_SPACE_PERCENTAGE_THRESHOLD = 5;
         private const int AVAILABLE_MEMORY_PERCENTAGE_THRESHOLD = 5;
         private const int CPU_UTILIZATION_PERCENTAGE_THRESHOLD = 95;
-
-        private IExecutionContext _context;
-
-        private Process _currentProcess;
 
         private static CpuInfo _cpuInfo;
         private static DiskInfo _diskInfo;
@@ -47,7 +48,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private static readonly object _cpuLock = new object();
         private static readonly object _diskLock = new object();
         private static readonly object _memoryLock = new object();
+        #endregion
 
+        #region MetricStructs
         private struct CpuInfo
         {
             public DateTime Updated;
@@ -68,7 +71,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             public long TotalMemoryMB;
             public long UsedMemoryMB;
         }
+        #endregion
 
+        #region InitMethods
         public void Setup(IExecutionContext context)
         {
             //initial context
@@ -89,7 +94,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         {
             _currentProcess?.Dispose();
         }
+        #endregion
 
+        #region MiscMethods
         private void PublishTelemetry(string message, string taskId)
         {
             try
@@ -119,7 +126,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Trace.Warning($"Unable to publish resource utilization telemetry data. Exception: {ex.Message}");
             }
         }
+        #endregion
 
+        #region MetricMethods
         private CpuInfo GetCpuInfo()
         {
             lock (_cpuLock)
@@ -265,7 +274,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 return _memoryInfo;
             }
         }
+        #endregion
 
+        #region StringMethods
         private string GetCpuInfoString()
         {
             try
@@ -308,7 +319,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 return StringUtil.Loc("ResourceMonitorMemoryInfoError", ex.Message);
             }
         }
+        #endregion
 
+        #region MonitorLoops
         public async Task RunDebugResourceMonitor()
         {
             while (!_context.CancellationToken.IsCancellationRequested)
@@ -403,5 +416,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 await Task.Delay(WARNING_MESSAGE_INTERVAL, _context.CancellationToken);
             }
         }
+        #endregion
     }
 }
