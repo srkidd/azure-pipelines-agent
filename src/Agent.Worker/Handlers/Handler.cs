@@ -16,8 +16,7 @@ using Agent.Sdk.Knob;
 using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
 using Newtonsoft.Json;
 using System.Runtime.Versioning;
-using Agent.Sdk.Util.ParentProcessUtil;
-using System.Diagnostics;
+using Agent.Sdk.Util;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
 {
@@ -302,6 +301,45 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         }
 
         [SupportedOSPlatform("windows")]
+        protected bool PsModulePathContainsPowershellCoreLocations()
+        {
+            // Return true when:
+            // on Windows
+            // Cleanup knob is disabled
+            // CheckPsModulePathLocations knob is enabled
+            // Windows PowerShell task is executing
+            // local env exists but contains pwsh locations
+            // system env contains pwsh locations
+            bool cleanupPsModulesKnob = AgentKnobs.CleanupPSModules.GetValue(ExecutionContext).AsBoolean();
+            bool checkLocationsKnob = AgentKnobs.CheckPsModulesLocations.GetValue(HostContext).AsBoolean();
+
+            bool isPwshCore = Inputs.TryGetValue("pwsh", out string pwsh) && StringUtil.ConvertToBoolean(pwsh);
+
+            if (!PlatformUtil.RunningOnWindows || !checkLocationsKnob || cleanupPsModulesKnob || isPwshCore)
+            {
+                return false;
+            }
+
+            const string PSModulePath = nameof(PSModulePath);
+
+            bool processVariableExists = Environment.TryGetValue(PSModulePath, out string processVariable);
+            bool localVariableContainsPwshLocations = PsModulePathUtil.ContainsPowershellCoreLocations(processVariable);
+
+            // Special case when the env variable is set for local process environment
+            // for example by vso command in a preceding pipeline step
+            if (processVariableExists && !localVariableContainsPwshLocations)
+            {
+                return false;
+            }
+
+            string systemVariable = System.Environment.GetEnvironmentVariable(PSModulePath);
+
+            bool systemVariableContainsPwshLocations = PsModulePathUtil.ContainsPowershellCoreLocations(systemVariable);
+
+            return localVariableContainsPwshLocations || systemVariableContainsPwshLocations;
+        }
+
+        [SupportedOSPlatform("windows")]
         protected void RemovePSModulePathFromEnvironment()
         {
             if (PlatformUtil.RunningOnWindows == false
@@ -309,16 +347,37 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             {
                 return;
             }
-
-            bool useInteropKnob = AgentKnobs.UseInteropToFindParentProcess.GetValue(ExecutionContext).AsBoolean();
-
-            var (isRunningInPowerShell, telemetry) = WindowsParentProcessUtil.IsParentProcess(useInteropKnob, ParentProcessNames.Powershell, ParentProcessNames.Pwsh);
-
-            if (isRunningInPowerShell)
+            try
             {
-                AddEnvironmentVariable("PSModulePath", "");
-                Trace.Info("PSModulePath is removed from environment since agent is running on Windows and in PowerShell.");
+                if (WindowsProcessUtil.IsAgentRunningInPowerShellCore())
+                {
+                    AddEnvironmentVariable("PSModulePath", "");
+                    Trace.Info("PSModulePath is removed from environment since agent is running on Windows and in PowerShell.");
+                }
+            }
+            catch (InvalidOperationException ex)
+            {
+                Trace.Error(ex.Message);
+
+                var telemetry = new Dictionary<string, string>() 
+                {
+                    ["ParentProcessFinderError"] = StringUtil.Loc("ParentProcessFinderError", nameof(InvalidOperationException))
+                };
                 PublishTelemetry(telemetry);
+
+                ExecutionContext.Error(StringUtil.Loc("ParentProcessFinderError", nameof(InvalidOperationException)));
+            }
+            catch (Exception ex)
+            {
+                Trace.Error(ex.Message);
+
+                var telemetry = new Dictionary<string, string>()
+                {
+                    ["ParentProcessFinderError"] = StringUtil.Loc("ParentProcessFinderError", "Generic exception")
+                };
+                PublishTelemetry(telemetry);
+
+                ExecutionContext.Error(StringUtil.Loc("ParentProcessFinderError", "Generic exception"));
             }
         }
 
