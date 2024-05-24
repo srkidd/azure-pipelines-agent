@@ -20,8 +20,6 @@ using Microsoft.VisualStudio.Services.Agent.Listener.Telemetry;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Agent.Sdk.Knob;
-using Agent.Sdk.Util.ParentProcessUtil;
-using System.Diagnostics;
 
 namespace Microsoft.VisualStudio.Services.Agent.Listener
 {
@@ -330,14 +328,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             {
                 Trace.Info(nameof(RunAsync));
 
-                if (AgentKnobs.CheckIfAgentIsRunningInPowershell.GetValue(HostContext).AsBoolean())
+                if (PlatformUtil.RunningOnWindows && AgentKnobs.CheckPsModulesLocations.GetValue(HostContext).AsBoolean())
                 {
-                    bool useInteropKnob = AgentKnobs.UseInteropToFindParentProcess.GetValue(HostContext).AsBoolean();
-                    (bool isRunningInPwsh, _) = WindowsParentProcessUtil.IsParentProcess(useInteropKnob, ParentProcessNames.Pwsh);
+                    string psModulePath = Environment.GetEnvironmentVariable("PSModulePath");
+                    bool containsPwshLocations = PsModulePathUtil.ContainsPowershellCoreLocations(psModulePath);
 
-                    if (isRunningInPwsh)
+                    if (containsPwshLocations)
                     {
-                        _term.WriteLine(StringUtil.Loc("AgentRunningInPowerShellCore"));
+                        _term.WriteLine(StringUtil.Loc("PSModulePathLocations"));
                     }
                 }
 
