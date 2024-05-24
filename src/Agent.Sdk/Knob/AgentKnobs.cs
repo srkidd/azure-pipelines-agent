@@ -705,10 +705,10 @@ namespace Agent.Sdk.Knob
             new PipelineFeatureSource("Rosetta2Warning"),
             new BuiltInDefaultKnobSource("false"));
 
-        public static readonly Knob CheckIfAgentIsRunningInPowershell = new Knob(
-            nameof(CheckIfAgentIsRunningInPowershell),
-            "Checks if the agent process is started from PowerShell.",
-            new EnvironmentKnobSource("AZP_AGENT_CHECK_IF_AGENT_IS_RUNNING_IN_POWERSHELL"),
+        public static readonly Knob CheckPsModulesLocations = new Knob(
+            nameof(CheckPsModulesLocations),
+            "Checks if the PSModulePath environment variable contains locations specific to PowerShell Core.",
+            new EnvironmentKnobSource("AZP_AGENT_CHECK_PSMODULES_LOCATIONS"),
             new BuiltInDefaultKnobSource("false"));
     }
 }
