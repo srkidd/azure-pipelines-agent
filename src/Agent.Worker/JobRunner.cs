@@ -20,8 +20,6 @@ using System.Net.Http;
 using Newtonsoft.Json.Linq;
 using Newtonsoft.Json;
 using Microsoft.VisualStudio.Services.Agent.Worker.Telemetry;
-using Agent.Sdk.Util.ParentProcessUtil;
-using System.Diagnostics;
 
 namespace Microsoft.VisualStudio.Services.Agent.Worker
 {
