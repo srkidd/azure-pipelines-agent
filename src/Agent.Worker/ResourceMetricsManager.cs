@@ -138,11 +138,60 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     return _cpuInfo;
                 }
 
-                TimeSpan totalCpuTime = _currentProcess.TotalProcessorTime;
-                TimeSpan elapsedTime = DateTime.Now - _currentProcess.StartTime;
+                if (PlatformUtil.RunningOnWindows)
+                {
+                    using var query = new ManagementObjectSearcher("SELECT * FROM Win32_PerfFormattedData_PerfOS_Processor WHERE Name=\"_Total\"");
 
-                _cpuInfo.Updated = DateTime.Now;
-                _cpuInfo.Usage = (totalCpuTime.TotalMilliseconds / elapsedTime.TotalMilliseconds) * 100.0;
+                    ManagementObject cpuInfo = query.Get().OfType<ManagementObject>().FirstOrDefault() ?? throw new Exception("Failed to execute WMI query");
+                    var cpuUsage = Convert.ToDouble(cpuInfo["PercentIdleTime"]);
+
+                    _cpuInfo.Updated = DateTime.Now;
+                    _cpuInfo.Usage = 100 - cpuUsage;
+                }
+
+                if (PlatformUtil.RunningOnLinux)
+                {
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo();
+
+                    processStartInfo.FileName = "grep 'cpu ' /proc/stat";
+                    processStartInfo.RedirectStandardOutput = true;
+
+                    var processStartInfoOutput = "";
+                    using (var process = Process.Start(processStartInfo))
+                    {
+                        processStartInfoOutput = process.StandardOutput.ReadToEnd();
+                    }
+
+                    var processStartInfoOutputString = processStartInfoOutput.Split('\n');
+
+                    var cpuInfoNice = Int32.Parse(processStartInfoOutputString[0].Split(' ', (char)StringSplitOptions.RemoveEmptyEntries)[2]);
+                    var cpuInfoIdle = Int32.Parse(processStartInfoOutputString[0].Split(' ', (char)StringSplitOptions.RemoveEmptyEntries)[4]);
+                    var cpuInfoIOWait = Int32.Parse(processStartInfoOutputString[0].Split(' ', (char)StringSplitOptions.RemoveEmptyEntries)[5]);
+
+                    _cpuInfo.Updated = DateTime.Now;
+                    _cpuInfo.Usage = (cpuInfoNice + cpuInfoIdle) * 100 / (cpuInfoNice + cpuInfoIdle + cpuInfoIOWait);
+                }
+
+                if (PlatformUtil.RunningOnMacOS)
+                {
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo();
+
+                    // Use second sample for more accurate calculation
+                    processStartInfo.FileName = "top -l 2 -o cpu | grep '^CPU'";
+                    processStartInfo.RedirectStandardOutput = true;
+
+                    var processStartInfoOutput = "";
+                    using (var process = Process.Start(processStartInfo))
+                    {
+                        processStartInfoOutput = process.StandardOutput.ReadToEnd();
+                    }
+
+                    var processStartInfoOutputString = processStartInfoOutput.Trim().Split('\n');
+                    var cpuIdleSecondSample = Double.Parse(processStartInfoOutputString[1].Split(' ', (char)StringSplitOptions.RemoveEmptyEntries)[6].Trim('%'));
+
+                    _cpuInfo.Updated = DateTime.Now;
+                    _cpuInfo.Usage = 100 - cpuIdleSecondSample;
+                }
 
                 return _cpuInfo;
             }
@@ -182,13 +231,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 {
                     using var query = new ManagementObjectSearcher("SELECT FreePhysicalMemory, TotalVisibleMemorySize FROM CIM_OperatingSystem");
 
-                    ManagementObject memoryInfo = query.Get().OfType<ManagementObject>().FirstOrDefault();
-
-                    if (memoryInfo == null)
-                    {
-                        throw new Exception("Failed to execute WMI query");
-                    }
-
+                    ManagementObject memoryInfo = query.Get().OfType<ManagementObject>().FirstOrDefault() ?? throw new Exception("Failed to execute WMI query");
                     var freeMemory = Convert.ToInt64(memoryInfo["FreePhysicalMemory"]);
                     var totalMemory = Convert.ToInt64(memoryInfo["TotalVisibleMemorySize"]);
 
