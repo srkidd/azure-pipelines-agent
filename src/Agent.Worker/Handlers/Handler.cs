@@ -303,11 +303,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         [SupportedOSPlatform("windows")]
         protected bool PsModulePathContainsPowershellCoreLocations()
         {
-            // Return true when:
-            // on Windows
-            // Cleanup knob is disabled
-            // CheckPsModulePathLocations knob is enabled
-            // Windows PowerShell task is executing
             // local env exists but contains pwsh locations
             // system env contains pwsh locations
             bool cleanupPsModulesKnob = AgentKnobs.CleanupPSModules.GetValue(ExecutionContext).AsBoolean();
@@ -354,18 +349,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
                     AddEnvironmentVariable("PSModulePath", "");
                     Trace.Info("PSModulePath is removed from environment since agent is running on Windows and in PowerShell.");
                 }
-            }
-            catch (InvalidOperationException ex)
-            {
-                Trace.Error(ex.Message);
-
-                var telemetry = new Dictionary<string, string>() 
-                {
-                    ["ParentProcessFinderError"] = StringUtil.Loc("ParentProcessFinderError", nameof(InvalidOperationException))
-                };
-                PublishTelemetry(telemetry);
-
-                ExecutionContext.Error(StringUtil.Loc("ParentProcessFinderError", nameof(InvalidOperationException)));
             }
             catch (Exception ex)
             {

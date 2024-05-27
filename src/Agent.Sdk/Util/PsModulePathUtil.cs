@@ -25,15 +25,12 @@ namespace Agent.Sdk.Util
             string programFilesModuleLocation = Path.Combine(programFilesPath.ToLower(), "powershell", "7", "Modules");
             string programFilesModuleLocation86 = Path.Combine(programFilesPath86.ToLower(), "powershell", "7", "Modules");
 
-            //string userFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            //string wellKnownDocumentsModuleLocation = Path.Combine(userFolderPath, "Documents", "PowerShell", "Modules");
             string[] wellKnownLocations = new[]
             {
                 psHomeModuleLocation, psHomeModuleLocation86, programFilesModuleLocation, programFilesModuleLocation86
             };
 
-            //TODO: mb use string comparison ordinal
-            bool containsPwshLocations = wellKnownLocations.Any(location => psModulePath.Contains(location));
+            bool containsPwshLocations = wellKnownLocations.Any(location => psModulePath.Contains(location, StringComparison.OrdinalIgnoreCase));
 
             return containsPwshLocations;
         }
