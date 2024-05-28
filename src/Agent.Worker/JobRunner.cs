@@ -117,7 +117,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 if (string.Equals(systemDebug, "true", StringComparison.OrdinalIgnoreCase))
                 {
                     resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
-                    resourceDiagnosticManager.Setup(jobContext);
+                    resourceDiagnosticManager.SetContext(jobContext);
 
                     _ = resourceDiagnosticManager.RunDebugResourceMonitor();
                 }
@@ -392,7 +392,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 legacyTaskConnection?.Dispose();
                 taskConnection?.Dispose();
                 jobConnection?.Dispose();
-                resourceDiagnosticManager?.Dispose();
 
                 await ShutdownQueue(throwOnFailure: false);
             }

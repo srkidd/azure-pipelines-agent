@@ -421,7 +421,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
 
                 var enableResourceUtilizationWarnings = AgentKnobs.EnableResourceUtilizationWarnings.GetValue(ExecutionContext).AsBoolean()
-                    && !AgentKnobs.DisableResourceUtilizationWarnings.GetValue(ExecutionContext).AsBoolean(); ;
+                    && !AgentKnobs.DisableResourceUtilizationWarnings.GetValue(ExecutionContext).AsBoolean();
 
                 //Start Resource utility monitors
                 IResourceMetricsManager resourceDiagnosticManager = null;
@@ -429,11 +429,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 if (enableResourceUtilizationWarnings)
                 {
                     resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
-                    resourceDiagnosticManager.Setup(ExecutionContext);
+                    resourceDiagnosticManager.SetContext(ExecutionContext);
 
-                    _ = resourceDiagnosticManager.RunMemoryUtilizationMonitor();
+                    _ = resourceDiagnosticManager.RunMemoryUtilizationMonitorAsync();
                     _ = resourceDiagnosticManager.RunDiskSpaceUtilizationMonitor();
-                    _ = resourceDiagnosticManager.RunCpuUtilizationMonitor(Task.Reference.Id.ToString());
+                    _ = resourceDiagnosticManager.RunCpuUtilizationMonitorAsync(Task.Reference.Id.ToString());
                 }
                 else
                 {
@@ -457,11 +457,6 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 else
                 {
                     await handler.RunAsync();
-                }
-
-                if (enableResourceUtilizationWarnings)
-                {
-                    resourceDiagnosticManager?.Dispose();
                 }
             }
         }
