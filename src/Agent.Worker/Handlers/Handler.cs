@@ -350,16 +350,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             catch (Exception ex)
             {
                 Trace.Error(ex.Message);
-                const string errorName = "ParentProcessFinderError";
                 const string errorDescription = "Error occurred while checking if agent is running in PowerShell Core";
 
                 var telemetry = new Dictionary<string, string>()
                 {
-                    [errorName] = StringUtil.Loc(errorName, errorDescription)
+                    ["ParentProcessFinderError"] = StringUtil.Loc("ParentProcessFinderError", errorDescription)
                 };
                 PublishTelemetry(telemetry);
 
-                ExecutionContext.Error(StringUtil.Loc(errorName, errorDescription));
+                ExecutionContext.Error(StringUtil.Loc("ParentProcessFinderError", errorDescription));
             }
         }
 
