@@ -303,26 +303,23 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
         [SupportedOSPlatform("windows")]
         protected bool PsModulePathContainsPowershellCoreLocations()
         {
-            // local env exists but contains pwsh locations
-            // system env contains pwsh locations
-            bool cleanupPsModulesKnob = AgentKnobs.CleanupPSModules.GetValue(ExecutionContext).AsBoolean();
             bool checkLocationsKnob = AgentKnobs.CheckPsModulesLocations.GetValue(HostContext).AsBoolean();
 
             bool isPwshCore = Inputs.TryGetValue("pwsh", out string pwsh) && StringUtil.ConvertToBoolean(pwsh);
 
-            if (!PlatformUtil.RunningOnWindows || !checkLocationsKnob || cleanupPsModulesKnob || isPwshCore)
+            if (!PlatformUtil.RunningOnWindows || !checkLocationsKnob || isPwshCore)
             {
                 return false;
             }
 
             const string PSModulePath = nameof(PSModulePath);
 
-            bool processVariableExists = Environment.TryGetValue(PSModulePath, out string processVariable);
-            bool localVariableContainsPwshLocations = PsModulePathUtil.ContainsPowershellCoreLocations(processVariable);
+            bool localVariableExists = Environment.TryGetValue(PSModulePath, out string localVariable);
+            bool localVariableContainsPwshLocations = PsModulePathUtil.ContainsPowershellCoreLocations(localVariable);
 
             // Special case when the env variable is set for local process environment
             // for example by vso command in a preceding pipeline step
-            if (processVariableExists && !localVariableContainsPwshLocations)
+            if (localVariableExists && !localVariableContainsPwshLocations)
             {
                 return false;
             }
@@ -353,14 +350,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker.Handlers
             catch (Exception ex)
             {
                 Trace.Error(ex.Message);
+                const string errorName = "ParentProcessFinderError";
+                const string errorDescription = "Error occurred while checking if agent is running in PowerShell Core";
 
                 var telemetry = new Dictionary<string, string>()
                 {
-                    ["ParentProcessFinderError"] = StringUtil.Loc("ParentProcessFinderError", "Generic exception")
+                    [errorName] = StringUtil.Loc(errorName, errorDescription)
                 };
                 PublishTelemetry(telemetry);
 
-                ExecutionContext.Error(StringUtil.Loc("ParentProcessFinderError", "Generic exception"));
+                ExecutionContext.Error(StringUtil.Loc(errorName, errorDescription));
             }
         }
 
