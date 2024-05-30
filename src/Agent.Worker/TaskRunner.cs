@@ -432,7 +432,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     resourceDiagnosticManager.SetContext(ExecutionContext);
 
                     _ = resourceDiagnosticManager.RunMemoryUtilizationMonitorAsync();
-                    _ = resourceDiagnosticManager.RunDiskSpaceUtilizationMonitor();
+                    _ = resourceDiagnosticManager.RunDiskSpaceUtilizationMonitorAsync();
                     _ = resourceDiagnosticManager.RunCpuUtilizationMonitorAsync(Task.Reference.Id.ToString());
                 }
                 else

@@ -18,9 +18,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
     [ServiceLocator(Default = typeof(ResourceMetricsManager))]
     public interface IResourceMetricsManager : IAgentService
     {
-        Task RunDebugResourceMonitor();
+        Task RunDebugResourceMonitorAsync();
         Task RunMemoryUtilizationMonitorAsync();
-        Task RunDiskSpaceUtilizationMonitor();
+        Task RunDiskSpaceUtilizationMonitorAsync();
         Task RunCpuUtilizationMonitorAsync(string taskId);
         void SetContext(IExecutionContext context);
     }
@@ -405,7 +405,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         #endregion
 
         #region MonitorLoops
-        public async Task RunDebugResourceMonitor()
+        public async Task RunDebugResourceMonitorAsync()
         {
             while (!_context.CancellationToken.IsCancellationRequested)
             {
@@ -415,7 +415,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             }
         }
 
-        public async Task RunDiskSpaceUtilizationMonitor()
+        public async Task RunDiskSpaceUtilizationMonitorAsync()
         {
             while (!_context.CancellationToken.IsCancellationRequested)
             {

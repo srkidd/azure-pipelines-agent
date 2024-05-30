@@ -119,7 +119,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
                     resourceDiagnosticManager.SetContext(jobContext);
 
-                    _ = resourceDiagnosticManager.RunDebugResourceMonitor();
+                    _ = resourceDiagnosticManager.RunDebugResourceMonitorAsync();
                 }
 
                 agentShutdownRegistration = HostContext.AgentShutdownToken.Register(() =>
