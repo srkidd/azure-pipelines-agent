@@ -426,11 +426,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 //Start Resource utility monitors
                 IResourceMetricsManager resourceDiagnosticManager = null;
 
+                resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
+                resourceDiagnosticManager.SetContext(ExecutionContext);
+
                 if (enableResourceUtilizationWarnings)
                 {
-                    resourceDiagnosticManager = HostContext.GetService<IResourceMetricsManager>();
-                    resourceDiagnosticManager.SetContext(ExecutionContext);
-
                     _ = resourceDiagnosticManager.RunMemoryUtilizationMonitorAsync();
                     _ = resourceDiagnosticManager.RunDiskSpaceUtilizationMonitorAsync();
                     _ = resourceDiagnosticManager.RunCpuUtilizationMonitorAsync(Task.Reference.Id.ToString());
