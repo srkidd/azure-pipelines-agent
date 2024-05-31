@@ -76,7 +76,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 return;
             }
 
-            List<Guid> exceptionList = GetTaskExceptionList();
+            HashSet<Guid> exceptionList = GetTaskExceptionList().ToHashSet();
 
             foreach (var task in uniqueTasks.Select(x => x.Reference))
             {
@@ -417,7 +417,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         /// This method provides a list of in-the-box pipeline tasks for which we don't want to display Node deprecation warnings. 
         /// </summary>
         /// <returns> List of tasks ID </returns>
-        private List<Guid> GetTaskExceptionList()
+        private IList<Guid> GetTaskExceptionList()
         {
             string exceptionListFile = HostContext.GetConfigFile(WellKnownConfigFile.TaskExceptionList);
             var exceptionList = new List<Guid>();
