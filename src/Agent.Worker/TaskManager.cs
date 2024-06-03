@@ -76,7 +76,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 return;
             }
 
-            HashSet<Guid> exceptionList = GetTaskExceptionList().ToHashSet();
+            HashSet<Guid> exceptionList = GetTaskExceptionSet();
 
             foreach (var task in uniqueTasks.Select(x => x.Reference))
             {
@@ -414,10 +414,10 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         }
 
         /// <summary> 
-        /// This method provides a list of in-the-box pipeline tasks for which we don't want to display Node deprecation warnings. 
+        /// This method provides a set of in-the-box pipeline tasks for which we don't want to display Node deprecation warnings. 
         /// </summary>
-        /// <returns> List of tasks ID </returns>
-        private IList<Guid> GetTaskExceptionList()
+        /// <returns> Set of tasks ID </returns>
+        private HashSet<Guid> GetTaskExceptionSet()
         {
             string exceptionListFile = HostContext.GetConfigFile(WellKnownConfigFile.TaskExceptionList);
             var exceptionList = new List<Guid>();
@@ -435,7 +435,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 }
             }
 
-            return exceptionList;
+            return exceptionList.ToHashSet();
         }
 
         private JObject GetTaskJson(Pipelines.TaskStepDefinitionReference task)
