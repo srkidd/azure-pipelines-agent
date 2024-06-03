@@ -397,7 +397,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
 
             agentSettings.NotificationSocketAddress = command.GetNotificationSocketAddress();
 
+            // Test to see if disableLogUpload and enabledLogOutput are both selected
+            if (command.GetDisableLogUploads() && command.GetEnableLogOutput())
+            {
+                Trace.Warning("You cannot use --disableloguploads and --enablelogoutput at the same time!");
+                throw new NotSupportedException();
+            }
+
             agentSettings.DisableLogUploads = command.GetDisableLogUploads();
+
+            agentSettings.EnableLogOutput = command.GetEnableLogOutput();
 
             agentSettings.AlwaysExtractTask = command.GetAlwaysExtractTask();
 
@@ -736,7 +745,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
                     // Get info about root folder
                     DirectoryInfo dirInfo = new DirectoryInfo(rootDirPath);
 
-                    // Get directory access control list 
+                    // Get directory access control list
                     DirectorySecurity directorySecurityInfo = dirInfo.GetAccessControl();
                     AuthorizationRuleCollection dirAccessRules = directorySecurityInfo.GetAccessRules(true, true, typeof(NTAccount));
 
