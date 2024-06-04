@@ -565,6 +565,11 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             return TestFlag(Configure?.DisableLogUploads, Constants.Agent.CommandLine.Flags.DisableLogUploads);
         }
 
+        public bool GetEnableLogOutput()
+        {
+            return TestFlag(Configure?.EnableLogOutput, Constants.Agent.CommandLine.Flags.EnableLogOutput);
+        }
+
         public bool Unattended()
         {
             if (TestFlag(GetConfigureOrRemoveBase()?.Unattended, Constants.Agent.CommandLine.Flags.Unattended))

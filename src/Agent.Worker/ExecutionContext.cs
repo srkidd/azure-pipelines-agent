@@ -117,6 +117,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private ExecutionTargetInfo _defaultStepTarget;
         private ExecutionTargetInfo _currentStepTarget;
         private bool _disableLogUploads;
+        private bool _enableLogOutput;
         private string _buildLogsFolderPath;
         private string _buildLogsFile;
         private FileStream _buildLogsData;
@@ -179,8 +180,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             base.Initialize(hostContext);
 
             _disableLogUploads = HostContext.GetService<IConfigurationStore>().GetSettings().DisableLogUploads;
+            _enableLogOutput = HostContext.GetService<IConfigurationStore>().GetSettings().EnableLogOutput;
 
-            if (_disableLogUploads)
+            if (_disableLogUploads || _enableLogOutput)
             {
                 _buildLogsFolderPath = Path.Combine(hostContext.GetDiagDirectory(), _buildLogsFolderName);
                 Directory.CreateDirectory(_buildLogsFolderPath);
@@ -263,7 +265,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             _jobServerQueue.QueueTimelineRecordUpdate(_mainTimelineId, _record);
 
-            if (_disableLogUploads)
+            if (_disableLogUploads || _enableLogOutput)
             {
                 var buildLogsJobFolder = Path.Combine(_buildLogsFolderPath, _mainTimelineId.ToString());
                 Directory.CreateDirectory(buildLogsJobFolder);
@@ -275,7 +277,15 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 _buildLogsData = new FileStream(_buildLogsFile, FileMode.CreateNew);
                 _buildLogsWriter = new StreamWriter(_buildLogsData, System.Text.Encoding.UTF8);
 
-                _logger.Write(StringUtil.Loc("BuildLogsMessage", _buildLogsFile));
+                if (_disableLogUploads)
+                {
+                    _logger.Write(StringUtil.Loc("BuildLogsMessage", _buildLogsFile));
+                }
+                else
+                {
+                    _logger.Write(StringUtil.Loc("LogOutputMessage", _buildLogsFile));
+                }
+
             }
         }
 
@@ -286,7 +296,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Result = result;
             }
 
-            if (_disableLogUploads)
+            if (_disableLogUploads || _enableLogOutput)
             {
                 _buildLogsWriter.Flush();
                 _buildLogsData.Flush();
@@ -703,9 +713,17 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 totalLines = _logger.TotalLines + 1;
 
+                DateTime rightNow = DateTime.UtcNow;
+
                 if (_disableLogUploads)
                 {
-                    _buildLogsWriter.WriteLine(message);
+                    //Add date time stamp to log line
+                    _buildLogsWriter.WriteLine("{0:O} {1}", rightNow, message);
+                }
+                else if (_enableLogOutput) {
+                    //Add date time stamp to log line
+                    _buildLogsWriter.WriteLine("{0:O} {1}", rightNow, message);
+                     _logger.Write(message);
                 }
                 else
                 {
