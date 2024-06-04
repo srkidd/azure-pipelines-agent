@@ -713,14 +713,16 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             {
                 totalLines = _logger.TotalLines + 1;
 
+                DateTime rightNow = DateTime.UtcNow;
+
                 if (_disableLogUploads)
                 {
                     //Add date time stamp to log line
-                    _buildLogsWriter.WriteLine(DateTime.UtcNow + " " + message);
+                    _buildLogsWriter.WriteLine("{0:O} " + message, rightNow.ToString());
                 }
                 else if (_enableLogOutput) {
                     //Add date time stamp to log line
-                    _buildLogsWriter.WriteLine(DateTime.UtcNow + " " + message);
+                    _buildLogsWriter.WriteLine("{0:O} " + message, rightNow.ToString());
                      _logger.Write(message);
                 }
                 else
