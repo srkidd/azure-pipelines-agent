@@ -715,10 +715,12 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
                 if (_disableLogUploads)
                 {
-                    _buildLogsWriter.WriteLine(message);
+                    //Add date time stamp to log line
+                    _buildLogsWriter.WriteLine(DateTime.UtcNow + " " + message);
                 }
                 else if (_enableLogOutput) {
-                    _buildLogsWriter.WriteLine(message);
+                    //Add date time stamp to log line
+                    _buildLogsWriter.WriteLine(DateTime.UtcNow + " " + message);
                      _logger.Write(message);
                 }
                 else
