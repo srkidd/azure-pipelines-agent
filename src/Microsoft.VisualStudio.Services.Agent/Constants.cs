@@ -226,6 +226,7 @@ namespace Microsoft.VisualStudio.Services.Agent
                     public const string NoRestart = "norestart";
                     public const string LaunchBrowser = "launchbrowser";
                     public const string Once = "once";
+                    public const string DebugMode = "debug";
                     public const string RunAsAutoLogon = "runasautologon";
                     public const string RunAsService = "runasservice";
                     public const string PreventServiceStart = "preventservicestart";
@@ -390,7 +391,6 @@ namespace Microsoft.VisualStudio.Services.Agent
                 public static readonly string ToolsDirectory = "agent.ToolsDirectory";
                 public static readonly string UseGitLongPaths = "USE_GIT_LONG_PATHS";
                 public static readonly string UseGitSingleThread = "USE_GIT_SINGLE_THREAD";
-                public static readonly string UseLatestGitVersion = "USE_LATEST_GIT_VERSION";
                 public static readonly string Version = "agent.version";
                 public static readonly string WorkFolder = "agent.workfolder";
                 public static readonly string WorkingDirectory = "agent.WorkingDirectory";
@@ -594,7 +594,6 @@ namespace Microsoft.VisualStudio.Services.Agent
                 Agent.ToolsDirectory,
                 Agent.UseGitLongPaths,
                 Agent.UseGitSingleThread,
-                Agent.UseLatestGitVersion,
                 Agent.Version,
                 Agent.WorkFolder,
                 Agent.WorkingDirectory,
