@@ -118,7 +118,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
         private ExecutionTargetInfo _defaultStepTarget;
         private ExecutionTargetInfo _currentStepTarget;
         private bool _disableLogUploads;
-        private bool _enableLogOutput;
+        private bool _reStreamLogsToFiles;
         private string _buildLogsFolderPath;
         private string _buildLogsFile;
         private FileStream _buildLogsData;
@@ -181,9 +181,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
             base.Initialize(hostContext);
 
             _disableLogUploads = HostContext.GetService<IConfigurationStore>().GetSettings().DisableLogUploads;
-            _enableLogOutput = HostContext.GetService<IConfigurationStore>().GetSettings().EnableLogOutput;
+            _reStreamLogsToFiles = HostContext.GetService<IConfigurationStore>().GetSettings().ReStreamLogsToFiles;
 
-            if (_disableLogUploads || _enableLogOutput)
+            if (_disableLogUploads || _reStreamLogsToFiles)
             {
                 _buildLogsFolderPath = Path.Combine(hostContext.GetDiagDirectory(), _buildLogsFolderName);
                 Directory.CreateDirectory(_buildLogsFolderPath);
@@ -266,7 +266,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
 
             _jobServerQueue.QueueTimelineRecordUpdate(_mainTimelineId, _record);
 
-            if (_disableLogUploads || _enableLogOutput)
+            if (_disableLogUploads || _reStreamLogsToFiles)
             {
                 var buildLogsJobFolder = Path.Combine(_buildLogsFolderPath, _mainTimelineId.ToString());
                 Directory.CreateDirectory(buildLogsJobFolder);
@@ -297,7 +297,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                 Result = result;
             }
 
-            if (_disableLogUploads || _enableLogOutput)
+            if (_disableLogUploads || _reStreamLogsToFiles)
             {
                 _buildLogsWriter.Flush();
                 _buildLogsData.Flush();
@@ -734,7 +734,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Worker
                     //Add date time stamp to log line
                     _buildLogsWriter.WriteLine("{0:O} {1}", rightNow, message);
                 }
-                else if (_enableLogOutput) {
+                else if (_reStreamLogsToFiles) {
                     //Add date time stamp to log line
                     _buildLogsWriter.WriteLine("{0:O} {1}", rightNow, message);
                      _logger.Write(message);

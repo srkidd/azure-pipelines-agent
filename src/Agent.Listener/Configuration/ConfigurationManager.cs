@@ -398,15 +398,14 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             agentSettings.NotificationSocketAddress = command.GetNotificationSocketAddress();
 
             // Test to see if disableLogUpload and enabledLogOutput are both selected
-            if (command.GetDisableLogUploads() && command.GetEnableLogOutput())
+            if (command.GetDisableLogUploads() && command.GetReStreamLogsToFiles())
             {
-                Trace.Warning("You cannot use --disableloguploads and --enablelogoutput at the same time!");
-                throw new NotSupportedException();
+                throw new NotSupportedException(StringUtil.Loc("You cannot use --disableloguploads and --reStreamLogsToFiles at the same time!"));
             }
 
             agentSettings.DisableLogUploads = command.GetDisableLogUploads();
 
-            agentSettings.EnableLogOutput = command.GetEnableLogOutput();
+            agentSettings.ReStreamLogsToFiles = command.GetReStreamLogsToFiles();
 
             agentSettings.AlwaysExtractTask = command.GetAlwaysExtractTask();
 

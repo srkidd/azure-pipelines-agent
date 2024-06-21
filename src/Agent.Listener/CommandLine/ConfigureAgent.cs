@@ -60,8 +60,8 @@ namespace Agent.Listener.CommandLine
         [Option(Constants.Agent.CommandLine.Flags.DisableLogUploads)]
         public bool DisableLogUploads { get; set; }
 
-        [Option(Constants.Agent.CommandLine.Flags.EnableLogOutput)]
-        public bool EnableLogOutput { get; set; }
+        [Option(Constants.Agent.CommandLine.Flags.ReStreamLogsToFiles)]
+        public bool ReStreamLogsToFiles { get; set; }
 
         [Option(Constants.Agent.CommandLine.Flags.MachineGroup)]
         public bool MachineGroup { get; set; }

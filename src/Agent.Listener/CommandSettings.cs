@@ -570,9 +570,9 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener
             return TestFlag(Configure?.DisableLogUploads, Constants.Agent.CommandLine.Flags.DisableLogUploads);
         }
 
-        public bool GetEnableLogOutput()
+        public bool GetReStreamLogsToFiles()
         {
-            return TestFlag(Configure?.EnableLogOutput, Constants.Agent.CommandLine.Flags.EnableLogOutput);
+            return TestFlag(Configure?.ReStreamLogsToFiles, Constants.Agent.CommandLine.Flags.ReStreamLogsToFiles);
         }
 
         public bool Unattended()
