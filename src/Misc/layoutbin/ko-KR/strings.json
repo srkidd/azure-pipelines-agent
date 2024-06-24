@@ -394,6 +394,7 @@
   "ListenForJobs": "{0:u}: 작업 수신 대기",
   "LocalClockSkewed": "로컬 컴퓨터의 시계는 서버 시간과 5분 이상 동기화되지 않을 수 있습니다. 시계를 도메인 또는 인터넷 시간과 동기화하고 다시 시도하세요.",
   "LocalSystemAccountNotFound": "로컬 시스템 계정을 찾을 수 없습니다",
+  "LogOutputMessage": "에이전트는 로그 업로드와 로그 파일 저장을 활성화했습니다. 작업이 완료된 후 에이전트의 {0}에서 이 단계의 로그를 검색할 수 있습니다.",
   "Maintenance": "유지 관리",
   "MaxHierarchyLevelReached": "계층 구조 수준이 지원되는 제한 {0}보다 많습니다. 낮은 계층 구조를 자릅니다.",
   "MaxSubResultLimitReached": "테스트 케이스 '{0}'의 하위 결과 수가 지원되는 제한인 {1}개를 초과하여 나머지 결과를 자릅니다.",
