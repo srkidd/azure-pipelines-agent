@@ -394,7 +394,6 @@
   "ListenForJobs": "{0:u}: Escuchando trabajos",
   "LocalClockSkewed": "Es posible que el reloj de la máquina local no esté sincronizado con la hora del servidor con una diferencia de más de cinco minutos. Sincronice el reloj con la hora de su dominio o internet e inténtelo de nuevo.",
   "LocalSystemAccountNotFound": "No se encuentra la cuenta del sistema local",
-  "LogOutputMessage": "El agente ha permitido cargar registros y guardarlos en un archivo. Una vez que se complete el trabajo, puede recuperar los registros de este paso en {0} en el agente.",
   "Maintenance": "Mantenimiento",
   "MaxHierarchyLevelReached": "El nivel de jerarquía es mayor que el límite admitido de {0}, se truncará la jerarquía inferior.",
   "MaxSubResultLimitReached": "El número de subresultados en el caso de prueba \"{0}\" supera el límite admitido de {1}, truncando los restantes.",

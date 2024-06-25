@@ -394,7 +394,6 @@
   "ListenForJobs": "{0:u}: 正在聆聽工作",
   "LocalClockSkewed": "本機電腦的時鐘可能與伺服器時間不同步 (可能超過五分鐘)。請將您的時鐘與網域或網際網路時間同步，然後再試一次。",
   "LocalSystemAccountNotFound": "找不到本機系統帳戶",
-  "LogOutputMessage": "代理程式已啟用上傳日誌以及將日誌儲存到檔案。作業完成後，您可以在代理程式上的 {0} 處擷取此步驟的日誌。",
   "Maintenance": "維修",
   "MaxHierarchyLevelReached": "階層層級大於支援的限制 {0}，因此會截斷較低的階層。",
   "MaxSubResultLimitReached": "測試案例中的子結果數目 '{0}' 超過支援的限制 {1}，正在截斷其餘的子結果。",

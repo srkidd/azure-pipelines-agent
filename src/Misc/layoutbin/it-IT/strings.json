@@ -394,7 +394,6 @@
   "ListenForJobs": "{0:u}: ascolto dei processi",
   "LocalClockSkewed": "L'orologio del computer locale potrebbe non essere sincronizzato con l'ora del server di più di cinque minuti. Sincronizzare l'orologio con il dominio o l'ora Internet e riprovare.",
   "LocalSystemAccountNotFound": "Impossibile trovare l'account di sistema locale",
-  "LogOutputMessage": "L'agente ha abilitato il caricamento dei registri e il salvataggio dei registri su file. Una volta completato il lavoro, puoi recuperare i registri di questo passaggio su {0} sull'agente.",
   "Maintenance": "Manutenzione",
   "MaxHierarchyLevelReached": "Il livello gerarchia è maggiore del limite supportato {0}. La gerarchia inferiore verrà troncata.",
   "MaxSubResultLimitReached": "Il numero di risultati secondari in test case '{0}' è superiore al limite supportato di {1}, troncando quelli rimanenti.",

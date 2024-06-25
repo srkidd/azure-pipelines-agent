@@ -394,7 +394,6 @@
   "ListenForJobs": "{0:u}: 正在侦听作业",
   "LocalClockSkewed": "本地计算机的时钟可能与服务器时间不同步，不同步的时间超过五分钟。请将时钟与域或 Internet 时间同步，然后重试。",
   "LocalSystemAccountNotFound": "找不到本地系统帐户",
-  "LogOutputMessage": "代理已启用上传日志以及将日志保存到文件。作业完成后，您可以在代理上的 {0} 处检索此步骤的日志。",
   "Maintenance": "维护",
   "MaxHierarchyLevelReached": "层次结构级别已超过支持的限制 {0}，导致较低的层次结构被截断。",
   "MaxSubResultLimitReached": "测试用例 \"{0}\" 中的子结果数超过了支持上限 {1}，正在截断剩余的子结果。",

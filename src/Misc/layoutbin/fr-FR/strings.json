@@ -394,7 +394,6 @@
   "ListenForJobs": "{0:u} : à l’écoute des travaux",
   "LocalClockSkewed": "L’horloge de l’ordinateur local n’est peut-être pas synchronisée avec l’heure du serveur de plus de cinq minutes. Veuillez synchroniser votre horloge avec votre domaine ou l’heure Internet et réessayer.",
   "LocalSystemAccountNotFound": "Compte système local introuvable",
-  "LogOutputMessage": "L'agent a activé le téléchargement des journaux ainsi que l'enregistrement du journal dans un fichier. Une fois la tâche terminée, vous pouvez récupérer les journaux de cette étape sur {0} sur l'agent.",
   "Maintenance": "Maintenance",
   "MaxHierarchyLevelReached": "Le niveau de hiérarchie est supérieur à la limite prise en charge {0}, troncation de la hiérarchie inférieure.",
   "MaxSubResultLimitReached": "Le nombre de sous-résultats dans le cas de test '{0}' est supérieur à la limite prise en charge de {1}, ce qui tronque les autres.",
