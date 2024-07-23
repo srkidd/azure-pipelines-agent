@@ -400,7 +400,7 @@ namespace Microsoft.VisualStudio.Services.Agent.Listener.Configuration
             // Test to see if disableLogUpload and enabledLogOutput are both selected
             if (command.GetDisableLogUploads() && command.GetReStreamLogsToFiles())
             {
-                throw new NotSupportedException(StringUtil.Loc("You cannot use --disableloguploads and --reStreamLogsToFiles at the same time!"));
+                throw new NotSupportedException(StringUtil.Loc("ReStreamLogsToFilesError"));
             }
 
             agentSettings.DisableLogUploads = command.GetDisableLogUploads();
